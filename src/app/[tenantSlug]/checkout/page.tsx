@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, User, Phone, StickyNote, CreditCard, ChevronRight, MapPin } from 'lucide-react';
 
 export default function CheckoutPage() {
-    const { cart, placeOrder, customer, updateCustomer } = useStore();
+    const { cart, placeOrder, clearCart, customer, updateCustomer } = useStore();
     const router = useRouter();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
@@ -20,16 +20,43 @@ export default function CheckoutPage() {
         note: ''
     });
 
-    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const [isPlacing, setIsPlacing] = useState(false);
+
+    const totalAmount = cart.reduce((sum, item) => {
+        const itemTotal = item.price * item.quantity;
+        const customizationTotal = (item.customizations || [])
+            .filter(c => c.price)
+            .reduce((cSum, c) => cSum + (c.price || 0) * item.quantity, 0);
+        return sum + itemTotal + customizationTotal;
+    }, 0);
 
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isPlacing) return;
+        if (cart.length === 0) { toast.error('Your cart is empty'); return; }
         if (!formData.name.trim()) { toast.error('Please enter your name'); return; }
         if (!formData.mobile || formData.mobile.length < 10) { toast.error('Please enter a valid 10-digit mobile number'); return; }
-        updateCustomer(formData.name, formData.mobile);
-        toast.success('Order placed successfully!');
-        const newOrder = await placeOrder(formData);
-        if (newOrder) { router.push(`/${tenantSlug}/order/${newOrder.order_id}`); }
+        
+        try {
+            setIsPlacing(true);
+            updateCustomer(formData.name, formData.mobile);
+            
+            const newOrder = await placeOrder(formData);
+            if (newOrder) { 
+                toast.success('Order placed successfully!');
+                // Navigate first
+                router.push(`/${tenantSlug}/order/${newOrder.order_id}`);
+                // Clear cart after a small delay to ensure navigation starts
+                setTimeout(() => {
+                    clearCart();
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Order placement error:', error);
+            toast.error('Something went wrong. Please try again.');
+        } finally {
+            setIsPlacing(false);
+        }
     };
 
     return (
@@ -129,16 +156,51 @@ export default function CheckoutPage() {
                                 transition={{ delay: 0.4 }}
                                 whileTap={{ scale: 0.97 }}
                                 type="submit"
-                                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_8px_30px_-4px_rgba(22,163,74,0.35)] flex items-center justify-center gap-2.5 hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
+                                disabled={isPlacing || cart.length === 0}
+                                className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all
+                                    ${isPlacing || cart.length === 0 
+                                        ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed' 
+                                        : 'bg-emerald-600 text-white shadow-[0_8px_30px_-4px_rgba(22,163,74,0.35)] hover:bg-emerald-700 active:bg-emerald-800'
+                                    }`}
                             >
-                                Place Order
-                                <div className="bg-white w-8 h-8 rounded-lg flex items-center justify-center">
-                                    <ChevronRight className="w-4 h-4 text-emerald-600" />
-                                </div>
+                                {isPlacing ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Placing Order...
+                                    </>
+                                ) : (
+                                    <>
+                                        Place Order
+                                        <div className="bg-white w-8 h-8 rounded-lg flex items-center justify-center">
+                                            <ChevronRight className={`w-4 h-4 ${cart.length === 0 ? 'text-neutral-300' : 'text-emerald-600'}`} />
+                                        </div>
+                                    </>
+                                )}
                             </motion.button>
                         </form>
                     </div>
                 </div>
+
+                {/* Full page loading overlay */}
+                {isPlacing && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="fixed inset-0 z-50 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center"
+                    >
+                        <div className="relative w-24 h-24 mb-6">
+                            <div className="absolute inset-0 border-4 border-emerald-100 rounded-full" />
+                            <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                                    <div className="w-1.5 h-6 bg-white rounded-full animate-pulse" />
+                                </div>
+                            </div>
+                        </div>
+                        <h2 className="text-xl font-bold text-neutral-900 mb-2">Placing your order...</h2>
+                        <p className="text-neutral-500 font-medium">Please don't close this page</p>
+                    </motion.div>
+                )}
             </main>
         </>
     );

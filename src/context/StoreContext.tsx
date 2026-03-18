@@ -66,6 +66,7 @@ interface StoreContextType {
     fetchCustomerOrders: (tenantId: string, mobile: string) => Promise<any[]>;
     isLoading: boolean;
     isInitialLoading: boolean;
+    isAdmin: boolean;
     sessionId: string | null;
 }
 
@@ -84,6 +85,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const [isInitialized, setIsInitialized] = useState(false);
 
     const [isStoreOpen, setIsStoreOpen] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [customer, setCustomer] = useState<{ name: string; mobile: string } | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -179,7 +181,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             const ordersRes = await getTenantOrders(tenantData.id);
             if (ordersRes.success) {
                 setOrders(ordersRes.data || []);
+                setIsAdmin(true);
             } else {
+                setIsAdmin(false);
                  
                 const savedMobile = localStorage.getItem('customerMobile');
                 if (savedMobile) {
@@ -244,11 +248,13 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                                 setOrders(prev => {
                                     if (prev.some(o => o.order_id === newOrder.order_id)) return prev;
                                     if (newOrder.order_status === 'received') {
-                                        playNotificationChime();
-                                        toast.success(`New order received! #${newOrder.short_id}`, {
-                                            duration: 5000,
-                                            icon: '🔔'
-                                        });
+                                        if (isAdmin) {
+                                            playNotificationChime();
+                                            toast.success(`New order received! #${newOrder.short_id}`, {
+                                                duration: 5000,
+                                                icon: '🔔'
+                                            });
+                                        }
                                     }
                                     return [newOrder, ...prev];
                                 });
@@ -281,7 +287,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [tenant]);
+    }, [tenant, isAdmin]);
 
 
 
@@ -443,6 +449,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             return null;
         }
 
+        if (cart.length === 0) {
+            toast.error('Your cart is empty');
+            return null;
+        }
+
         const subtotal = cart.reduce((sum, item) => {
             const itemTotal = item.price * item.quantity;
             const customizationTotal = (item.customizations || [])
@@ -500,8 +511,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         };
 
         setOrders((prev) => [newOrder, ...prev]);
-        clearCart();
-        toast.success('Order placed successfully!');
+        // Don't clear cart here to avoid UI flicker before navigation
+        // toast.success('Order placed successfully!');
         return newOrder;
     };
 
@@ -693,6 +704,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 fetchCustomerOrders,
                 isLoading,
                 isInitialLoading,
+                isAdmin,
                 sessionId
             }}
         >
