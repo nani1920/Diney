@@ -1,6 +1,8 @@
 import { getAllTenants } from '@/app/actions/super-admin';
 import TenantRegistryClient from '@/components/super-admin/TenantRegistryClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TenantsPage() {
     const tenantsResult = await getAllTenants();
     const tenants = tenantsResult.success ? (tenantsResult.data || []) : [];

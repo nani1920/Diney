@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/server';
 import { exitImpersonation } from '@/app/actions/super-admin';
 import { ShieldAlert, LogOut } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ 
     params 
 }: { 

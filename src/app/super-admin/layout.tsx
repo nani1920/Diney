@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { isSuperAdmin } from '@/lib/auth-utils';
 import SuperAdminClientLayout from './SuperAdminClientLayout';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SuperAdminLayout({
     children,
 }: {
