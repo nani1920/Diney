@@ -12,23 +12,23 @@ export default function PendingCalibrationPage() {
 
   useEffect(() => {
     const checkStatus = async () => {
-      // 1. Get current user
+       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/admin/login');
         return;
       }
 
-      // 2. Fetch their tenant
+       
       const { data: tenant } = await supabase
         .from('tenants')
         .select('slug, status')
         .eq('owner_id', user.id)
-        .order('created_at', { ascending: false }) // Get the most recent one
+        .order('created_at', { ascending: false })  
         .limit(1)
         .maybeSingle();
 
-      // 3. If active, redirect!
+       
       if (tenant?.status === 'active') {
         router.push(`/${tenant.slug}/admin`);
         return;
@@ -39,7 +39,7 @@ export default function PendingCalibrationPage() {
 
     checkStatus();
     
-    // Poll every 5 seconds so they don't have to manual refresh
+     
     const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
   }, [router]);
@@ -55,13 +55,13 @@ export default function PendingCalibrationPage() {
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 selection:bg-red-500/30">
       
-      {/* Dynamic Background Noise/Ambience */}
+      { }
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.03)_0%,transparent_70%)]" />
       </div>
 
       <div className="w-full max-w-2xl relative z-10 text-center">
-        {/* Animated Calibration Ring */}
+        { }
         <div className="relative inline-block mb-16">
           <motion.div
             animate={{ 
@@ -104,7 +104,7 @@ export default function PendingCalibrationPage() {
           </p>
         </motion.div>
 
-        {/* Status Stepper */}
+        { }
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
           <StatusChip 
             icon={ShieldAlert} 

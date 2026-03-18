@@ -69,7 +69,7 @@ export default function SuperAdminDashboard() {
 
     return (
         <div className="space-y-12 pb-24 font-inter">
-            {/* Header */}
+            { }
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-4">
@@ -93,7 +93,7 @@ export default function SuperAdminDashboard() {
                 </div>
             </header>
 
-            {/* Global Stats Grid */}
+            { }
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <MetricCard 
                     label="Platform Tenants" 
@@ -118,7 +118,7 @@ export default function SuperAdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Platform Overview Chart */}
+                { }
                 <div className="lg:col-span-2 bg-[#0a0a0a] border border-white/[0.03] rounded-[2rem] p-8 flex flex-col space-y-8 relative overflow-hidden group shadow-2xl">
                     <div className="flex justify-between items-center relative z-10">
                         <div>
@@ -130,7 +130,7 @@ export default function SuperAdminDashboard() {
                         </div>
                     </div>
                     
-                    {/* Refined Trend Chart */}
+                    { }
                     <div className="flex-1 h-72 w-full relative">
                         {stats.trendData.every((d: any) => d.amount === 0) ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-700 space-y-2 translate-y-[-20px]">
@@ -146,7 +146,7 @@ export default function SuperAdminDashboard() {
                                     <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                                 </linearGradient>
                             </defs>
-                            {/* Refined Grid & Labels */}
+                            { }
                             {(() => {
                                 const maxVal = Math.max(...stats.trendData.map((t: any) => t.amount)) || 1;
                                 const labels = [
@@ -164,7 +164,7 @@ export default function SuperAdminDashboard() {
                                             </g>
                                         ))}
 
-                                        {/* X-Axis Time Labels */}
+                                        { }
                                         <text x="0" y="295" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">24h ago</text>
                                         <text x="500" y="295" textAnchor="middle" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">12h ago</text>
                                         <text x="1000" y="295" textAnchor="end" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">Now</text>
@@ -172,21 +172,21 @@ export default function SuperAdminDashboard() {
                                 );
                             })()}
                             
-                            {/* Smooth Area & Path */}
+                            { }
                             {(() => {
                                 const data = stats.trendData;
                                 if (data.length < 2) return null;
                                 
                                 const maxVal = Math.max(...data.map((t: any) => t.amount)) || 1;
-                                const getY = (val: number) => 300 - (Math.min(val / maxVal, 1) * 220) - 20; // 20px padding from bottom
+                                const getY = (val: number) => 300 - (Math.min(val / maxVal, 1) * 220) - 20;  
                                 
-                                // Generate points
+                                 
                                 const points = data.map((d: any, i: number) => ({
                                     x: (i / (data.length - 1)) * 1000,
                                     y: getY(d.amount)
                                 }));
 
-                                // Simple smoothing for SVG path
+                                 
                                 let pathData = `M ${points[0].x} ${points[0].y}`;
                                 for (let i = 0; i < points.length - 1; i++) {
                                     const curr = points[i];
@@ -221,9 +221,9 @@ export default function SuperAdminDashboard() {
                     </div>
                 </div>
 
-                {/* Sidebar Rankings */}
+                { }
                 <div className="space-y-8">
-                    {/* Performance leaderboard */}
+                    { }
                     <div className="bg-[#0a0a0a] border border-white/[0.03] rounded-[2rem] p-8 shadow-xl">
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="font-bold text-lg text-white tracking-tight flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function SuperAdminDashboard() {
                         </div>
                     </div>
 
-                    {/* Infrastructure Stats */}
+                    { }
                     <div className="bg-neutral-900/40 p-8 rounded-[2rem] border border-white/[0.03] relative overflow-hidden group transition-all hover:bg-neutral-900/60">
                         <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-6 text-neutral-500 italic">Network Capacity</h3>
                         <div className="space-y-5">
@@ -274,7 +274,7 @@ export default function SuperAdminDashboard() {
                 </div>
             </div>
 
-            {/* Recent Registry Table */}
+            { }
             <div className="bg-[#0a0a0a] border border-white/[0.03] rounded-[2.5rem] overflow-hidden shadow-2xl">
                 <div className="p-8 border-b border-white/[0.03] flex justify-between items-center bg-white/[0.01]">
                     <div>
@@ -341,7 +341,7 @@ function MetricCard({ label, value, icon: Icon, subtitle, growth, trend }: any) 
             </div>
             <p className="text-neutral-600 text-xs mt-6 font-bold tracking-tight uppercase group-hover:text-neutral-400 transition-colors">{subtitle}</p>
             
-            {/* Ambient Red Glow */}
+            { }
             <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-red-600/5 blur-[50px] rounded-full group-hover:bg-red-600/10 transition-all duration-700" />
         </div>
     );

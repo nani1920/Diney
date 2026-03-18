@@ -18,7 +18,7 @@ function IdentityForm() {
 
   useEffect(() => {
     async function checkIdentity() {
-      // Force canonical domain (lvh.me) in local dev
+       
       const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
       const protocol = process.env.NEXT_PUBLIC_PROTOCOL || 'http';
       if (typeof window !== 'undefined' && window.location.hostname === 'localhost' && baseDomain.includes('lvh.me')) {
@@ -26,11 +26,11 @@ function IdentityForm() {
         return;
       }
 
-      // Direct client-side check which has access to session
+       
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        // Construct login URL with returnTo if present
+         
         const loginUrl = returnTo 
           ? `/admin/login?returnTo=${encodeURIComponent(returnTo)}`
           : `/admin/login`;
@@ -38,7 +38,7 @@ function IdentityForm() {
         return;
       }
 
-      // Fetch profile directly from client for the initial check
+       
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -63,7 +63,7 @@ function IdentityForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple structural validation (Regex for numbers)
+     
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
     if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
       toast.error('Please enter a valid international mobile number');
@@ -72,7 +72,7 @@ function IdentityForm() {
 
     setSubmitting(true);
     
-    // Get user again to ensure fresh session
+     
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (!authUser) {
       toast.error('Session expired. Please login again.');
@@ -83,7 +83,7 @@ function IdentityForm() {
       return;
     }
 
-    // Direct client update
+     
     const { error } = await supabase
       .from('profiles')
       .upsert({
@@ -119,7 +119,7 @@ function IdentityForm() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 selection:bg-red-500/30">
       <Toaster />
       
-      {/* Background Ambience */}
+      { }
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-red-600/5 blur-[120px] rounded-full animate-pulse" />
         <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-red-600/5 blur-[120px] rounded-full animate-pulse delay-700" />

@@ -58,7 +58,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            {/* Business Hours (Static for now) */}
+            { }
             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm opacity-75">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">

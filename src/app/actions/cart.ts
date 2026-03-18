@@ -3,8 +3,8 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { withErrorHandling } from '@/lib/server-utils';
 
-// Note: Cart actions are publicly accessible via sessionId, 
-// but we still want to ensure they are constrained by the tenant context.
+ 
+ 
 
 export async function getCart(tenantId: string, sessionId: string) {
     return withErrorHandling(async () => {

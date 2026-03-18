@@ -23,7 +23,7 @@ export default function SuperAdminClientLayout({
 
     return (
         <div className="flex min-h-screen bg-[#050505] text-white font-inter">
-            {/* Sidebar */}
+            { }
             <aside className="w-72 border-r border-white-[0.03] bg-[#0a0a0a] flex flex-col sticky top-0 h-screen">
                 <div className="p-8 pb-10">
                     <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function SuperAdminClientLayout({
                 </div>
             </aside>
 
-            {/* Main Content */}
+            { }
             <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#080808] to-[#050505] p-8 lg:p-12">
                 <div className="max-w-7xl mx-auto">
                     {children}

@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #FCFAF7; /* Aether Ivory */
-  --foreground: #000000; /* Deep Obsidian */
+  --background: #FCFAF7;  
+  --foreground: #000000;  
   --diney-emerald: #025E43;
   --diney-emerald-light: #E9F1EF;
   --aether-glow: rgba(2, 94, 67, 0.04);
@@ -25,7 +25,7 @@ body {
   font-family: 'Instrument Serif', serif;
 }
 
-/* --- Aether Materiality --- */
+ 
 .bg-grain-aether::before {
   content: "";
   position: fixed;
@@ -39,12 +39,12 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* --- Aria Specific Badges --- */
+ 
 .pill-emerald {
   @apply px-4 py-1.5 bg-[#025E43] text-white rounded-lg font-bold;
 }
 
-/* --- Aether Typography --- */
+ 
 .text-aria-headline {
   font-size: clamp(3.5rem, 7.5vw, 8.5rem);
   line-height: 0.95;
@@ -59,7 +59,7 @@ body {
   @apply text-black/60 font-medium;
 }
 
-/* --- High-Aesthetic Buttons --- */
+ 
 .button-aether-primary {
   @apply px-14 py-5 bg-[#1A1A1A] text-white rounded-full font-black text-[12px] uppercase tracking-[0.1em] transition-all duration-500 shadow-xl;
 }
@@ -76,7 +76,7 @@ body {
   @apply border-black/30 bg-black/5 -translate-y-1;
 }
 
-/* --- Premium Utilities --- */
+ 
 .glass-morphism {
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(20px);
@@ -92,13 +92,13 @@ body {
   @apply bg-clip-text text-transparent bg-gradient-to-br from-[#025E43] to-[#04a678];
 }
 
-/* --- Aether Lighting --- */
+ 
 .aether-glow {
   background: radial-gradient(circle at center, var(--aether-glow) 0%, transparent 70%);
   filter: blur(100px);
 }
 
-/* Custom Scrollbar */
+ 
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -116,7 +116,7 @@ body {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* --- Ultra-Luxury Effects (Sovereign Elite) --- */
+ 
 .mesh-gradient-aura {
   background: 
     radial-gradient(at 0% 0%, rgba(2, 94, 67, 0.1) 0%, transparent 50%),
@@ -163,7 +163,7 @@ body {
   animation: pulse-slow 12s ease-in-out infinite;
 }
 
-/* Floating Animation */
+ 
 @keyframes float-aether {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-30px); }

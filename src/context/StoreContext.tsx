@@ -18,19 +18,19 @@ export interface TenantData {
     subscription_status?: string;
 }
 
-// Promo Codes
+ 
 const PROMO_CODES: PromoCode[] = [
     {
         code: 'GFood',
         discount_type: 'percentage',
-        discount_value: 10, // 10% off
+        discount_value: 10,  
         min_order_value: 200,
         is_active: true
     }
 ];
 
-// Initial Seed Data with prep times
-// Initial state removed - now fetched from cloud
+ 
+ 
 
 interface StoreContextType {
     tenant: TenantData | null;
@@ -83,7 +83,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const [customer, setCustomer] = useState<{ name: string; mobile: string } | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
 
-    // Initial Hydration
+     
     useEffect(() => {
         const savedName = localStorage.getItem('customerName');
         const savedMobile = localStorage.getItem('customerMobile');
@@ -93,7 +93,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
         let sId = localStorage.getItem('sessionId');
         if (!sId) {
-            // Fallback for non-secure contexts (lvh.me)
+             
             if (typeof crypto !== 'undefined' && crypto.randomUUID) {
                 sId = crypto.randomUUID();
             } else {
@@ -120,14 +120,14 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const tenantRes = await getTenantData(slug);
             if (!tenantRes.success || !tenantRes.data) {
-                setTenant(null); // Explicitly clear if not found
+                setTenant(null);  
                 toast.error(tenantRes.error || 'Store not found');
                 return;
             }
             const tenantData = tenantRes.data;
             setTenant(tenantData);
 
-            // Fetch Menu and Categories in parallel
+             
             const [menuRes, categoriesRes] = await Promise.all([
                 getTenantMenu(tenantData.id, slug),
                 getTenantCategories(tenantData.id)
@@ -151,7 +151,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 setCustomers(customersRes.data || []);
             }
 
-            // Fetch Database Cart
+             
             const sId = localStorage.getItem('sessionId');
             if (sId) {
                 const cartRes = await getCart(tenantData.id, sId);
@@ -160,7 +160,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 }
             }
 
-            // Apply tenant config if exists
+             
             if (tenantData.config) {
                 setIsStoreOpen(tenantData.config.isStoreOpen ?? true);
                 setOpeningTimeState(tenantData.config.openingTime ?? '10:00');
@@ -178,8 +178,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
 
 
-    // We removed localStorage sync for cart in favor of DB persistence
-    // But we keep it as a transient fallback if needed
+     
+     
     useEffect(() => {
         if (isInitialized && cart.length > 0) {
             localStorage.setItem('cart', JSON.stringify(cart));
@@ -192,12 +192,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             return;
         }
 
-        // Optimistic UI Update
+         
         const tempCartItem: CartItem = { 
             ...item, 
             quantity: 1, 
             customizations,
-            id: item.id // Keep original item ID for lookup
+            id: item.id  
         };
 
         setCart((prev) => {
@@ -212,11 +212,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             return [...prev, tempCartItem];
         });
 
-        // Sync to DB
+         
         const result = await addToCartDB(tenant.id, sessionId, item.id, customizations);
         if (!result.success) {
             toast.error(result.error || 'Failed to sync cart to cloud');
-            // Refresh cart from DB as fallback
+             
             const refreshRes = await getCart(tenant.id, sessionId);
             if (refreshRes.success) setCart(refreshRes.data || []);
         }
@@ -225,11 +225,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const updateCartQuantity = async (itemId: string, delta: number) => {
         if (!tenant || !sessionId) return;
 
-        // Find the cart item ID from the current cart state
+         
         const cartItem = cart.find(i => i.id === itemId);
         if (!cartItem) return;
 
-        // Optimistic UI
+         
         setCart((prev) =>
             prev
                 .map((item) =>
@@ -238,9 +238,9 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 .filter((item) => item.quantity > 0)
         );
 
-        // Sync to DB
-        // If we have a cart_id (from DB), use it, otherwise we'd need to fetch or use a matching strategy
-        // For simplicity, let's look up the item in the DB cart
+         
+         
+         
         const cartRes = await getCart(tenant.id, sessionId);
         if (cartRes.success) {
             const dbItem = (cartRes.data as any[]).find(i => i.id === itemId);
@@ -301,7 +301,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
         const totalAmount = subtotal - discountAmount;
 
-        // 🚀 Cloud Submission
+         
         setIsLoading(true);
         const result = await createCloudOrder(
             tenant.id,
@@ -319,7 +319,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
         const orderData = result.data;
 
-        // Local state update for immediate feedback
+         
         const maxPrepTime = Math.max(...cart.map(item => item.prep_time_minutes || 10));
         const estimatedReadyTime = new Date(Date.now() + (maxPrepTime + 5) * 60000).toISOString();
 
@@ -347,7 +347,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const updateOrderStatus = async (orderId: string, status: Order['order_status']) => {
         if (!tenant) return;
         
-        // Optimistic update
+         
         setOrders((prev) =>
             prev.map((o) => (o.order_id === orderId ? { ...o, order_status: status } : o))
         );
@@ -355,14 +355,14 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         const result = await updateOrderStatusServer(orderId, status, tenant.id);
         if (!result.success) {
             toast.error('Failed to update order status in cloud');
-            // Rollback could be implemented here if needed
+             
         }
     };
 
     const addMenuItem = async (item: MenuItem) => {
         if (!tenant) return false;
         
-        // Optimistic UI Update
+         
         const optimisticId = item.id || 'temp-' + Date.now();
         const optimisticItem = { ...item, id: optimisticId };
         
@@ -379,14 +379,14 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                     ...itemData,
                     availability_status: (itemData as any).is_available ?? (itemData as any).availability_status
                 };
-                // Replace optimistic item with actual server item (keeps DB ID and mapping)
+                 
                 setMenuItems((prev) => 
                     prev.map(i => i.id === optimisticId ? (mappedItem as any) : i)
                 );
                 toast.success('Item added successfully');
                 return true;
             } else {
-                // Rollback
+                 
                 setMenuItems((prev) => prev.filter(i => i.id !== optimisticId));
                 toast.error('Failed to add item: ' + result.error);
                 return false;
@@ -402,7 +402,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const updateMenuItem = async (item: MenuItem) => {
         if (!tenant) return false;
         
-        // Optimistic UI Update
+         
         const previousState = [...menuItems];
         setMenuItems((prev) => prev.map((i) => (i.id === item.id ? { ...item } : i)));
         setIsLoading(true);
@@ -421,7 +421,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 toast.success('Item updated successfully');
                 return true;
             } else {
-                // Rollback
+                 
                 setMenuItems(previousState);
                 toast.error('Failed to update item: ' + result.error);
                 return false;
@@ -437,7 +437,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const deleteMenuItem = async (itemId: string) => {
         if (!tenant) return false;
         
-        // Optimistic UI Update
+         
         const deletedItem = menuItems.find(i => i.id === itemId);
         setMenuItems((prev) => prev.filter((i) => i.id !== itemId));
         setIsLoading(true);
@@ -450,7 +450,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 toast.success('Item deleted successfully');
                 return true;
             } else {
-                // Rollback
+                 
                 if (deletedItem) setMenuItems((prev) => [...prev, deletedItem]);
                 toast.error('Failed to delete item: ' + result.error);
                 return false;
@@ -478,7 +478,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             setTenant({ ...tenant, config: newConfig });
         } else {
             toast.error('Failed to update store status in cloud');
-            setIsStoreOpen(!newStatus); // Rollback
+            setIsStoreOpen(!newStatus);  
         }
     };
 

@@ -5,9 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { withErrorHandling } from '@/lib/server-utils';
 import { ProfileSchema } from '@/lib/validations';
 
-/**
- * Fetches the profile of the currently authenticated user.
- */
+ 
 export async function getProfile() {
   return withErrorHandling(async () => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -28,10 +26,7 @@ export async function getProfile() {
   }, "getProfile");
 }
 
-/**
- * Updates or creates a profile for the currently authenticated user.
- * Specifically used to collect the business mobile number.
- */
+ 
 export async function updateProfile(data: { full_name?: string, phone_number: string }) {
   return withErrorHandling(async () => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -40,7 +35,7 @@ export async function updateProfile(data: { full_name?: string, phone_number: st
       throw new Error('Unauthorized');
     }
 
-    // Data Validation
+     
     const validatedData = ProfileSchema.parse(data);
 
     const profileData = {

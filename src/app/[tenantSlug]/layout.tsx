@@ -18,7 +18,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
     }
   }, [tenantSlug, fetchStoreData]);
 
-  // Route Guard for Closed Store
+   
   useEffect(() => {
     if (!isLoading && tenant && !isStoreOpen) {
       const protectedRoutes = ['/cart', '/checkout', '/my-orders', '/order'];

@@ -27,7 +27,7 @@ export default function AdminSidebar() {
     const tenantSlug = params.tenantSlug as string;
     const [isOpen, setIsOpen] = useState(false);
 
-    // Detect if we are on a subdomain based on env
+     
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
     const baseHost = baseDomain.split(':')[0];
     const isSubdomain = typeof window !== 'undefined' && 
@@ -35,8 +35,8 @@ export default function AdminSidebar() {
                         (window.location.hostname !== baseHost && window.location.hostname.includes(baseHost)));
 
     const getLink = (path: string) => {
-        if (isSubdomain) return path; // On subdomain, keep clean: /admin
-        return `/${tenantSlug}${path}`; // On root, keep slug: /jaffa/admin
+        if (isSubdomain) return path;  
+        return `/${tenantSlug}${path}`;  
     };
 
     const menuItems = [
@@ -52,7 +52,7 @@ export default function AdminSidebar() {
 
     return (
         <>
-            {/* Mobile Header */}
+            { }
             <div className="md:hidden flex items-center justify-between p-4 bg-neutral-900 text-white sticky top-0 z-30 w-full shrink-0 border-b border-neutral-800 shadow-lg">
                 <div className="flex items-center gap-2">
                     <Store className="w-6 h-6 text-green-500" />
@@ -65,13 +65,13 @@ export default function AdminSidebar() {
                 </button>
             </div>
 
-            {/* Sidebar Container */}
+            { }
             <aside className={clsx(
                 "fixed inset-y-0 left-0 bg-neutral-900 text-white w-64 transform transition-transform duration-300 ease-in-out z-40 md:translate-x-0 md:static h-full shrink-0 border-r border-neutral-800 shadow-xl",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex flex-col h-full">
-                    {/* Brand */}
+                    { }
                     <div className="p-8 border-b border-neutral-800">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20">
@@ -86,7 +86,7 @@ export default function AdminSidebar() {
                         </div>
                     </div>
 
-                    {/* Navigation */}
+                    { }
                     <nav className="flex-1 p-4 space-y-2 mt-4">
                         {menuItems.map((item) => {
                             const isActive = pathname === item.href;
@@ -119,7 +119,7 @@ export default function AdminSidebar() {
                         })}
                     </nav>
 
-                    {/* Footer Actions */}
+                    { }
                     <div className="p-4 border-t border-neutral-800">
                         <Link href={`/${tenantSlug}`} className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-all border border-dashed border-neutral-700 hover:border-neutral-500">
                             <LogOut className="w-5 h-5" />
@@ -129,7 +129,7 @@ export default function AdminSidebar() {
                 </div>
             </aside>
 
-            {/* Overlay for mobile */}
+            { }
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"

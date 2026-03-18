@@ -23,10 +23,10 @@ export default function CatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Extract unique categories for filtering
+   
   const categories = ["ALL", ...Array.from(new Set(products.map(p => p.category_suggestion).filter(Boolean)))];
   
-  // Form State
+   
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -113,7 +113,7 @@ export default function CatalogPage() {
 
   return (
     <div className="space-y-12 pb-12">
-      {/* Header & Main Stats */}
+      { }
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -142,7 +142,7 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      {/* Global Controls */}
+      { }
       <div className="space-y-6">
         <div className="bg-[#0a0a0a] border border-white/[0.03] p-2 rounded-[2rem] shadow-2xl">
           <div className="relative">
@@ -157,7 +157,7 @@ export default function CatalogPage() {
           </div>
         </div>
 
-        {/* Category Filters */}
+        { }
         <div className="flex flex-wrap items-center gap-3">
           {categories.map((cat) => (
             <button
@@ -176,7 +176,7 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      {/* Grid Implementation */}
+      { }
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
           {[1,2,3,4,5].map(n => (
@@ -203,7 +203,7 @@ export default function CatalogPage() {
                 transition={{ delay: idx * 0.05 }}
                 className="group relative flex flex-col bg-[#0a0a0a] border border-white/[0.03] rounded-[2.5rem] overflow-hidden hover:border-red-500/30 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
               >
-                {/* Visual Asset Container - Reduced Aspect Ratio for Density */}
+                { }
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-900 border-b border-white/[0.03]">
                   {product.default_image_url ? (
                     <img 
@@ -218,7 +218,7 @@ export default function CatalogPage() {
                     </div>
                   )}
 
-                  {/* High-Impact Actions */}
+                  { }
                   <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
                     <button 
                       onClick={() => handleOpenModal(product)}
@@ -243,7 +243,7 @@ export default function CatalogPage() {
                   )}
                 </div>
 
-                {/* Content Container - Compact for Uniform Alignment */}
+                { }
                 <div className="flex-1 p-6 flex flex-col justify-between min-h-[120px]">
                   <div className="space-y-2">
                     <h3 className="text-[15px] font-black text-white tracking-tight group-hover:text-red-500 transition-colors duration-300 line-clamp-1">
@@ -267,7 +267,7 @@ export default function CatalogPage() {
         </div>
       )}
 
-      {/* Modal Overhaul */}
+      { }
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8">

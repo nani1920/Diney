@@ -16,7 +16,7 @@ export default function CartPage() {
 
     return (
         <main className="min-h-screen bg-[#FAFAF8] relative max-w-[520px] mx-auto flex flex-col">
-            {/* Header */}
+            { }
             <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                 <div className="px-5 py-3.5 flex items-center justify-between">
                     <Link href={`/${tenantSlug}`}>
@@ -67,7 +67,7 @@ export default function CartPage() {
                                     key={item.id}
                                     className="bg-white p-4 rounded-2xl border border-neutral-200/30 flex items-center gap-4 shadow-sm shadow-neutral-100/40"
                                 >
-                                    {/* Thumbnail */}
+                                    { }
                                     <div className="w-[72px] h-[72px] bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0">
                                         {item.image_url ? (
                                             <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
@@ -78,13 +78,13 @@ export default function CartPage() {
                                         )}
                                     </div>
 
-                                    {/* Details */}
+                                    { }
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-[15px] font-semibold text-neutral-900 tracking-[-0.01em] truncate mb-2">{item.name}</h3>
                                         <div className="flex items-center justify-between">
                                             <span className="text-[17px] font-extrabold text-neutral-900 tracking-tight">₹{item.price * item.quantity}</span>
 
-                                            {/* Stepper */}
+                                            { }
                                             <div className="flex items-center bg-emerald-600 rounded-xl overflow-hidden shadow-sm shadow-emerald-600/20">
                                                 <motion.button
                                                     whileTap={{ scale: 0.85 }}
@@ -107,7 +107,7 @@ export default function CartPage() {
                                 </motion.div>
                             ))}
 
-                            {/* Add more items */}
+                            { }
                             <Link href={`/${tenantSlug}`} className="flex items-center gap-3 px-2 pt-3 text-emerald-600 hover:text-emerald-700 transition-colors">
                                 <div className="w-9 h-9 rounded-xl border border-dashed border-emerald-300 flex items-center justify-center">
                                     <Plus className="w-4 h-4" />
@@ -120,7 +120,7 @@ export default function CartPage() {
 
                 {cart.length > 0 && (
                     <div className="px-5 mt-8 space-y-6">
-                        {/* Promo Code */}
+                        { }
                         <div className="flex gap-2.5">
                             <div className="flex-1 bg-white border border-neutral-200/50 h-12 rounded-2xl flex items-center px-4 focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-50 transition-all shadow-sm">
                                 <Ticket className="w-[18px] h-[18px] text-neutral-300 mr-3" />
@@ -134,7 +134,7 @@ export default function CartPage() {
                             </button>
                         </div>
 
-                        {/* Bill Summary */}
+                        { }
                         <div className="bg-white p-6 rounded-3xl border border-neutral-200/30 shadow-sm">
                             <h3 className="text-[13px] font-semibold text-neutral-400 uppercase tracking-wider mb-5">Bill Summary</h3>
                             <div className="space-y-3.5">
@@ -156,7 +156,7 @@ export default function CartPage() {
                             </div>
                         </div>
 
-                        {/* Checkout CTA */}
+                        { }
                         <Link href={`/${tenantSlug}/checkout`}>
                             <motion.button
                                 whileTap={{ scale: 0.97 }}

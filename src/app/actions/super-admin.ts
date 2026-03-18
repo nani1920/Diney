@@ -15,14 +15,14 @@ export async function getGlobalStats() {
         const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
         const sixtyDaysAgo = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
 
-        // 1. Get Total Tenants
+         
         const { count: tenantCount, error: tenantError } = await supabaseAdmin
             .from('tenants')
             .select('*', { count: 'exact', head: true });
 
         if (tenantError) throw tenantError;
 
-        // 2. Get Orders from last 60 days
+         
         const { data: allOrders, error: ordersError } = await supabaseAdmin
             .from('orders')
             .select('total_amount, status, created_at, tenant_id, tenants(name)')
@@ -31,7 +31,7 @@ export async function getGlobalStats() {
 
         if (ordersError) throw ordersError;
 
-        // ... existing processing logic ...
+         
         const currentOrders = allOrders.filter((o: any) => new Date(o.created_at) >= thirtyDaysAgo);
         const previousOrders = allOrders.filter((o: any) => new Date(o.created_at) < thirtyDaysAgo);
 
@@ -86,13 +86,11 @@ export async function getGlobalStats() {
     }, "getGlobalStats");
 }
 
-/**
- * Updates a tenant's status (e.g., active, suspended, rejected).
- */
+ 
 export async function updateTenantStatus(tenantId: string, status: 'pending' | 'active' | 'suspended' | 'rejected') {
     return withErrorHandling(async () => {
         await ensureSuperAdmin();
-        // 1. Get the slug first to invalidate cache
+         
         const { data: tenant, error: fetchError } = await supabaseAdmin
             .from('tenants')
             .select('slug')
@@ -101,7 +99,7 @@ export async function updateTenantStatus(tenantId: string, status: 'pending' | '
 
         if (fetchError || !tenant) throw fetchError || new Error('Tenant not found');
 
-        // 2. Update status
+         
         const { error } = await supabaseAdmin
             .from('tenants')
             .update({ status })
@@ -109,7 +107,7 @@ export async function updateTenantStatus(tenantId: string, status: 'pending' | '
 
         if (error) throw error;
 
-        // 3. Purge Cache
+         
         const configKey = getCacheKey(tenant.slug, 'config');
         const menuKey = getCacheKey(tenant.slug, 'menu');
         
@@ -118,7 +116,7 @@ export async function updateTenantStatus(tenantId: string, status: 'pending' | '
             redis.del(menuKey)
         ]);
 
-        // 4. Trigger Next.js Revalidation
+         
         revalidatePath(`/${tenant.slug}`);
         revalidatePath(`/${tenant.slug}/admin`, 'layout');
         revalidatePath(`/super-admin/tenants`);
@@ -130,7 +128,7 @@ export async function updateTenantStatus(tenantId: string, status: 'pending' | '
 export async function updateTenantTier(tenantId: string, tier: string, status: string = 'active') {
     return withErrorHandling(async () => {
         await ensureSuperAdmin();
-        // 1. Get current tenant details
+         
         const { data: tenant, error: fetchError } = await supabaseAdmin
             .from('tenants')
             .select('slug')
@@ -139,7 +137,7 @@ export async function updateTenantTier(tenantId: string, tier: string, status: s
 
         if (fetchError || !tenant) throw fetchError || new Error('Tenant not found');
 
-        // 2. Update tier and status
+         
         const { error } = await supabaseAdmin
             .from('tenants')
             .update({ 
@@ -150,11 +148,11 @@ export async function updateTenantTier(tenantId: string, tier: string, status: s
 
         if (error) throw error;
 
-        // 3. Purge Cache (Tier can affect features cached in config)
+         
         const configKey = getCacheKey(tenant.slug, 'config');
         await redis.del(configKey);
 
-        // 4. Revalidate
+         
         revalidatePath(`/${tenant.slug}/admin`, 'layout');
         revalidatePath(`/super-admin/tenants`);
 
@@ -221,7 +219,7 @@ export async function loginAsMerchant(tenantSlug: string) {
     await ensureSuperAdmin();
     const cookieStore = await cookies();
     
-    // Set a temporary impersonation cookie (valid for 1 hour)
+     
     cookieStore.set('impersonation_target', tenantSlug, {
         maxAge: 3600,
         path: '/',
@@ -238,7 +236,7 @@ export async function exitImpersonation() {
     redirect('/super-admin/tenants');
 }
 
-// --- Master Catalog Management ---
+ 
 
 export async function getMasterProducts() {
     return withErrorHandling(async () => {

@@ -50,7 +50,7 @@ export default function CategoriesPage() {
       setEditingItem(null);
       setFormData({
         name: "",
-        display_order: categories.length // Default to end
+        display_order: categories.length  
       });
     }
     setIsModalOpen(true);
@@ -90,7 +90,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="p-6 md:p-10 space-y-8 animate-in fade-in duration-500">
-      {/* Header */}
+      { }
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-3">
@@ -108,7 +108,7 @@ export default function CategoriesPage() {
         </button>
       </div>
 
-      {/* Info Card */}
+      { }
       <div className="bg-emerald-50 border border-emerald-100 rounded-[32px] p-6 flex items-start gap-4">
         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm flex-shrink-0">
           <Grid className="w-6 h-6" />
@@ -121,7 +121,7 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      {/* List */}
+      { }
       {isLoading ? (
         <div className="space-y-4">
           {[1,2,3].map(n => (
@@ -186,7 +186,7 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {/* Modal */}
+      { }
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">

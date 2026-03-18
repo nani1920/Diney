@@ -62,7 +62,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#FAFAF8] relative max-w-[520px] mx-auto overflow-x-hidden">
-      {/* ─── Store Suspended ─── */}
+      { }
       {tenant?.is_active === false && !isLoading && (
         <div className="fixed inset-0 z-[60] bg-neutral-900 flex flex-col items-center justify-center p-8 text-center text-white">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -76,7 +76,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ─── Store Closed ─── */}
+      { }
       {!isStoreOpen && tenant?.is_active !== false && (
         <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center p-8 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm w-full space-y-8">
@@ -112,7 +112,7 @@ export default function Home() {
 
       {isStoreOpen && (
         <>
-          {/* ═══ TOP HEADER ═══ */}
+          { }
           <div className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
             <div className="px-5 py-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -151,7 +151,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Search */}
+            { }
             <div className="px-5 pb-3">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-300" />
@@ -171,7 +171,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Dynamic Horizontal Category Tabs */}
+            { }
             <div className="px-5 pb-3.5 flex gap-2 overflow-x-auto scrollbar-hide">
               <button
                 onClick={() => setActiveCategoryId("all")}
@@ -201,7 +201,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ═══ HERO BANNER ═══ */}
+          { }
           <div className="px-5 pt-4">
             <div className="relative h-44 rounded-3xl overflow-hidden shadow-sm">
               <img src="/hero-bg.png" alt="" className="w-full h-full object-cover" />
@@ -215,7 +215,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ═══ SECTION LABEL ═══ */}
+          { }
           <div className="px-5 pt-6 pb-4 flex items-center justify-between">
             <h3 className="text-[20px] font-bold text-neutral-900 tracking-[-0.02em]">
                 {activeCategoryLabel}
@@ -223,7 +223,7 @@ export default function Home() {
             <span className="text-[13px] text-neutral-400 font-medium">{filteredItems.length} items</span>
           </div>
 
-          {/* ═══ MENU LIST ═══ */}
+          { }
           <div className="px-5 pb-32">
             <motion.div
               key={activeCategoryId}
@@ -255,7 +255,7 @@ export default function Home() {
                           : "bg-white border-neutral-200/30 hover:border-emerald-200 hover:shadow-md shadow-sm shadow-neutral-100/40"
                       )}
                     >
-                      {/* Image Thumbnail */}
+                      { }
                       <div className="relative flex-shrink-0 w-[94px] h-[94px] rounded-2xl bg-neutral-50 overflow-hidden">
                         {item.image_url ? (
                             <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
@@ -271,14 +271,14 @@ export default function Home() {
                         )}
                       </div>
 
-                      {/* Details */}
+                      { }
                       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                         <div className="space-y-1">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className="text-[16px] font-bold text-neutral-900 leading-tight line-clamp-2 tracking-tight">
                               {item.name}
                             </h4>
-                            {/* Veg/Non-Veg Indicator */}
+                            { }
                             <div className={clsx(
                                 "w-[14px] h-[14px] rounded-[3px] flex-shrink-0 border flex items-center justify-center mt-1",
                                 item.veg_or_nonveg === "veg" ? "border-green-600" : "border-red-500"
@@ -332,7 +332,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ═══ FLOATING CART BAR ═══ */}
+          { }
           <AnimatePresence>
             {totalItems > 0 && (
               <motion.div

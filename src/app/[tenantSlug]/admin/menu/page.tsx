@@ -13,7 +13,7 @@ import { getTenantCategories } from "@/app/actions/tenant";
 import { getMasterProducts } from "@/app/actions/super-admin";
 import { toast } from "react-hot-toast";
 
-// Fallback UUID generator for non-secure contexts (lvh.me)
+ 
 const generateUUID = () => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
@@ -27,7 +27,7 @@ const generateUUID = () => {
 export default function MenuManagementPage() {
   const { tenant, menuItems, addMenuItem, updateMenuItem, deleteMenuItem } = useStore();
 
-  // State
+   
   const [categories, setCategories] = useState<any[]>([]);
   const [masterProducts, setMasterProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function MenuManagementPage() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Catalog Internal State
+   
   const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
   const [catalogActiveCategory, setCatalogActiveCategory] = useState("all");
 
@@ -51,7 +51,7 @@ export default function MenuManagementPage() {
   }, [tenant?.id]);
 
   const loadData = async () => {
-    // Only show loading if we don't have categories yet
+     
     if (categories.length === 0) setIsLoading(true);
     
     const [catRes, masterRes] = await Promise.all([
@@ -147,7 +147,7 @@ export default function MenuManagementPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen bg-neutral-50/30">
-      {/* Refined Header */}
+      { }
       <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
           <div className="flex items-center gap-3 mb-1">

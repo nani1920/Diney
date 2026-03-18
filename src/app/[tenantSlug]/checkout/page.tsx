@@ -36,7 +36,7 @@ export default function CheckoutPage() {
         <>
             <Toaster />
             <main className="min-h-screen bg-[#FAFAF8] max-w-[520px] mx-auto flex flex-col">
-                {/* Header */}
+                { }
                 <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                     <div className="px-5 py-3.5 flex items-center justify-between">
                         <Link href={`/${tenantSlug}/cart`}>
@@ -51,7 +51,7 @@ export default function CheckoutPage() {
 
                 <div className="flex-1 px-5 py-6">
                     <div className="space-y-6">
-                        {/* Collection Point */}
+                        { }
                         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                             <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Collection</h2>
                             <div className="bg-white p-5 rounded-2xl border border-neutral-200/30 shadow-sm flex items-center gap-4">
@@ -67,7 +67,7 @@ export default function CheckoutPage() {
                         </motion.div>
 
                         <form onSubmit={handlePlaceOrder} className="space-y-6">
-                            {/* Personal Details */}
+                            { }
                             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                                 <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Your Details</h2>
                                 <div className="space-y-3">
@@ -94,7 +94,7 @@ export default function CheckoutPage() {
                                 </div>
                             </motion.div>
 
-                            {/* Special Notes */}
+                            { }
                             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                                 <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Special Instructions</h2>
                                 <div className="relative">
@@ -108,7 +108,7 @@ export default function CheckoutPage() {
                                 </div>
                             </motion.div>
 
-                            {/* Payment Summary */}
+                            { }
                             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                                 className="bg-white p-6 rounded-3xl border border-neutral-200/30 shadow-sm"
                             >
@@ -122,7 +122,7 @@ export default function CheckoutPage() {
                                 <span className="text-[28px] font-extrabold text-neutral-900 tracking-tight block">₹{totalAmount}</span>
                             </motion.div>
 
-                            {/* Place Order CTA */}
+                            { }
                             <motion.button
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}

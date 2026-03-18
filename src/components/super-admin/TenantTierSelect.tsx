@@ -61,10 +61,10 @@ export default function TenantTierSelect({ tenantId, currentTier }: TenantTierSe
                             <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full border-2 border-[#0d0d0d]" />
                         )}
                         
-                        {/* Improved Tooltip */}
+                        { }
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-neutral-950 border border-white/10 rounded-md text-[8px] font-black uppercase tracking-[0.2em] text-white opacity-0 group-hover/tier:opacity-100 scale-90 group-hover/tier:scale-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-2xl">
                             {t.name}
-                            {/* Tooltip Arrow */}
+                            { }
                             <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-4 border-transparent border-t-neutral-950" />
                         </div>
                     </button>

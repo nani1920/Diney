@@ -40,7 +40,7 @@ export default function OrderStatusPage() {
 
     return (
         <main className="min-h-screen bg-[#FAFAF8] max-w-[520px] mx-auto flex flex-col">
-            {/* Header */}
+            { }
             <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                 <div className="px-5 py-3.5 flex items-center justify-between">
                     <Link href={`/${params.tenantSlug}`}>
@@ -57,7 +57,7 @@ export default function OrderStatusPage() {
             </header>
 
             <div className="flex-1 px-5 py-10 flex flex-col items-center">
-                {/* Status Illustration */}
+                { }
                 <div className="relative mb-12">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
@@ -78,7 +78,7 @@ export default function OrderStatusPage() {
                         )}
                     </motion.div>
                     
-                    {/* Pulsing rings */}
+                    { }
                     <div className={`absolute inset-0 rounded-[3rem] ${visuals.ringColor} blur-2xl opacity-40 scale-110 -z-10`} />
                     <motion.div 
                         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
@@ -106,7 +106,7 @@ export default function OrderStatusPage() {
                     </motion.p>
                 </div>
 
-                {/* Receipt Card */}
+                { }
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

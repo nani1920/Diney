@@ -18,7 +18,7 @@ export default function TenantStatusToggle({
     const router = useRouter();
 
     const handleToggle = async () => {
-        if (status === 'pending') return; // Pending needs explicit approval button
+        if (status === 'pending') return;  
 
         setIsLoading(true);
         try {

@@ -29,16 +29,16 @@ export default async function AdminLayout({
     children: React.ReactNode;
     params: Promise<{ tenantSlug: string }>;
 }) {
-    // We await params here to ensure they are available for the layout
+     
     const { tenantSlug } = await params;
     const res = await getTenantData(tenantSlug);
     const tenant = res.data;
 
-    // --- SECURITY GATE: Tenant Isolation ---
+     
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Determine main domain from env
+     
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
     const protocol = process.env.NEXT_PUBLIC_PROTOCOL || 'http';
     const mainDomain = `${protocol}://${baseDomain}`;
@@ -46,24 +46,24 @@ export default async function AdminLayout({
     const cookieStore = await cookies();
     const isImpersonating = cookieStore.get('impersonation_target')?.value === tenantSlug;
 
-    // 1. If no user, send to main domain login
+     
     if (!user && !isImpersonating) {
-        const currentPath = `/admin`; // or subpath if available
+        const currentPath = `/admin`;  
         const currentUrl = `${protocol}://${tenantSlug}.${baseDomain}${currentPath}`;
         redirect(`${mainDomain}/admin/login?returnTo=${encodeURIComponent(currentUrl)}`);
     }
 
-    // 2. If user exists, verify ownership (unless impersonating)
+     
     if (user && !isImpersonating && tenant?.owner_id !== user.id) {
         console.warn(`[Security Alert] User ${user.id} attempted unauthorized access to tenant ${tenantSlug}. Owner: ${tenant?.owner_id}`);
         redirect(`${mainDomain}/admin/dashboard`);
     }
-    // ----------------------------------------
+     
 
-    // Block access if not active
+     
     const status = tenant?.status || 'pending';
     
-    // 1. If Pending: Show Calibration Holding Bay
+     
     if (status === 'pending') {
         return (
             <div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center p-6 text-center text-white ring-[20px] ring-inset ring-amber-500/10">
@@ -88,7 +88,7 @@ export default async function AdminLayout({
         );
     }
 
-    // 2. If Suspended or Rejected: Show Restriction Screen
+     
     if (status === 'suspended' || status === 'rejected') {
         return (
             <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col items-center justify-center p-6 text-center text-white font-inter ring-[20px] ring-inset ring-red-500/10">

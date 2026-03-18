@@ -66,7 +66,7 @@ export default function MerchantDashboard() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 md:p-12 selection:bg-red-500/30">
-      {/* Background Ambience */}
+      { }
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#025E43]/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#025E43]/5 blur-[120px] rounded-full" />
@@ -125,7 +125,7 @@ export default function MerchantDashboard() {
                     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
                     const protocol = process.env.NEXT_PUBLIC_PROTOCOL || 'http';
                     
-                    // Construct subdomain URL using environment variables
+                     
                     const targetUrl = `${protocol}://${slug}.${baseDomain}/admin`;
                     
                     window.location.href = targetUrl;
@@ -190,7 +190,7 @@ function StoreCard({ tenant, index, onSelect }: { tenant: any, index: number, on
         <ChevronRight size={16} className="text-neutral-700 group-hover:text-[#025E43] group-hover:translate-x-1 transition-all" />
       </div>
 
-      {/* Decorative Glow */}
+      { }
       <div className="absolute inset-0 rounded-[2.5rem] bg-[#025E43] blur-[80px] opacity-0 group-hover:opacity-[0.03] transition-opacity pointer-events-none" />
     </motion.div>
   );

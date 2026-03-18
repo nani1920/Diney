@@ -6,9 +6,9 @@ export async function createClient() {
   const headersList = await headers();
   const host = headersList.get('host') || '';
   
-  // Wildcard domain for session sharing from env
+   
   const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
-  // Strip port and add leading dot (e.g., "lvh.me:3000" -> ".lvh.me")
+   
   const rootDomain = baseDomain ? `.${baseDomain.split(':')[0]}` : undefined;
 
   return createServerClient(
@@ -33,7 +33,7 @@ export async function createClient() {
               secure: process.env.NODE_ENV === 'production',
             });
           } catch (error) {
-            // Server Component context
+             
           }
         },
         remove(name: string, options: CookieOptions) {
@@ -46,7 +46,7 @@ export async function createClient() {
               maxAge: 0 
             });
           } catch (error) {
-            // Server Component context
+             
           }
         },
       },

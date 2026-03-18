@@ -44,7 +44,7 @@ export default function AdminOrdersPage() {
         return () => clearInterval(timer);
     }, []);
 
-    // Function to calculate time elapsed
+     
     const getTimeElapsed = (startTime: string) => {
         const start = new Date(startTime).getTime();
         const now = currentTime.getTime();
@@ -99,7 +99,7 @@ export default function AdminOrdersPage() {
                 </div>
             </header>
 
-            {/* Mobile Tabs */}
+            { }
             <div className="md:hidden flex bg-gray-100 p-1 rounded-xl mb-4">
                 {(['received', 'preparing', 'ready'] as const).map((tab) => {
                     const count = tab === 'received' ? receivedCount : tab === 'preparing' ? preparingCount : readyCount;
@@ -128,10 +128,10 @@ export default function AdminOrdersPage() {
                 })}
             </div>
 
-            {/* Content Render */}
+            { }
             <div className="flex-1 overflow-hidden min-h-[500px] md:min-h-[600px] md:grid md:grid-cols-3 gap-6">
 
-                {/* Desktop: Show all columns. Mobile: Show only active tab */}
+                { }
 
                 <div className={clsx("h-[calc(100vh-250px)] md:h-[calc(100vh-180px)]", activeTab === 'received' ? 'block' : 'hidden md:block')}>
                     <KanbanColumn
@@ -236,7 +236,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
         return diffInMinutes > 15;
     })();
 
-    // Determine button text and style
+     
     let buttonText = `Move to ${nextStatus}`;
     let buttonClass = 'bg-black text-white hover:bg-neutral-800';
     if (nextStatus === 'completed') {
@@ -252,7 +252,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 isDelayed && order.order_status !== 'ready' && "border-amber-200/60 bg-amber-50/10"
             )}
         >
-            {/* Header: ID & Meta */}
+            { }
             <div className="flex justify-between items-center text-[10px] font-bold tracking-tight">
                 <span className="text-neutral-300 font-black uppercase tracking-[0.2em]">#{order.short_id}</span>
                 <div className="flex items-center gap-1.5 text-neutral-400 bg-neutral-50/50 px-2 py-0.5 rounded-full border border-neutral-100/50">
@@ -261,7 +261,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 </div>
             </div>
 
-            {/* Customer Profile */}
+            { }
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-neutral-50 flex items-center justify-center border border-neutral-100 text-neutral-400">
                     <User className="w-5 h-5" />
@@ -277,7 +277,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 )}
             </div>
 
-            {/* Items List - Receipt Style */}
+            { }
             <div className="space-y-3 py-1">
                 <div className="border-t border-dashed border-neutral-100 pt-3" />
                 {order.items.map((item: any, i: number) => (
@@ -291,7 +291,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                             </div>
                             <span className="text-[14px] font-black text-neutral-900">₹{item.price * item.quantity}</span>
                         </div>
-                        {/* Customizations */}
+                        { }
                         {item.customizations && item.customizations.length > 0 && (
                             <div className="ml-7.5 flex flex-wrap gap-1.5">
                                 {item.customizations.map((c: any, idx: number) => (
@@ -305,7 +305,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 ))}
             </div>
 
-            {/* Special Instructions */}
+            { }
             {order.order_note && (
                 <div className="bg-neutral-50 p-3 rounded-2xl border border-neutral-100/50">
                     <p className="text-[10px] text-neutral-300 font-bold uppercase tracking-widest mb-1 flex items-center gap-1.5">
@@ -317,7 +317,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 </div>
             )}
 
-            {/* Dashboard Footer */}
+            { }
             <div className="mt-2 space-y-3">
                 <div className="flex justify-between items-center px-1">
                     <span className="text-[10px] font-black text-neutral-200 uppercase tracking-widest">Total</span>

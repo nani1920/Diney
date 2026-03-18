@@ -12,13 +12,13 @@ export async function getTenantData(slug: string) {
   return withErrorHandling(async () => {
     const cacheKey = getCacheKey(slug, 'config');
     
-    // 1. Try Cache First
+     
     const cached = await redis.get(cacheKey) as any;
     if (cached && cached.owner_id) {
       return cached;
     }
 
-    // 2. Fetch from Supabase (Use Admin to bypass RLS for security gate)
+     
     const { data: tenant, error } = await supabaseAdmin
       .from('tenants')
       .select('id, name, slug, status, config, tier, subscription_status, created_at, owner_id')
@@ -29,7 +29,7 @@ export async function getTenantData(slug: string) {
       throw new Error(`Tenant ${slug} not found`);
     }
 
-    // 3. Save to Cache
+     
     await redis.set(cacheKey, tenant, { ex: DEFAULT_TTL });
 
     return tenant;
@@ -40,13 +40,13 @@ export async function getTenantMenu(tenantId: string, slug: string) {
   return withErrorHandling(async () => {
     const cacheKey = getCacheKey(slug, 'menu');
     
-    // 1. Try Cache First
+     
     const cached = await redis.get(cacheKey);
     if (cached) {
       return cached as MenuItem[];
     }
 
-    // 2. Fetch from Supabase
+     
     const { data: items, error } = await supabase
       .from('menu_items')
       .select(`
@@ -58,13 +58,13 @@ export async function getTenantMenu(tenantId: string, slug: string) {
 
     if (error) throw error;
 
-    // 3. Map Fields for Frontend
+     
     const mappedItems = (items || []).map(item => ({
       ...item,
-      availability_status: item.is_available // Map is_available to availability_status
+      availability_status: item.is_available  
     }));
 
-    // 4. Save to Cache
+     
     await redis.set(cacheKey, mappedItems, { ex: DEFAULT_TTL });
 
     return mappedItems as any[];
@@ -73,17 +73,17 @@ export async function getTenantMenu(tenantId: string, slug: string) {
 
 export async function registerTenant(name: string, slug: string, ownerId?: string) {
   return withErrorHandling(async () => {
-    // 1. Rate Limiting
+     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Authentication required");
     
     const { success: rateLimitOk } = await actionRateLimiter.limit(`register:${user.id}`);
     if (!rateLimitOk) throw new Error("Too many registration attempts. Please wait.");
 
-    // 2. Data Validation
+     
     const validatedData = TenantSchema.parse({ name, slug, owner_id: ownerId || user.id });
 
-    // 3. Check if slug exists
+     
     const { data: existing } = await supabaseAdmin
       .from('tenants')
       .select('id')
@@ -112,23 +112,23 @@ export async function registerTenant(name: string, slug: string, ownerId?: strin
 
     if (error) throw new Error(error.message);
 
-    // 4. Invalidate Cache
+     
     const cacheKey = getCacheKey(validatedData.slug, 'config');
     await redis.del(cacheKey);
 
     return tenant;
   }, "registerTenant");
 }
-// --- Menu Management Actions ---
+ 
 
 export async function upsertMenuItem(tenantId: string, slug: string, item: any) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
     
-    // 1. Data Validation
+     
     const validatedData = MenuItemSchema.parse(item);
 
-    // 2. Category Fallback
+     
     let categoryId = validatedData.category_id;
     if (!categoryId) {
       const { data: cat } = await supabaseAdmin
@@ -151,7 +151,7 @@ export async function upsertMenuItem(tenantId: string, slug: string, item: any) 
       }
     }
 
-    // 3. Prepare Payload
+     
     const payload = {
       tenant_id: tenantId,
       category_id: categoryId,
@@ -164,7 +164,7 @@ export async function upsertMenuItem(tenantId: string, slug: string, item: any) 
       prep_time_minutes: validatedData.prep_time_minutes
     };
 
-    // 4. Perform Upsert
+     
     const { data, error } = await supabaseAdmin
       .from('menu_items')
       .upsert(
@@ -176,7 +176,7 @@ export async function upsertMenuItem(tenantId: string, slug: string, item: any) 
 
     if (error) throw error;
 
-    // 5. Invalidate Cache
+     
     const cacheKey = getCacheKey(slug, 'menu');
     await redis.del(cacheKey);
 
@@ -195,7 +195,7 @@ export async function deleteMenuItemServer(tenantId: string, slug: string, itemI
 
     if (error) throw error;
 
-    // Invalidate Cache
+     
     const cacheKey = getCacheKey(slug, 'menu');
     await redis.del(cacheKey);
     
@@ -205,7 +205,7 @@ export async function deleteMenuItemServer(tenantId: string, slug: string, itemI
 export async function updateTenantConfig(tenantId: string, slug: string, config: any) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
-    // 1. Update Supabase
+     
     const { error } = await supabaseAdmin
       .from('tenants')
       .update({ config })
@@ -213,7 +213,7 @@ export async function updateTenantConfig(tenantId: string, slug: string, config:
 
     if (error) throw error;
 
-    // 2. Invalidate Cache
+     
     const cacheKey = getCacheKey(slug, 'config');
     await redis.del(cacheKey);
 
@@ -221,7 +221,7 @@ export async function updateTenantConfig(tenantId: string, slug: string, config:
   }, "updateTenantConfig");
 }
 
-// --- Category Management ---
+ 
 
 export async function getTenantCategories(tenantId: string) {
   return withErrorHandling(async () => {
@@ -250,7 +250,7 @@ export async function upsertCategory(tenantId: string, slug: string, category: a
 
     if (error) throw error;
 
-    // Invalidate Menu Cache since categories affect display
+     
     const cacheKey = getCacheKey(slug, 'menu');
     await redis.del(cacheKey);
 
@@ -269,7 +269,7 @@ export async function deleteCategory(tenantId: string, slug: string, categoryId:
 
     if (error) throw error;
 
-    // Invalidate Cache
+     
     const cacheKey = getCacheKey(slug, 'menu');
     await redis.del(cacheKey);
 

@@ -22,7 +22,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     async function checkAuth() {
-      // Direct client-side check which has access to session
+       
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -30,7 +30,7 @@ export default function OnboardingPage() {
         return;
       }
 
-      // Check profile directly on client
+       
       const { data: profile } = await supabase
         .from('profiles')
         .select('phone_number')
@@ -55,7 +55,7 @@ export default function OnboardingPage() {
 
     setSubmitting(true);
     
-    // Get auth user on client to pass ID to server action (bypasses cookie issue)
+     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error('Session expired. Please login again.');
@@ -68,7 +68,7 @@ export default function OnboardingPage() {
 
     if (result.success) {
       toast.success('Registry request transmitted!');
-      // After registration, redirect to the pending screen
+       
       setTimeout(() => {
         window.location.href = '/admin/onboarding/pending';
       }, 1500);
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 relative">
       <Toaster />
       
-      {/* Back to Dashboard Button */}
+      { }
       <div className="absolute top-8 left-8">
         <Link 
           href="/admin/dashboard" 

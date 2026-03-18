@@ -63,7 +63,7 @@ export default function MyOrdersPage() {
 
     return (
         <main className="min-h-screen bg-[#FAFAF8] max-w-[520px] mx-auto">
-            {/* Header */}
+            { }
             <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                 <div className="px-5 py-3.5 flex items-center gap-4">
                     <Link href={`/${tenantSlug}`}>
@@ -76,7 +76,7 @@ export default function MyOrdersPage() {
             </header>
 
             <div className="px-5 py-6">
-                {/* Phone Input */}
+                { }
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
                     <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Verify Your Number</h2>
                     <div className="relative">
@@ -94,7 +94,7 @@ export default function MyOrdersPage() {
                 <AnimatePresence>
                     {mobileFilter.length >= 10 && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                            {/* Active Orders */}
+                            { }
                             {activeOrders.length > 0 && (
                                 <section>
                                     <h2 className="text-[12px] font-semibold text-emerald-600 uppercase tracking-wider mb-3 ml-1 flex items-center gap-2">
@@ -153,7 +153,7 @@ export default function MyOrdersPage() {
                                 </section>
                             )}
 
-                            {/* Completed Orders */}
+                            { }
                             {completedOrders.length > 0 && (
                                 <section>
                                     <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Past Orders</h2>
@@ -195,7 +195,7 @@ export default function MyOrdersPage() {
                                 </section>
                             )}
 
-                            {/* No Orders */}
+                            { }
                             {activeOrders.length === 0 && completedOrders.length === 0 && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 text-center">
                                     <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mb-5">
@@ -214,7 +214,7 @@ export default function MyOrdersPage() {
                     )}
                 </AnimatePresence>
 
-                {/* Initial state */}
+                { }
                 <AnimatePresence>
                     {mobileFilter.length < 10 && (
                         <motion.div

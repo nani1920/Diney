@@ -11,7 +11,7 @@ export default function PlatformSettingsPage() {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* General Settings */}
+                { }
                 <div className="bg-[#0d0d0d] border border-white/5 p-8 rounded-[2rem] space-y-6">
                     <div className="flex items-center gap-4 mb-2">
                         <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
@@ -35,7 +35,7 @@ export default function PlatformSettingsPage() {
                     </div>
                 </div>
 
-                {/* Infrastructure */}
+                { }
                 <div className="bg-[#0d0d0d] border border-white/5 p-8 rounded-[2rem] space-y-6">
                     <div className="flex items-center gap-4 mb-2">
                         <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">

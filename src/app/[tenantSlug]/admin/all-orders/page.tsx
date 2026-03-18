@@ -24,7 +24,7 @@ export default function AllOrdersPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 20;
 
-    // Filtered orders logic
+     
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
             const matchesSearch = 
@@ -38,7 +38,7 @@ export default function AllOrdersPage() {
         }).sort((a, b) => new Date(b.order_time).getTime() - new Date(a.order_time).getTime());
     }, [orders, searchQuery, statusFilter]);
 
-    // Reset to page 1 when filters change
+     
     useMemo(() => {
         setCurrentPage(1);
     }, [searchQuery, statusFilter]);
@@ -62,7 +62,7 @@ export default function AllOrdersPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header */}
+            { }
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <Link 
@@ -84,7 +84,7 @@ export default function AllOrdersPage() {
                 </div>
             </div>
 
-            {/* Filters Bar */}
+            { }
             <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within:text-green-500 transition-colors" />
@@ -115,7 +115,7 @@ export default function AllOrdersPage() {
                 </div>
             </div>
 
-            {/* Table */}
+            { }
             <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead className="bg-gray-50 border-b border-gray-100">
@@ -185,7 +185,7 @@ export default function AllOrdersPage() {
                 </table>
             </div>
 
-            {/* Pagination Placeholder */}
+            { }
             {filteredOrders.length > 0 && (
                 <div className="flex items-center justify-between text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 bg-white rounded-2xl border border-neutral-100 shadow-sm mt-4">
                     <div>
@@ -222,4 +222,4 @@ export default function AllOrdersPage() {
     );
 }
 
-// Reuse Clock icon from lucide-react (imported at top)
+ 

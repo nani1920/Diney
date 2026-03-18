@@ -71,7 +71,7 @@ export default function AnnouncementsPage() {
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Creation Form */}
+                { }
                 <div className="bg-[#0d0d0d] border border-white/5 p-8 rounded-[2rem] space-y-6 h-fit sticky top-8">
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         Post New Announcement
@@ -128,7 +128,7 @@ export default function AnnouncementsPage() {
                     </form>
                 </div>
 
-                {/* History */}
+                { }
                 <div className="space-y-6">
                     <h2 className="text-xl font-bold px-2">Recent Broadcasts</h2>
                     {isLoading ? (

@@ -24,7 +24,7 @@ export async function createOrder(
   totalAmount: number
 ) {
   return withErrorHandling(async () => {
-    // 1. Rate Limiting (by tenantId and customerMobile)
+     
     const identifier = `order:${tenantId}:${customerMobile}`;
     const { success: rateLimitOk } = await orderRateLimiter.limit(identifier);
     
@@ -32,7 +32,7 @@ export async function createOrder(
       throw new Error("Too many orders attempted. Please wait a minute and try again.");
     }
 
-    // 2. Data Validation
+     
     const validatedData = OrderSchema.parse({
       tenantId,
       customerName,
@@ -41,7 +41,7 @@ export async function createOrder(
       totalAmount
     });
 
-    // 3. Verify Tenant Status
+     
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
       .select('status')
@@ -56,7 +56,7 @@ export async function createOrder(
       throw new Error(`Store is currently ${tenant.status}. Orders are not being accepted.`);
     }
 
-    // 4. Create the primary order record
+     
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
@@ -74,10 +74,10 @@ export async function createOrder(
       throw new Error(`Order creation failed`);
     }
 
-    // 5. Insert order items
+     
     const orderItems = validatedData.items.map(item => ({
       order_id: order.id,
-      menu_item_id: item.id || null, // Best effort link
+      menu_item_id: item.id || null,  
       name: item.name,
       price: item.price,
       quantity: item.quantity,

@@ -18,7 +18,7 @@ export default function QRGeneratorPage() {
     const tenantSlug = params.tenantSlug as string;
     const qrRef = useRef<any>(null);
 
-    // QR State
+     
     const [fgColor, setFgColor] = useState('#000000');
     const [bgColor, setBgColor] = useState('#ffffff');
     const [eyeColor, setEyeColor] = useState('#000000');
@@ -60,7 +60,7 @@ export default function QRGeneratorPage() {
 
     return (
         <div className="p-4 md:p-10 max-w-6xl mx-auto space-y-10 min-h-screen pb-20">
-            {/* Header */}
+            { }
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 print:hidden">
                 <div className="space-y-2">
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
@@ -197,7 +197,7 @@ export default function QRGeneratorPage() {
                         <p className="text-[10px] text-neutral-400 font-medium">Use a square logo with a transparent background for best results.</p>
                     </section>
 
-                    {/* Corner Radius */}
+                    { }
                     <section className="space-y-4">
                         <div className="flex justify-between items-center">
                             <label className="text-sm font-black uppercase tracking-widest text-neutral-500">Corner Softness</label>
@@ -213,7 +213,7 @@ export default function QRGeneratorPage() {
                         />
                     </section>
 
-                    {/* Reset */}
+                    { }
                     <button 
                         onClick={resetDefaults}
                         className="w-full py-4 text-sm font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-red-500 transition-colors"
@@ -223,7 +223,7 @@ export default function QRGeneratorPage() {
                 </div>
             </div>
 
-            {/* Print Only Info */}
+            { }
             <div className="hidden print:block text-center mt-10">
                 <h2 className="text-3xl font-black">{params.tenantSlug}</h2>
                 <p className="text-neutral-500">Scan to view our digital menu</p>

@@ -36,7 +36,7 @@ export default function AdminDashboard() {
     const currentTier = (tenant?.tier || 'free') as keyof typeof tierConfig;
     const TierIcon = tierConfig[currentTier].icon;
 
-    // Filtered orders based on timeframe
+     
     const filteredOrders = useMemo(() => {
         if (timeframe === 'all') return orders;
 
@@ -74,11 +74,11 @@ export default function AdminDashboard() {
     const preparingCount = filteredOrders.filter(o => o.order_status === 'preparing').length;
     const completedCount = filteredOrders.filter(o => o.order_status === 'completed').length;
 
-    // Calculate Average Order Value
+     
     const activeOrderCount = filteredOrders.filter(o => o.order_status !== 'cancelled').length;
     const averageOrderValue = activeOrderCount > 0 ? Math.round(totalRevenue / activeOrderCount) : 0;
 
-    // Detect if we are on a subdomain based on env
+     
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
     const baseHost = baseDomain.split(':')[0];
     const isSubdomain = typeof window !== 'undefined' && 
@@ -86,11 +86,11 @@ export default function AdminDashboard() {
                         (window.location.hostname !== baseHost && window.location.hostname.includes(baseHost)));
 
     const getLink = (path: string) => {
-        if (isSubdomain) return path; // On subdomain, keep clean: /admin
-        return `/${tenantSlug}${path}`; // On root, keep slug: /jaffa/admin
+        if (isSubdomain) return path;  
+        return `/${tenantSlug}${path}`;  
     };
 
-    // Sort orders by time descending
+     
     const sortedOrders = useMemo(() => {
         return [...filteredOrders].sort((a, b) => 
             new Date(b.order_time).getTime() - new Date(a.order_time).getTime()
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-            {/* Header */}
+            { }
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className={clsx(
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
                 </div>
             </header>
 
-            {/* Timeframe Filter */}
+            { }
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                 <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl border border-gray-200">
                     {timeframeOptions.map((option) => (
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Stats Grid */}
+            { }
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatCard
                     title="Total Revenue"
@@ -198,9 +198,9 @@ export default function AdminDashboard() {
                 />
             </div>
 
-            {/* Recent Orders & Activity Section */}
+            { }
             <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-8">
-                {/* Main Table */}
+                { }
                 <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h2 className="font-bold text-lg text-gray-900">Recent Orders</h2>
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
                     )}
                 </div>
 
-                {/* Quick Actions / Activity */}
+                { }
                 <div className="space-y-6">
                     <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-2xl p-6 text-white text-center">
                         <Clock className="w-8 h-8 mx-auto mb-3 text-green-400" />

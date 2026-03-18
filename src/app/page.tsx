@@ -26,12 +26,12 @@ export default function SovereignLanding() {
    const { scrollYProgress } = useScroll();
    const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
-   // Hero Parallax & Scales
+    
    const heroOpacity = useTransform(smoothProgress, [0, 0.15], [1, 0]);
    const heroScale = useTransform(smoothProgress, [0, 0.2], [1, 0.9]);
    const heroY = useTransform(smoothProgress, [0, 0.2], [0, -50]);
 
-   // Cursor Interactive Light
+    
    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
    useEffect(() => {
       const handleMouseMove = (e: MouseEvent) => {
@@ -64,7 +64,7 @@ export default function SovereignLanding() {
    return (
       <div className="min-h-screen bg-[#FCFAF7] text-black selection:bg-[#025E43] selection:text-white font-sans mesh-gradient-aura">
 
-         {/* Cursor Flare / Interactive Light */}
+         { }
          <motion.div 
             className="fixed inset-0 pointer-events-none z-[9999]"
             animate={{
@@ -72,11 +72,11 @@ export default function SovereignLanding() {
             }}
          />
 
-         {/* Background Texture & Aura */}
+         { }
          <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/p6.png')]" />
          <div className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#025E43]/[0.03] blur-[150px] rounded-full pointer-events-none" />
 
-         {/* --- Sovereign Navigation --- */}
+         { }
          <div className="fixed top-8 left-0 right-0 z-[100] px-6 md:px-12 flex justify-center">
             <motion.nav
                initial={{ y: -100, opacity: 0 }}
@@ -100,7 +100,7 @@ export default function SovereignLanding() {
                   </Link>
                </div>
 
-               {/* Mobile Menu Trigger (Minimalist) */}
+               { }
                <div className="md:hidden flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-black/5 flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-black/10 transition-colors">
                      <div className="w-4 h-[1.5px] bg-black" />
@@ -111,7 +111,7 @@ export default function SovereignLanding() {
          </div>
 
          <main>
-            {/* --- Sovereign Hero (Ground-Up Rebuild) --- */}
+            { }
             <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-12">
                <motion.div
                   initial="hidden"
@@ -129,7 +129,7 @@ export default function SovereignLanding() {
                   className="w-full max-w-[1400px] text-center space-y-16 relative z-10"
                >
 
-                  {/* Headline: Absolute Typography Mastery */}
+                  { }
                   <motion.div
                      variants={{
                         hidden: { opacity: 0, y: 40 },
@@ -143,7 +143,7 @@ export default function SovereignLanding() {
                      </h1>
                   </motion.div>
 
-                  {/* Subtext: High-Value Copy */}
+                  { }
                   <motion.p
                      variants={{
                         hidden: { opacity: 0, y: 20 },
@@ -153,7 +153,7 @@ export default function SovereignLanding() {
                   >
                      Diney is your all-in-one solution to simplify and elevate the dining experience. Let your customers effortlessly discover your restaurant, browse the menu, place orders, and pay — all seamlessly from their phones.  </motion.p>
 
-                  {/* Action Suite */}
+                  { }
                   <motion.div
                      variants={{
                         hidden: { opacity: 0, scale: 0.95 },
@@ -165,12 +165,12 @@ export default function SovereignLanding() {
                      <span className="relative z-20">Initialize Account</span>
                      <ArrowRight size={16} className="relative z-20 group-hover:translate-x-2 transition-transform duration-700 ease-[0.16, 1, 0.3, 1]" />
                      
-                     {/* Internal Light Tracking Shimmer */}
+                     { }
                      <motion.div 
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1.5s] ease-[0.16, 1, 0.3, 1] z-10"
                      />
                      
-                     {/* Glass Background Overlay */}
+                     { }
                      <div className="absolute inset-0 bg-[#025E43] scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 ease-[0.16, 1, 0.3, 1]" />
                   </Link>
                   <Link href="/legal/contact" className="px-14 py-6 border border-black/10 bg-white/5 backdrop-blur-md text-black rounded-full font-black text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-black/5 hover:-translate-y-2 hover:border-black/30 flex items-center justify-center">
@@ -179,14 +179,14 @@ export default function SovereignLanding() {
                   </motion.div>
                </motion.div>
 
-             {/* --- Sovereign Visual Block (The Masterwork HUD Stack) --- */}
+             { }
             <motion.div 
                initial={{ opacity: 0, y: 120 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
                className="mt-32 w-full max-w-[1400px] relative px-10 group perspective-3000"
             >
-               {/* Main Canvas: The Command Center (Now 3D Tilting) */}
+               { }
                <motion.div 
                   whileHover={{ rotateX: 3, rotateY: -3, scale: 1.03 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -198,7 +198,7 @@ export default function SovereignLanding() {
                     className="w-full h-full object-cover rounded-[3.8rem] brightness-[1.01] contrast-[1.02]"
                  />
                  
-                 {/* Attentive Text Overlays (Ultra-Refined) */}
+                 { }
                  <div className="absolute top-[45%] left-1/2 -translate-x-1/2 pointer-events-none z-30">
                     <motion.div 
                        animate={{ y: [0, -10, 0] }}
@@ -209,12 +209,12 @@ export default function SovereignLanding() {
                     </motion.div>
                  </div>
 
-                 {/* Internal HUD Shimmer Glass */}
+                 { }
                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent pointer-events-none" />
                  <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_50%_0%,rgba(255,255,255,0.1)_0%,transparent_100%)] pointer-events-none" />
               </motion.div>
 
-              {/* Layer 1: The Performance HUD (Top Right) */}
+              { }
               <motion.div 
                  initial={{ x: 100, opacity: 0 }}
                  whileInView={{ x: 0, opacity: 1 }}
@@ -247,7 +247,7 @@ export default function SovereignLanding() {
                  </div>
               </motion.div>
 
-              {/* Layer 2: The Direct Access (Bottom Left) */}
+              { }
               <motion.div 
                  initial={{ x: -100, opacity: 0 }}
                  whileInView={{ x: 0, opacity: 1 }}
@@ -265,7 +265,7 @@ export default function SovereignLanding() {
                  </div>
               </motion.div>
 
-              {/* Layer 3: Minimalist Counter (Top Left) */}
+              { }
               <motion.div 
                  initial={{ y: -50, opacity: 0 }}
                  whileInView={{ y: 0, opacity: 1 }}
@@ -278,14 +278,14 @@ export default function SovereignLanding() {
                  </div>
               </motion.div>
 
-              {/* Background Glow */}
+              { }
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-radial from-[#025E43]/[0.05] to-transparent pointer-events-none -z-10 blur-[100px]" />
            </motion.div>
             </section>
 
-            {/* --- Features --- */}
+            { }
             <section id="features" className="pt-24 pb-48 bg-white relative overflow-hidden mesh-gradient-aura scroll-mt-32">
-               {/* Background Decorative Aura (Enhanced) */}
+               { }
                <div className="absolute top-[10%] left-[-10%] w-[60%] h-[60%] bg-[#025E43]/[0.05] blur-[180px] rounded-full pointer-events-none animate-pulse-slow" />
                <div className="absolute bottom-[10%] right-[-10%] w-[50%] h-[50%] bg-[#025E43]/[0.03] blur-[150px] rounded-full pointer-events-none" />
 
@@ -337,7 +337,7 @@ export default function SovereignLanding() {
                   viewport={{ once: true }}
                   className="w-full max-w-[1400px] mx-auto bg-[#1A1A1A] rounded-[5rem] py-40 px-12 md:px-32 text-center relative overflow-hidden group shadow-[0_120px_200px_-50px_rgba(0,0,0,0.5)]"
                >
-                  {/* Atmospheric Depth Layers */}
+                  { }
                   <div className="absolute inset-0 bg-gradient-to-br from-[#025E43]/30 via-transparent to-transparent opacity-50 transition-opacity duration-1000 group-hover:opacity-70" />
                   <div className="absolute top-[-30%] right-[-10%] w-[60%] h-[60%] bg-[#025E43]/[0.1] blur-[150px] rounded-full pointer-events-none" />
                   <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#025E43]/[0.05] blur-[120px] rounded-full pointer-events-none" />
@@ -371,9 +371,9 @@ export default function SovereignLanding() {
 
          </main>
 
-         {/* --- Sovereign Footer (The Final Node) --- */}
+         { }
           <footer className="pt-32 pb-8 px-12 bg-[#0A0A0A] relative overflow-hidden border-t border-white/5">
-             {/* Atmospheric Footer Depth */}
+             { }
              <div className="absolute top-0 left-1/4 w-[50%] h-[50%] bg-[#025E43]/[0.05] blur-[150px] rounded-full pointer-events-none" />
              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#025E43]/[0.02] blur-[120px] rounded-full pointer-events-none" />
 
@@ -391,7 +391,7 @@ export default function SovereignLanding() {
                          The infrastructure layer for elite hospitality. Defining the future of sovereign restaurant operations.
                       </p>
                       
-                      {/* Live Status Node */}
+                      { }
                       <div className="pt-4">
                          <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl w-fit backdrop-blur-xl">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse-slow shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
@@ -430,7 +430,7 @@ export default function SovereignLanding() {
                          />
                       </div>
                       
-                      {/* JOIN OUR NEWSLETTER (Aria Style) */}
+                      { }
                       <div className="lg:col-span-4 space-y-10">
                          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#025E43]">Join Our Newsletter</p>
                          <div className="space-y-6">
@@ -589,7 +589,7 @@ function PricingSection() {
                ))}
             </div>
 
-            {/* Add-Ons Section */}
+            { }
             <motion.div 
                initial={{ opacity: 0, y: 40 }}
                whileInView={{ opacity: 1, y: 0 }}
@@ -625,7 +625,7 @@ function SovereignFeature({ icon, title, desc }: { icon: React.ReactNode, title:
          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
          className="relative group p-12 bg-[#FCFAF7] border border-black/[0.03] rounded-[3.5rem] shadow-sm hover:shadow-2xl hover:shadow-[#025E43]/5 transition-all duration-700 hover:-translate-y-2 overflow-hidden"
       >
-         {/* Feature Card Aura */}
+         { }
          <div className="absolute top-0 right-0 w-32 h-32 bg-[#025E43]/[0.03] blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#025E43]/[0.1] transition-colors duration-700" />
          
          <div className="relative z-10 space-y-8">
@@ -678,7 +678,7 @@ function ProtocolReveal() {
    return (
       <section id="market" ref={containerRef} className="relative h-[450vh] bg-[#FCFAF7] scroll-mt-32">
          <div className="sticky top-0 h-screen w-full flex overflow-hidden">
-            {/* Left Pane: The Fixed Narrative */}
+            { }
             <div className="hidden lg:flex w-1/2 h-full flex-col justify-center px-24 border-r border-black/[0.03] bg-white">
                <motion.div 
                   initial={{ opacity: 0, x: -40 }}
@@ -694,9 +694,9 @@ function ProtocolReveal() {
                </motion.div>
             </div>
 
-            {/* Right Pane: The Material Reveal */}
+            { }
             <div className="w-full lg:w-1/2 h-full relative">
-               {/* Mobile Headline (Fixed at top for mobile) */}
+               { }
                <div className="lg:hidden absolute top-12 left-0 right-0 px-8 z-30 text-center">
                   <h2 className="text-[3rem] font-bold tracking-tight">The Protocol</h2>
                </div>

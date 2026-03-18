@@ -1,8 +1,8 @@
-// Customization options for items
+ 
 export type Customization = {
   type: 'addon' | 'spice_level' | 'special_instruction';
   name: string;
-  price?: number; // For add-ons
+  price?: number;  
 };
 
 export type MenuItem = {
@@ -27,7 +27,7 @@ export type ServerActionResult<T = any> = {
 
 export type CartItem = MenuItem & {
   quantity: number;
-  customizations?: Customization[]; // Optional customizations
+  customizations?: Customization[];  
 };
 
 export type PromoCode = {
@@ -48,11 +48,11 @@ export type Order = {
   order_note?: string;
   items: CartItem[];
   total_amount: number;
-  discount_amount?: number; // Discount applied
-  applied_promo_code?: string; // Promo code used
-  estimated_ready_time?: string; // ISO string
+  discount_amount?: number;  
+  applied_promo_code?: string;  
+  estimated_ready_time?: string;  
   order_status: OrderStatus;
-  order_time: string; // ISO string
+  order_time: string;  
 };
 
 export type Customer = {

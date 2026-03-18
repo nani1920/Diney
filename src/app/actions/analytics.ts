@@ -7,7 +7,7 @@ import { withErrorHandling } from '@/lib/server-utils';
 export async function getStoreAnalytics(
   tenantId: string, 
   timeframe: 'today' | 'week' | 'month' | 'specific' = 'today',
-  specificDate?: string // ISO date string
+  specificDate?: string  
 ) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
@@ -38,7 +38,7 @@ export async function getStoreAnalytics(
 
     if (error) throw error;
     
-    // If no orders, return empty structure instead of throwing
+     
     if (!orders || orders.length === 0) {
       return {
         totalRevenue: 0,
@@ -49,12 +49,12 @@ export async function getStoreAnalytics(
       };
     }
 
-    // Aggregate Data
+     
     const totalRevenue = (orders as any[]).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
     const totalOrders = orders.length;
     const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
-    // Top Selling Items
+     
     const itemMap: Record<string, { name: string; count: number; revenue: number }> = {};
     (orders as any[]).forEach(o => {
       o.order_items?.forEach((oi: any) => {
@@ -70,7 +70,7 @@ export async function getStoreAnalytics(
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    // Order Distribution (by hour for today/specific, by day for week/month)
+     
     const distribution: Record<string, number> = {};
     (orders as any[]).forEach(o => {
       const date = new Date(o.created_at);
