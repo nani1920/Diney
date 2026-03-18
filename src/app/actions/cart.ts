@@ -120,3 +120,36 @@ export async function clearCartDB(tenantId: string, sessionId: string) {
         return true;
     }, "clearCartDB");
 }
+
+export async function replaceCartDB(tenantId: string, sessionId: string, newItems: { menuItemId: string, quantity: number, customizations: any[] }[]) {
+    return withErrorHandling(async () => {
+        const { success: rateLimitOk } = await cartRateLimiter.limit(`cart:${sessionId}`);
+        if (!rateLimitOk) throw new Error("Too many cart operations. Please try again later.");
+
+        const { error: deleteError } = await supabaseAdmin
+            .from('carts')
+            .delete()
+            .eq('tenant_id', tenantId)
+            .eq('session_id', sessionId);
+            
+        if (deleteError) throw deleteError;
+
+        if (newItems.length > 0) {
+            const insertData = newItems.map(item => ({
+                tenant_id: tenantId,
+                session_id: sessionId,
+                menu_item_id: item.menuItemId,
+                quantity: item.quantity,
+                customizations: item.customizations || []
+            }));
+
+            const { error: insertError } = await supabaseAdmin
+                .from('carts')
+                .insert(insertData);
+                
+            if (insertError) throw insertError;
+        }
+
+        return true;
+    }, "replaceCartDB");
+}

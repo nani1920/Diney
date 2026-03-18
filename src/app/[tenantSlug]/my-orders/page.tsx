@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package } from 'lucide-react';
 
 export default function MyOrdersPage() {
-    const { addToCart, customer, tenant, fetchCustomerOrders } = useStore();
+    const { reorderPastOrder, customer, tenant, fetchCustomerOrders } = useStore();
     const [localOrders, setLocalOrders] = useState<any[]>([]);
     const [mobileFilter, setMobileFilter] = useState(customer?.mobile || '');
     const params = useParams();
@@ -37,13 +37,11 @@ export default function MyOrdersPage() {
         }
     }, [orders, mobileFilter]);
 
-    const handleReorder = (order: any) => {
-        order.items.forEach((item: any) => {
-            for (let i = 0; i < item.quantity; i++) {
-                addToCart(item, item.customizations);
-            }
-        });
-        router.push(`/${tenantSlug}/cart`);
+    const handleReorder = async (order: any) => {
+        await reorderPastOrder(order.items);
+        setTimeout(() => {
+            router.push(`/${tenantSlug}/cart`);
+        }, 500);
     };
 
     const filteredOrders = localOrders;

@@ -6,17 +6,36 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Order } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Clock, CheckCircle2, ShoppingBag, UtensilsCrossed, Receipt, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, ShoppingBag, UtensilsCrossed, Receipt, ChevronRight, RotateCcw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function OrderStatusPage() {
     const params = useParams();
-    const { orders } = useStore();
+    const router = useRouter();
+    const { orders, reorderPastOrder, menuItems, fetchCustomerOrders, tenant } = useStore();
     const [order, setOrder] = useState<Order | null>(null);
+    const [hasSynced, setHasSynced] = useState(false);
 
     useEffect(() => {
         const foundOrder = orders.find(o => o.order_id === params.id);
-        if (foundOrder) setOrder(foundOrder);
-    }, [params.id, orders]);
+        if (foundOrder) {
+            setOrder(foundOrder);
+            
+            // If order found but has no items, and we haven't tried syncing yet, try to fetch again
+            if (foundOrder.items.length === 0 && !hasSynced && tenant) {
+                setHasSynced(true);
+                fetchCustomerOrders(tenant.id, foundOrder.customer_mobile);
+            }
+        }
+    }, [params.id, orders, hasSynced, tenant, fetchCustomerOrders]);
+
+    const handleReorder = async () => {
+        if (!order) return;
+        await reorderPastOrder(order.items);
+        setTimeout(() => {
+            router.push(`/${params.tenantSlug}/cart`);
+        }, 500);
+    };
 
     if (!order) {
         return (
@@ -56,121 +75,178 @@ export default function OrderStatusPage() {
                 </div>
             </header>
 
-            <div className="flex-1 px-5 py-10 flex flex-col items-center">
-                { }
-                <div className="relative mb-12">
+            <div className="flex-1 px-5 py-6 flex flex-col items-center overflow-y-auto pb-32">
+                {/* Status Icon */}
+                <div className="relative mb-10 mt-4">
                     <motion.div 
-                        initial={{ scale: 0.9, opacity: 0 }}
+                        initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className={`w-48 h-48 rounded-[3rem] ${visuals.bgColor} flex items-center justify-center relative z-10 transition-colors duration-700 shadow-xl shadow-black/5`}
+                        transition={{ type: "spring", damping: 15 }}
+                        className={`w-44 h-44 rounded-[3.5rem] ${visuals.bgColor} flex items-center justify-center relative z-10 shadow-2xl shadow-black/5 overflow-hidden`}
                     >
+                        {/* Dynamic Background Pattern */}
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-current via-transparent to-transparent" />
+                        </div>
+
                         <motion.div 
                             key={order.order_status}
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
+                            initial={{ y: 20, opacity: 0, scale: 0.5 }}
+                            animate={{ y: 0, opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
                             className={visuals.color}
                         >
-                            {visuals.icon}
+                            {order.order_status === 'completed' ? (
+                                <div className="relative">
+                                    <CheckCircle2 className="w-16 h-16 text-emerald-500" strokeWidth={2.5} />
+                                    <motion.div 
+                                        animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                        className="absolute inset-0 bg-emerald-500 rounded-full -z-10"
+                                    />
+                                </div>
+                            ) : visuals.icon}
                         </motion.div>
                         
+                        {order.order_status === 'completed' && (
+                            <div className="absolute inset-0 pointer-events-none">
+                                {[...Array(6)].map((_, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{ 
+                                            opacity: [0, 1, 0],
+                                            scale: [0, 1, 0.5],
+                                            x: [0, (i % 2 === 0 ? 1 : -1) * (20 + i * 10)],
+                                            y: [0, -(40 + i * 15)]
+                                        }}
+                                        transition={{ 
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            delay: i * 0.3
+                                        }}
+                                        className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full bg-emerald-400"
+                                    />
+                                ))}
+                            </div>
+                        )}
+
                         {order.order_status === 'preparing' && (
-                            <div className="absolute inset-4 border-[3px] border-amber-500/10 border-t-amber-500 rounded-[2.2rem] animate-spin" />
+                            <motion.div 
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-2 border-[2px] border-dashed border-amber-500/20 rounded-[3rem]"
+                            />
                         )}
                     </motion.div>
                     
-                    { }
-                    <div className={`absolute inset-0 rounded-[3rem] ${visuals.ringColor} blur-2xl opacity-40 scale-110 -z-10`} />
+                    {/* Multi-layered Glow */}
+                    <div className={`absolute inset-0 rounded-[3.5rem] ${order.order_status === 'completed' ? 'bg-emerald-500/10' : visuals.ringColor} blur-3xl opacity-30 scale-125 -z-10`} />
                     <motion.div 
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                        className={`absolute inset-0 rounded-[3rem] ${visuals.ringColor} opacity-10 -z-10`} 
+                        animate={{ 
+                            scale: order.order_status === 'completed' ? [1, 1.1, 1] : [1, 1.15, 1],
+                            opacity: [0.2, 0.4, 0.2] 
+                        }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className={`absolute inset-0 rounded-[3.5rem] ${order.order_status === 'completed' ? 'border-emerald-500/20' : visuals.ringColor + ' border-current'} border-2 opacity-20 -z-10`} 
                     />
                 </div>
 
-                <div className="text-center mb-10 max-w-xs">
+                <div className="text-center mb-8 max-w-xs">
                     <motion.h2 
                         key={visuals.label}
                         initial={{ y: 10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
-                        className="text-[26px] font-extrabold text-neutral-900 tracking-[-0.02em] mb-2"
+                        className="text-[28px] font-black text-neutral-900 tracking-tight mb-2"
                     >
-                        {visuals.label}
+                        {order.order_status === 'completed' ? "Order Picked Up!" : visuals.label}
                     </motion.h2>
                     <motion.p 
                         key={visuals.subLabel}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-[14px] text-neutral-400 font-medium leading-relaxed"
+                        transition={{ delay: 0.1 }}
+                        className="text-[14px] text-neutral-400 font-medium leading-relaxed px-4"
                     >
-                        {visuals.subLabel}
+                        {order.order_status === 'completed' ? "We hope you enjoyed your legendary meal. See you again soon!" : visuals.subLabel}
                     </motion.p>
                 </div>
 
-                { }
+                {/* Details Card */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="w-full bg-white p-6 rounded-3xl border border-neutral-200/30 shadow-sm mb-8"
+                    className="w-full bg-white p-6 rounded-[2.5rem] border border-neutral-100 shadow-xl shadow-black/[0.02] mb-6"
                 >
-                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-100/60">
-                        <h3 className="text-[13px] font-semibold text-neutral-400 uppercase tracking-wider">Item Details</h3>
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 bg-neutral-50 px-2.5 py-1 rounded-lg">
+                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-50">
+                        <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-[0.1em]">Item Details</h3>
+                        <div className="flex items-center gap-1.5 text-[10px] font-black text-neutral-500 bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-100/50">
                             <Clock className="w-3.5 h-3.5" />
-                            {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                     </div>
 
-                    <div className="space-y-4 mb-6">
-                        {order.items.map((item, i) => (
-                            <div key={i} className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-neutral-50 rounded-xl overflow-hidden flex-shrink-0">
-                                    {item.image_url ? (
-                                        <img src={item.image_url} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[24px]">
-                                            {getFoodEmoji(item.name)}
+                    <div className="space-y-5 mb-6">
+                        {order.items.map((item, i) => {
+                            const menuItem = menuItems.find(m => m.name === item.name);
+                            const displayImage = item.image_url || menuItem?.image_url;
+                            
+                            return (
+                                <div key={i} className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0 border border-neutral-100 shadow-sm flex items-center justify-center">
+                                        {displayImage ? (
+                                            <img src={displayImage} className="w-full h-full object-cover" alt={item.name} />
+                                        ) : (
+                                            <span className="text-[28px]">{getFoodEmoji(item.name)}</span>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-[14px] font-bold text-neutral-900 truncate tracking-tight">{item.name}</h4>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[12px] text-neutral-400 font-medium">Qty: {item.quantity}</span>
+                                            <div className="w-1 h-1 bg-neutral-200 rounded-full" />
+                                            <span className="text-[12px] text-neutral-400 font-medium">₹{item.price}</span>
                                         </div>
-                                    )}
+                                    </div>
+                                    <span className="text-[15px] font-black text-neutral-900 tracking-tight">₹{item.price * item.quantity}</span>
                                 </div>
-                                <div className="flex-1">
-                                    <h4 className="text-[14px] font-semibold text-neutral-900 tracking-[-0.01em]">{item.name}</h4>
-                                    <span className="text-[12px] text-neutral-400 font-medium tracking-tight">Quantity: {item.quantity}</span>
-                                </div>
-                                <span className="text-[15px] font-bold text-neutral-900">₹{item.price * item.quantity}</span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
-                    <div className="pt-5 pb-5 border-t border-dashed border-neutral-200">
-                        <h4 className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Customer Details</h4>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-[14px] font-bold text-neutral-900">{order.customer_name}</p>
-                            <p className="text-[13px] font-medium text-neutral-500">{order.customer_mobile}</p>
-                        </div>
-                    </div>
-
-                    <div className="pt-5 border-t border-dashed border-neutral-200">
-                        <div className="flex justify-between items-center">
-                            <span className="text-[15px] font-bold text-neutral-400">Total</span>
-                            <span className="text-[24px] font-extrabold text-neutral-900 tracking-tight">₹{order.total_amount}</span>
+                    <div className="pt-5 pb-5 border-t border-dashed border-neutral-100">
+                        <div className="flex justify-between items-center px-1">
+                            <span className="text-[14px] font-bold text-neutral-400">Total Amount</span>
+                            <span className="text-[24px] font-black text-neutral-900 tracking-tighter">₹{order.total_amount}</span>
                         </div>
                     </div>
 
                     {order.order_status === 'ready' && (
-                        <div className="mt-6">
-                            <div className="bg-emerald-600 text-white text-center py-3 rounded-xl font-bold text-[13px] uppercase tracking-wider shadow-lg shadow-emerald-600/20">
+                        <div className="mt-2">
+                            <div className="bg-emerald-600 text-white text-center py-4 rounded-2xl font-black text-[12px] uppercase tracking-[0.1em] shadow-lg shadow-emerald-600/20">
                                 Hot & Ready for Pickup
                             </div>
                         </div>
                     )}
                 </motion.div>
+            </div>
 
-                <div className="w-full">
-                    <Link href={`/${params.tenantSlug}`}>
-                        <button className="w-full h-14 bg-white border border-neutral-200/50 text-neutral-900 rounded-2xl font-bold text-[15px] shadow-sm hover:bg-neutral-50 active:bg-neutral-100 transition-colors flex items-center justify-center gap-2">
-                            Back to Menu
-                            <ChevronRight className="w-4 h-4 text-neutral-300" />
+            {/* Sticky Action Footer */}
+            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[520px] z-50 px-5 pb-8 pt-4 bg-gradient-to-t from-[#FAFAF8] via-[#FAFAF8] to-transparent">
+                <div className="flex gap-3">
+                    <button 
+                        onClick={handleReorder}
+                        className="flex-[2] h-14 bg-emerald-600 text-white rounded-2xl font-bold text-[15px] shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0"
+                    >
+                        <RotateCcw className="w-4 h-4" strokeWidth={3} />
+                        Reorder Meal
+                    </button>
+
+                    <Link href={`/${params.tenantSlug}`} className="flex-1">
+                        <button className="w-full h-14 bg-white border border-neutral-200/50 text-neutral-900 rounded-2xl font-bold text-[15px] shadow-sm hover:bg-neutral-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            Menu
+                            <ChevronRight className="w-4 h-4 text-neutral-400" />
                         </button>
                     </Link>
                 </div>

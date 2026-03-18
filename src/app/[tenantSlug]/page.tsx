@@ -128,16 +128,16 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {activeOrdersCount > 0 && (
-                  <Link href={`/${tenant?.slug}/my-orders`}>
-                    <div className="relative w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100/50">
-                      <Bell className="w-5 h-5" />
+                <Link href={`/${tenant?.slug}/my-orders`}>
+                  <div className="relative w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100/50">
+                    <Bell className="w-5 h-5" />
+                    {activeOrdersCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-[#FAFAF8] shadow-sm leading-none pl-[0.5px] pt-[0.5px]">
                         {activeOrdersCount}
                       </span>
-                    </div>
-                  </Link>
-                )}
+                    )}
+                  </div>
+                </Link>
                 <Link href={`/${tenant?.slug}/cart`}>
                   <div className="relative w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-100/50">
                     <ShoppingCart className="w-5 h-5" />

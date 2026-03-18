@@ -5,8 +5,9 @@ import { MenuItem, Order, Customer, CartItem, PromoCode, ServerActionResult } fr
 import { getTenantData, getTenantMenu, upsertMenuItem, deleteMenuItemServer, updateTenantConfig, getTenantCategories } from '@/app/actions/tenant';
 import { createOrder as createCloudOrder, getTenantOrders, updateOrderStatusServer, getTenantCustomers, getCustomerOrders, getOrderById } from '@/app/actions/orders';
 import { supabase } from '@/lib/supabase';
-import { getCart, addToCartDB, updateCartQuantityDB, clearCartDB } from '@/app/actions/cart';
+import { getCart, addToCartDB, updateCartQuantityDB, clearCartDB, replaceCartDB } from '@/app/actions/cart';
 import { toast } from 'react-hot-toast';
+import { playNotificationChime } from '@/lib/sounds';
 
 export interface TenantData {
     id: string;
@@ -45,6 +46,7 @@ interface StoreContextType {
     addToCart: (item: MenuItem, customizations?: any[]) => void;
     updateCartQuantity: (itemId: string, delta: number) => void;
     clearCart: () => void;
+    reorderPastOrder: (orderItems: any[]) => Promise<void>;
     placeOrder: (customer: { name: string; mobile: string; note?: string }) => Promise<Order | null>;
     updateOrderStatus: (orderId: string, status: Order['order_status']) => void;
     addMenuItem: (item: MenuItem) => Promise<boolean>;
@@ -61,7 +63,7 @@ interface StoreContextType {
     setOpeningTime: (time: string) => void;
     setClosingTime: (time: string) => void;
     fetchStoreData: (slug: string) => Promise<void>;
-    fetchCustomerOrders: (tenantId: string, mobile: string) => Promise<void>;
+    fetchCustomerOrders: (tenantId: string, mobile: string) => Promise<any[]>;
     isLoading: boolean;
     isInitialLoading: boolean;
     sessionId: string | null;
@@ -120,9 +122,28 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchCustomerOrders = useCallback(async (tenantId: string, mobile: string) => {
         const result = await getCustomerOrders(tenantId, mobile);
-        if (result.success) {
-            setOrders(result.data || []);
-            return result.data;
+        if (result.success && result.data) {
+            const incomingOrders = result.data as Order[];
+            setOrders(prev => {
+                // Merge incoming orders with existing ones
+                const merged = [...prev];
+                incomingOrders.forEach(newOrder => {
+                    const existingIdx = merged.findIndex(o => o.order_id === newOrder.order_id);
+                    if (existingIdx >= 0) {
+                        // If existing order has items and new one doesn't, keep existing items
+                        const existing = merged[existingIdx];
+                        if (existing.items.length > 0 && newOrder.items.length === 0) {
+                            merged[existingIdx] = { ...newOrder, items: existing.items };
+                        } else {
+                            merged[existingIdx] = newOrder;
+                        }
+                    } else {
+                        merged.unshift(newOrder);
+                    }
+                });
+                return merged.sort((a, b) => new Date(b.order_time).getTime() - new Date(a.order_time).getTime());
+            });
+            return incomingOrders;
         }
         return [];
     }, []);
@@ -223,6 +244,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                                 setOrders(prev => {
                                     if (prev.some(o => o.order_id === newOrder.order_id)) return prev;
                                     if (newOrder.order_status === 'received') {
+                                        playNotificationChime();
                                         toast.success(`New order received! #${newOrder.short_id}`, {
                                             duration: 5000,
                                             icon: '🔔'
@@ -246,7 +268,15 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                     }
                 }
             )
-            .subscribe();
+            .subscribe((status, err) => {
+                console.log('Supabase Realtime Status (orders):', status, err);
+                if (status === 'SUBSCRIBED') {
+                    console.log('Successfully connected to realtime orders channel for tenant', tenant.id);
+                }
+                if (err) {
+                    console.error('Realtime subscription error:', err);
+                }
+            });
 
         return () => {
             supabase.removeChannel(channel);
@@ -333,6 +363,59 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         setAppliedPromo(null);
         if (tenant && sessionId) {
             await clearCartDB(tenant.id, sessionId);
+        }
+    };
+
+    const reorderPastOrder = async (orderItems: any[]) => {
+        if (!tenant || !sessionId) {
+            toast.error('Session not initialized');
+            return;
+        }
+        
+        const newCartItems: CartItem[] = [];
+        const dbItems: { menuItemId: string, quantity: number, customizations: any[] }[] = [];
+        
+        let allMatched = true;
+
+        for (const item of orderItems) {
+            const liveItem = menuItems.find(m => m.name === item.name);
+            if (!liveItem || !liveItem.id) {
+                allMatched = false;
+                continue;
+            }
+            
+            newCartItems.push({
+                ...liveItem,
+                id: liveItem.id,
+                quantity: item.quantity,
+                customizations: item.customizations || []
+            });
+
+            dbItems.push({
+                menuItemId: liveItem.id,
+                quantity: item.quantity,
+                customizations: item.customizations || []
+            });
+        }
+
+        if (newCartItems.length === 0) {
+            toast.error("None of these items are currently available on the menu.");
+            return;
+        }
+
+        toast.loading("Replacing cart...", { id: 'reorder' });
+        
+        setCart(newCartItems);
+        const result = await replaceCartDB(tenant.id, sessionId, dbItems);
+        
+        if (!result.success) {
+            toast.error(result.error || "Failed to sync reorder", { id: 'reorder' });
+        } else {
+            if (!allMatched) {
+                toast.success("Added to cart! (Some items no longer available)", { id: 'reorder' });
+            } else {
+                toast.success("Order copied to cart!", { id: 'reorder' });
+            }
         }
     };
 
@@ -590,6 +673,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 addToCart,
                 updateCartQuantity,
                 clearCart,
+                reorderPastOrder,
                 placeOrder: placeOrder as any,
                 updateOrderStatus,
                 addMenuItem,

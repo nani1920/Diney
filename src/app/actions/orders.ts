@@ -79,7 +79,8 @@ export async function createOrder(
       order_id: order.id,
       name: item.name,
       price: item.price,
-      quantity: item.quantity
+      quantity: item.quantity,
+      image_url: item.image_url
     }));
 
     const { error: itemsError } = await supabaseAdmin
