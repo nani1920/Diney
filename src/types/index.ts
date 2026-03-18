@@ -12,7 +12,17 @@ export type MenuItem = {
   price: number;
   veg_or_nonveg: 'veg' | 'non-veg';
   availability_status: boolean;
-  prep_time_minutes: number; // Estimated preparation time
+  prep_time_minutes: number;
+  image_url?: string;
+  category_id?: string;
+  master_product_id?: string;
+};
+
+export type ServerActionResult<T = any> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
 };
 
 export type CartItem = MenuItem & {
@@ -32,6 +42,7 @@ export type OrderStatus = 'received' | 'preparing' | 'ready' | 'completed' | 'ca
 
 export type Order = {
   order_id: string;
+  short_id: string;
   customer_name: string;
   customer_mobile: string;
   order_note?: string;

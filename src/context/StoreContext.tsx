@@ -1,7 +1,22 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { MenuItem, Order, Customer, CartItem, PromoCode } from '@/types';
+import { getTenantData, getTenantMenu, upsertMenuItem, deleteMenuItemServer, updateTenantConfig, getTenantCategories } from '@/app/actions/tenant';
+import { createOrder as createCloudOrder, getTenantOrders, updateOrderStatusServer, getTenantCustomers } from '@/app/actions/orders';
+import { getCart, addToCartDB, updateCartQuantityDB, clearCartDB } from '@/app/actions/cart';
+import { toast } from 'react-hot-toast';
+
+export interface TenantData {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url?: string;
+    config?: any;
+    is_active?: boolean;
+    tier?: string;
+    subscription_status?: string;
+}
 
 // Promo Codes
 const PROMO_CODES: PromoCode[] = [
@@ -15,160 +30,12 @@ const PROMO_CODES: PromoCode[] = [
 ];
 
 // Initial Seed Data with prep times
-const INITIAL_MENU: MenuItem[] = [
-    // Quick Snacks (5-8 mins)
-    {
-        id: '1',
-        name: 'Veg Samosa',
-        description: 'Crispy fried pastry with spiced potato filling',
-        price: 20,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 5
-    },
-    {
-        id: '2',
-        name: 'Aloo Cutlet',
-        description: 'Deep-fried spiced potato patty',
-        price: 30,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 6
-    },
-    {
-        id: '3',
-        name: 'Bread Pakora',
-        description: 'Bread stuffed with potato filling, battered & fried',
-        price: 35,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 7
-    },
-    {
-        id: '4',
-        name: 'French Fries',
-        description: 'Crispy salted potato fries',
-        price: 60,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 8
-    },
-    // Street Food (10-12 mins)
-    {
-        id: '5',
-        name: 'Veg Burger',
-        description: 'Burger with veg patty, onion & sauce',
-        price: 70,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 10
-    },
-    {
-        id: '6',
-        name: 'Chicken Burger',
-        description: 'Crispy chicken patty with mayo',
-        price: 90,
-        veg_or_nonveg: 'non-veg',
-        availability_status: true,
-        prep_time_minutes: 12
-    },
-    {
-        id: '7',
-        name: 'Veg Momos (6 pcs)',
-        description: 'Steamed dumplings with veg stuffing',
-        price: 80,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 10
-    },
-    {
-        id: '8',
-        name: 'Chicken Momos (6 pcs)',
-        description: 'Steamed dumplings with chicken stuffing',
-        price: 100,
-        veg_or_nonveg: 'non-veg',
-        availability_status: true,
-        prep_time_minutes: 12
-    },
-    // Indian Fast Food (12-15 mins)
-    {
-        id: '9',
-        name: 'Pav Bhaji',
-        description: 'Buttered pav with spicy vegetable curry',
-        price: 90,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 12
-    },
-    {
-        id: '10',
-        name: 'Vada Pav',
-        description: 'Spicy potato fritter in pav with chutneys',
-        price: 30,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 8
-    },
-    {
-        id: '11',
-        name: 'Masala Dosa (Mini)',
-        description: 'Crispy dosa with potato masala',
-        price: 80,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 15
-    },
-    // Fried & Grilled (10-15 mins)
-    {
-        id: '12',
-        name: 'Chicken Pakora',
-        description: 'Deep-fried spicy chicken bites',
-        price: 110,
-        veg_or_nonveg: 'non-veg',
-        availability_status: true,
-        prep_time_minutes: 12
-    },
-    {
-        id: '13',
-        name: 'Chicken Nuggets (6 pcs)',
-        description: 'Crispy fried nuggets',
-        price: 120,
-        veg_or_nonveg: 'non-veg',
-        availability_status: true,
-        prep_time_minutes: 10
-    },
-    // Add-ons & Drinks (2-5 mins)
-    {
-        id: '14',
-        name: 'Cold Drink (Can)',
-        description: 'Coke / Pepsi / Sprite',
-        price: 40,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 2
-    },
-    {
-        id: '15',
-        name: 'Masala Chai',
-        description: 'Traditional Indian spiced tea',
-        price: 20,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 5
-    },
-    {
-        id: '16',
-        name: 'Lemon Soda',
-        description: 'Refreshing lemon flavored soda',
-        price: 30,
-        veg_or_nonveg: 'veg',
-        availability_status: true,
-        prep_time_minutes: 3
-    }
-];
+// Initial state removed - now fetched from cloud
 
 interface StoreContextType {
+    tenant: TenantData | null;
     menuItems: MenuItem[];
+    categories: any[];
     orders: Order[];
     customers: Customer[];
     cart: CartItem[];
@@ -177,81 +44,162 @@ interface StoreContextType {
     addToCart: (item: MenuItem, customizations?: any[]) => void;
     updateCartQuantity: (itemId: string, delta: number) => void;
     clearCart: () => void;
-    placeOrder: (customer: { name: string; mobile: string; note?: string }) => Order;
+    placeOrder: (customer: { name: string; mobile: string; note?: string }) => Promise<Order | null>;
     updateOrderStatus: (orderId: string, status: Order['order_status']) => void;
-    addMenuItem: (item: MenuItem) => void;
-    updateMenuItem: (item: MenuItem) => void;
-    deleteMenuItem: (itemId: string) => void;
+    addMenuItem: (item: MenuItem) => Promise<boolean>;
+    updateMenuItem: (item: MenuItem) => Promise<boolean>;
+    deleteMenuItem: (itemId: string) => Promise<boolean>;
     validatePromoCode: (code: string, cartTotal: number) => { valid: boolean; message: string; promo?: PromoCode };
     applyPromoCode: (promo: PromoCode | null) => void;
     isStoreOpen: boolean;
+    customer: { name: string; mobile: string } | null;
+    updateCustomer: (name: string, mobile: string) => void;
     toggleStoreStatus: () => void;
     openingTime: string;
     closingTime: string;
     setOpeningTime: (time: string) => void;
     setClosingTime: (time: string) => void;
+    fetchStoreData: (slug: string) => Promise<void>;
+    isLoading: boolean;
+    isInitialLoading: boolean;
+    sessionId: string | null;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
+    const [tenant, setTenant] = useState<TenantData | null>(null);
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    const [isStoreOpen, setIsStoreOpen] = useState(true);
+    const [isStoreOpen, setIsStoreOpen] = useState(false);
+    const [customer, setCustomer] = useState<{ name: string; mobile: string } | null>(null);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+
+    // Initial Hydration
+    useEffect(() => {
+        const savedName = localStorage.getItem('customerName');
+        const savedMobile = localStorage.getItem('customerMobile');
+        if (savedName && savedMobile) {
+            setCustomer({ name: savedName, mobile: savedMobile });
+        }
+
+        let sId = localStorage.getItem('sessionId');
+        if (!sId) {
+            // Fallback for non-secure contexts (lvh.me)
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                sId = crypto.randomUUID();
+            } else {
+                sId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+            localStorage.setItem('sessionId', sId);
+        }
+        setSessionId(sId);
+    }, []);
+
+    const updateCustomer = (name: string, mobile: string) => {
+        localStorage.setItem('customerName', name);
+        localStorage.setItem('customerMobile', mobile);
+        setCustomer({ name, mobile });
+    };
     const [openingTime, setOpeningTimeState] = useState('10:00');
     const [closingTime, setClosingTimeState] = useState('22:00');
 
+    const fetchStoreData = useCallback(async (slug: string) => {
+        setIsInitialLoading(true);
+        try {
+            const tenantRes = await getTenantData(slug);
+            if (!tenantRes.success || !tenantRes.data) {
+                setTenant(null); // Explicitly clear if not found
+                toast.error(tenantRes.error || 'Store not found');
+                return;
+            }
+            const tenantData = tenantRes.data;
+            setTenant(tenantData);
 
+            // Fetch Menu and Categories in parallel
+            const [menuRes, categoriesRes] = await Promise.all([
+                getTenantMenu(tenantData.id, slug),
+                getTenantCategories(tenantData.id)
+            ]);
+            
+            if (menuRes.success) {
+                setMenuItems(menuRes.data || []);
+            }
 
+            if (categoriesRes.success) {
+                setCategories(categoriesRes.data || []);
+            }
+            
+            const ordersRes = await getTenantOrders(tenantData.id);
+            if (ordersRes.success) {
+                setOrders(ordersRes.data || []);
+            }
+            
+            const customersRes = await getTenantCustomers(tenantData.id);
+            if (customersRes.success) {
+                setCustomers(customersRes.data || []);
+            }
 
-    // Load from LocalStorage
-    useEffect(() => {
-        const MENU_VERSION = '3'; // Increment when menu changes
-        const savedVersion = localStorage.getItem('menuVersion');
-        const savedMenu = localStorage.getItem('menuItems');
-        const savedOrders = localStorage.getItem('orders');
-        const savedCustomers = localStorage.getItem('customers');
-        const savedStoreStatus = localStorage.getItem('isStoreOpen');
-        const savedOpeningTime = localStorage.getItem('openingTime');
-        const savedClosingTime = localStorage.getItem('closingTime');
+            // Fetch Database Cart
+            const sId = localStorage.getItem('sessionId');
+            if (sId) {
+                const cartRes = await getCart(tenantData.id, sId);
+                if (cartRes.success) {
+                    setCart(cartRes.data || []);
+                }
+            }
 
-        // Force update menu if version changed
-        if (savedVersion !== MENU_VERSION) {
-            setMenuItems(INITIAL_MENU);
-            localStorage.setItem('menuVersion', MENU_VERSION);
-        } else if (savedMenu) {
-            setMenuItems(JSON.parse(savedMenu));
-        } else {
-            setMenuItems(INITIAL_MENU);
+            // Apply tenant config if exists
+            if (tenantData.config) {
+                setIsStoreOpen(tenantData.config.isStoreOpen ?? true);
+                setOpeningTimeState(tenantData.config.openingTime ?? '10:00');
+                setClosingTimeState(tenantData.config.closingTime ?? '22:00');
+            }
+        } catch (error) {
+            console.error('Failed to fetch store data:', error);
+            toast.error('Error loading store data');
+        } finally {
+            setIsInitialLoading(false);
+            setIsInitialized(true);
         }
-
-        if (savedOrders) setOrders(JSON.parse(savedOrders));
-        if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
-        if (savedStoreStatus !== null) setIsStoreOpen(savedStoreStatus === 'true');
-        if (savedOpeningTime) setOpeningTimeState(savedOpeningTime);
-        if (savedClosingTime) setClosingTimeState(savedClosingTime);
-
-        setIsInitialized(true);
     }, []);
 
-    // Sync to LocalStorage
-    useEffect(() => {
-        if (isInitialized) {
-            localStorage.setItem('menuItems', JSON.stringify(menuItems));
-            localStorage.setItem('orders', JSON.stringify(orders));
-            localStorage.setItem('customers', JSON.stringify(customers));
-            localStorage.setItem('isStoreOpen', String(isStoreOpen));
-            localStorage.setItem('openingTime', openingTime);
-            localStorage.setItem('closingTime', closingTime);
-        }
-    }, [menuItems, orders, customers, isStoreOpen, openingTime, closingTime, isInitialized]);
 
-    const addToCart = (item: MenuItem, customizations?: any[]) => {
+
+
+    // We removed localStorage sync for cart in favor of DB persistence
+    // But we keep it as a transient fallback if needed
+    useEffect(() => {
+        if (isInitialized && cart.length > 0) {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+    }, [cart, isInitialized]);
+
+    const addToCart = async (item: MenuItem, customizations?: any[]) => {
+        if (!tenant || !sessionId) {
+            toast.error('Session not initialized');
+            return;
+        }
+
+        // Optimistic UI Update
+        const tempCartItem: CartItem = { 
+            ...item, 
+            quantity: 1, 
+            customizations,
+            id: item.id // Keep original item ID for lookup
+        };
+
         setCart((prev) => {
             const existing = prev.find((i) => i.id === item.id && JSON.stringify(i.customizations) === JSON.stringify(customizations));
             if (existing) {
@@ -261,11 +209,27 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                         : i
                 );
             }
-            return [...prev, { ...item, quantity: 1, customizations }];
+            return [...prev, tempCartItem];
         });
+
+        // Sync to DB
+        const result = await addToCartDB(tenant.id, sessionId, item.id, customizations);
+        if (!result.success) {
+            toast.error(result.error || 'Failed to sync cart to cloud');
+            // Refresh cart from DB as fallback
+            const refreshRes = await getCart(tenant.id, sessionId);
+            if (refreshRes.success) setCart(refreshRes.data || []);
+        }
     };
 
-    const updateCartQuantity = (itemId: string, delta: number) => {
+    const updateCartQuantity = async (itemId: string, delta: number) => {
+        if (!tenant || !sessionId) return;
+
+        // Find the cart item ID from the current cart state
+        const cartItem = cart.find(i => i.id === itemId);
+        if (!cartItem) return;
+
+        // Optimistic UI
         setCart((prev) =>
             prev
                 .map((item) =>
@@ -273,11 +237,25 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 )
                 .filter((item) => item.quantity > 0)
         );
+
+        // Sync to DB
+        // If we have a cart_id (from DB), use it, otherwise we'd need to fetch or use a matching strategy
+        // For simplicity, let's look up the item in the DB cart
+        const cartRes = await getCart(tenant.id, sessionId);
+        if (cartRes.success) {
+            const dbItem = (cartRes.data as any[]).find(i => i.id === itemId);
+            if (dbItem) {
+                await updateCartQuantityDB(tenant.id, sessionId, dbItem.cart_id, delta);
+            }
+        }
     };
 
-    const clearCart = () => {
+    const clearCart = async () => {
         setCart([]);
         setAppliedPromo(null);
+        if (tenant && sessionId) {
+            await clearCartDB(tenant.id, sessionId);
+        }
     };
 
     const validatePromoCode = (code: string, cartTotal: number) => {
@@ -298,7 +276,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         setAppliedPromo(promo);
     };
 
-    const placeOrder = (customerData: { name: string; mobile: string; note?: string }) => {
+    const placeOrder = async (customerData: { name: string; mobile: string; note?: string }) => {
+        if (!tenant) {
+            toast.error('Store data not loaded');
+            return null;
+        }
+
         const subtotal = cart.reduce((sum, item) => {
             const itemTotal = item.price * item.quantity;
             const customizationTotal = (item.customizations || [])
@@ -318,32 +301,31 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
         const totalAmount = subtotal - discountAmount;
 
-        // Calculate estimated ready time (max prep time + 5 min buffer)
-        const maxPrepTime = Math.max(...cart.map(item => item.prep_time_minutes));
-        const estimatedReadyTime = new Date(Date.now() + (maxPrepTime + 5) * 60000).toISOString();
+        // 🚀 Cloud Submission
+        setIsLoading(true);
+        const result = await createCloudOrder(
+            tenant.id,
+            customerData.name,
+            customerData.mobile,
+            cart,
+            totalAmount
+        );
+        setIsLoading(false);
 
-        // Create or Update Customer
-        const existingCustomer = customers.find(c => c.mobile === customerData.mobile);
-        if (existingCustomer) {
-            const updatedCustomer = {
-                ...existingCustomer,
-                total_spent: existingCustomer.total_spent + totalAmount,
-                last_order_date: new Date().toISOString()
-            };
-            setCustomers(prev => prev.map(c => c.mobile === customerData.mobile ? updatedCustomer : c));
-        } else {
-            const newCustomer: Customer = {
-                customer_id: crypto.randomUUID(),
-                name: customerData.name,
-                mobile: customerData.mobile,
-                total_spent: totalAmount,
-                last_order_date: new Date().toISOString()
-            };
-            setCustomers(prev => [...prev, newCustomer]);
+        if (!result.success || !result.data) {
+            toast.error(result.error || 'Failed to place order. Please try again.');
+            return null;
         }
 
+        const orderData = result.data;
+
+        // Local state update for immediate feedback
+        const maxPrepTime = Math.max(...cart.map(item => item.prep_time_minutes || 10));
+        const estimatedReadyTime = new Date(Date.now() + (maxPrepTime + 5) * 60000).toISOString();
+
         const newOrder: Order = {
-            order_id: Math.floor(1000 + Math.random() * 9000).toString(),
+            order_id: orderData.orderId!,
+            short_id: orderData.shortId || orderData.orderId!.replace(/\D/g, '').slice(0, 6) || '000000',
             customer_name: customerData.name,
             customer_mobile: customerData.mobile,
             order_note: customerData.note,
@@ -358,35 +340,170 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
         setOrders((prev) => [newOrder, ...prev]);
         clearCart();
+        toast.success('Order placed successfully!');
         return newOrder;
     };
 
-    const updateOrderStatus = (orderId: string, status: Order['order_status']) => {
+    const updateOrderStatus = async (orderId: string, status: Order['order_status']) => {
+        if (!tenant) return;
+        
+        // Optimistic update
         setOrders((prev) =>
             prev.map((o) => (o.order_id === orderId ? { ...o, order_status: status } : o))
         );
+
+        const result = await updateOrderStatusServer(orderId, status, tenant.id);
+        if (!result.success) {
+            toast.error('Failed to update order status in cloud');
+            // Rollback could be implemented here if needed
+        }
     };
 
-    const addMenuItem = (item: MenuItem) => {
-        setMenuItems((prev) => [...prev, item]);
+    const addMenuItem = async (item: MenuItem) => {
+        if (!tenant) return false;
+        
+        // Optimistic UI Update
+        const optimisticId = item.id || 'temp-' + Date.now();
+        const optimisticItem = { ...item, id: optimisticId };
+        
+        setMenuItems((prev) => [...prev, optimisticItem as any]);
+        setIsLoading(true);
+        
+        try {
+            const result = await upsertMenuItem(tenant.id, tenant.slug, item);
+            setIsLoading(false);
+            
+            if (result.success && result.data) {
+                const itemData = result.data;
+                const mappedItem = {
+                    ...itemData,
+                    availability_status: (itemData as any).is_available ?? (itemData as any).availability_status
+                };
+                // Replace optimistic item with actual server item (keeps DB ID and mapping)
+                setMenuItems((prev) => 
+                    prev.map(i => i.id === optimisticId ? (mappedItem as any) : i)
+                );
+                toast.success('Item added successfully');
+                return true;
+            } else {
+                // Rollback
+                setMenuItems((prev) => prev.filter(i => i.id !== optimisticId));
+                toast.error('Failed to add item: ' + result.error);
+                return false;
+            }
+        } catch (error) {
+            setIsLoading(false);
+            setMenuItems((prev) => prev.filter(i => i.id !== optimisticId));
+            toast.error('Error adding item');
+            return false;
+        }
     };
 
-    const updateMenuItem = (item: MenuItem) => {
-        setMenuItems((prev) => prev.map((i) => (i.id === item.id ? item : i)));
+    const updateMenuItem = async (item: MenuItem) => {
+        if (!tenant) return false;
+        
+        // Optimistic UI Update
+        const previousState = [...menuItems];
+        setMenuItems((prev) => prev.map((i) => (i.id === item.id ? { ...item } : i)));
+        setIsLoading(true);
+        
+        try {
+            const result = await upsertMenuItem(tenant.id, tenant.slug, item);
+            setIsLoading(false);
+
+            if (result.success && result.data) {
+                const itemData = result.data;
+                const mappedItem = {
+                    ...itemData,
+                    availability_status: (itemData as any).is_available ?? (itemData as any).availability_status
+                };
+                setMenuItems((prev) => prev.map((i) => (i.id === item.id ? (mappedItem as any) : i)));
+                toast.success('Item updated successfully');
+                return true;
+            } else {
+                // Rollback
+                setMenuItems(previousState);
+                toast.error('Failed to update item: ' + result.error);
+                return false;
+            }
+        } catch (error) {
+            setIsLoading(false);
+            setMenuItems(previousState);
+            toast.error('Error updating item');
+            return false;
+        }
     };
 
-    const deleteMenuItem = (itemId: string) => {
+    const deleteMenuItem = async (itemId: string) => {
+        if (!tenant) return false;
+        
+        // Optimistic UI Update
+        const deletedItem = menuItems.find(i => i.id === itemId);
         setMenuItems((prev) => prev.filter((i) => i.id !== itemId));
+        setIsLoading(true);
+        
+        try {
+            const result = await deleteMenuItemServer(tenant.id, tenant.slug, itemId);
+            setIsLoading(false);
+
+            if (result.success) {
+                toast.success('Item deleted successfully');
+                return true;
+            } else {
+                // Rollback
+                if (deletedItem) setMenuItems((prev) => [...prev, deletedItem]);
+                toast.error('Failed to delete item: ' + result.error);
+                return false;
+            }
+        } catch (error) {
+            setIsLoading(false);
+            if (deletedItem) setMenuItems((prev) => [...prev, deletedItem]);
+            toast.error('Error deleting item');
+            return false;
+        }
     };
 
-    const toggleStoreStatus = () => {
-        setIsStoreOpen(prev => !prev);
+    const toggleStoreStatus = async () => {
+        if (!tenant) return;
+        const newStatus = !isStoreOpen;
+        setIsStoreOpen(newStatus);
+        
+        const newConfig = {
+            ...tenant.config,
+            isStoreOpen: newStatus
+        };
+        
+        const result = await updateTenantConfig(tenant.id, tenant.slug, newConfig);
+        if (result.success) {
+            setTenant({ ...tenant, config: newConfig });
+        } else {
+            toast.error('Failed to update store status in cloud');
+            setIsStoreOpen(!newStatus); // Rollback
+        }
+    };
+
+    const setOpeningTime = async (time: string) => {
+        if (!tenant) return;
+        setOpeningTimeState(time);
+        const newConfig = { ...tenant.config, openingTime: time };
+        const result = await updateTenantConfig(tenant.id, tenant.slug, newConfig);
+        if (result.success) setTenant({ ...tenant, config: newConfig });
+    };
+
+    const setClosingTime = async (time: string) => {
+        if (!tenant) return;
+        setClosingTimeState(time);
+        const newConfig = { ...tenant.config, closingTime: time };
+        const result = await updateTenantConfig(tenant.id, tenant.slug, newConfig);
+        if (result.success) setTenant({ ...tenant, config: newConfig });
     };
 
     return (
         <StoreContext.Provider
             value={{
+                tenant,
                 menuItems,
+                categories,
                 orders,
                 customers,
                 cart,
@@ -395,7 +512,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 addToCart,
                 updateCartQuantity,
                 clearCart,
-                placeOrder,
+                placeOrder: placeOrder as any,
                 updateOrderStatus,
                 addMenuItem,
                 updateMenuItem,
@@ -403,11 +520,17 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 validatePromoCode,
                 applyPromoCode,
                 isStoreOpen,
+                customer,
+                updateCustomer,
                 toggleStoreStatus,
                 openingTime,
                 closingTime,
                 setOpeningTime: setOpeningTimeState,
-                setClosingTime: setClosingTimeState
+                setClosingTime: setClosingTimeState,
+                fetchStoreData,
+                isLoading,
+                isInitialLoading,
+                sessionId
             }}
         >
             {children}

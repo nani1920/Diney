@@ -7,7 +7,11 @@ module.exports = {
         './src/context/**/*.{js,ts,jsx,tsx,mdx}',
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                inter: ['Inter', 'sans-serif'],
+            },
+        },
     },
     plugins: [],
 }
