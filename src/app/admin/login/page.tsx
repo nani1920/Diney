@@ -34,9 +34,7 @@ function LoginForm() {
       ? `/admin/onboarding/identity?returnTo=${encodeURIComponent(returnTo)}`
       : `/admin/onboarding/identity`;
 
-    const protocol = process.env.NEXT_PUBLIC_PROTOCOL || 'http';
-    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
-    const origin = `${protocol}://${baseDomain}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -60,9 +58,7 @@ function LoginForm() {
       ? `/admin/onboarding/identity?returnTo=${encodeURIComponent(returnTo)}`
       : `/admin/onboarding/identity`;
 
-    const protocol = process.env.NEXT_PUBLIC_PROTOCOL || 'http';
-    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
-    const origin = `${protocol}://${baseDomain}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
