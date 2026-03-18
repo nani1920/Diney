@@ -16,3 +16,17 @@ export const orderRateLimiter = new Ratelimit({
   analytics: true,
   prefix: "@upstash/ratelimit/order",
 });
+
+export const cartRateLimiter = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(10, "10 s"),
+  analytics: true,
+  prefix: "@upstash/ratelimit/cart",
+});
+
+export const viewOrderRateLimiter = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(5, "1 m"),
+  analytics: true,
+  prefix: "@upstash/ratelimit/vieworder",
+});

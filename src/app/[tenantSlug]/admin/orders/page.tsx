@@ -60,8 +60,9 @@ export default function AdminOrdersPage() {
     const filteredOrders = activeOrders.filter(o => {
         const query = searchQuery.toLowerCase();
         return (
-            o.order_id.toLowerCase().includes(query) ||
+            o.short_id.toLowerCase().includes(query) ||
             o.customer_name.toLowerCase().includes(query) ||
+            o.customer_mobile.toLowerCase().includes(query) ||
             o.items.some(item => item.name.toLowerCase().includes(query))
         );
     });

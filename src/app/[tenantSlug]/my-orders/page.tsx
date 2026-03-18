@@ -8,17 +8,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package } from 'lucide-react';
 
 export default function MyOrdersPage() {
-    const { orders, addToCart, customer } = useStore();
+    const { addToCart, customer, tenant, fetchCustomerOrders } = useStore();
+    const [localOrders, setLocalOrders] = useState<any[]>([]);
     const [mobileFilter, setMobileFilter] = useState(customer?.mobile || '');
     const params = useParams();
     const router = useRouter();
     const tenantSlug = params.tenantSlug as string;
 
     useEffect(() => {
-        if (customer?.mobile && !mobileFilter) {
-            setMobileFilter(customer.mobile);
+        const loadOrders = async () => {
+             
+            if (tenant && mobileFilter.length === 10) {
+                const result = await fetchCustomerOrders(tenant.id, mobileFilter);
+                 
+            }
+        };
+        loadOrders();
+    }, [tenant, mobileFilter, fetchCustomerOrders]);
+
+     
+    const { orders } = useStore();
+    useEffect(() => {
+        if (mobileFilter.length === 10) {
+            const filtered = orders.filter(o => String(o.customer_mobile) === mobileFilter);
+            setLocalOrders(filtered);
+        } else {
+            setLocalOrders([]);
         }
-    }, [customer, mobileFilter]);
+    }, [orders, mobileFilter]);
 
     const handleReorder = (order: any) => {
         order.items.forEach((item: any) => {
@@ -29,9 +46,7 @@ export default function MyOrdersPage() {
         router.push(`/${tenantSlug}/cart`);
     };
 
-    const filteredOrders = mobileFilter.length === 10
-        ? orders.filter(order => order.customer_mobile === mobileFilter)
-        : [];
+    const filteredOrders = localOrders;
 
     const activeOrders = filteredOrders.filter(o =>
         o.order_status === 'received' || o.order_status === 'preparing' || o.order_status === 'ready'
@@ -77,17 +92,33 @@ export default function MyOrdersPage() {
 
             <div className="px-5 py-6">
                 { }
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                    <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Verify Your Number</h2>
-                    <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-300" />
-                        <input
-                            type="tel"
-                            placeholder="Enter mobile number"
-                            value={mobileFilter}
-                            onChange={(e) => setMobileFilter(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                            className="w-full h-12 pl-12 pr-5 bg-white rounded-2xl outline-none text-[15px] font-medium text-neutral-800 tracking-wide placeholder:text-neutral-300 placeholder:tracking-normal border border-neutral-200/50 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50 transition-all shadow-sm"
-                        />
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+                    <div className="bg-white rounded-[2rem] p-6 border border-neutral-200/50 shadow-sm relative overflow-hidden">
+                        { }
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -mr-16 -mt-16" />
+                        
+                        <div className="relative z-10">
+                            <h2 className="text-[11px] font-bold text-neutral-400 uppercase tracking-[0.2em] mb-4 ml-1">Identity Verification</h2>
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-focus-within:bg-emerald-600 group-focus-within:text-white transition-all duration-300">
+                                    <Phone className="w-5 h-5" />
+                                </div>
+                                <input
+                                    type="tel"
+                                    placeholder="Enter registered mobile number"
+                                    value={mobileFilter}
+                                    onChange={(e) => setMobileFilter(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                    className="w-full h-14 pl-16 pr-5 bg-neutral-50/50 rounded-2xl outline-none text-[16px] font-bold text-neutral-900 tracking-widest placeholder:text-neutral-300 placeholder:tracking-normal placeholder:font-medium border border-transparent focus:bg-white focus:border-emerald-500/20 focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                                />
+                            </div>
+                            
+                            <div className="mt-4 flex items-center gap-2 px-3 py-2 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div className="w-1.5 h-1.5 bg-neutral-300 rounded-full shrink-0" />
+                                <p className="text-[11px] font-medium text-neutral-400 tracking-tight">
+                                    Only orders matching this exact number will be retrieved.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -115,7 +146,7 @@ export default function MyOrdersPage() {
                                                             <h3 className="text-[16px] font-bold text-neutral-900 tracking-[-0.01em]">Order #{order.short_id}</h3>
                                                             <div className="flex items-center gap-1.5 text-[12px] text-neutral-400 font-medium mt-1">
                                                                 <Clock className="w-3 h-3" />
-                                                                {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </div>
                                                         </div>
                                                         <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border ${getStatusStyle(order.order_status)}`}>
@@ -170,7 +201,7 @@ export default function MyOrdersPage() {
                                                         <div>
                                                             <h3 className="text-[15px] font-bold text-neutral-500 tracking-[-0.01em]">Order #{order.short_id}</h3>
                                                             <p className="text-[12px] text-neutral-400 font-medium mt-1">
-                                                                {new Date(order.order_time).toLocaleDateString()}
+                                                                {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                         </div>
                                                         <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border ${getStatusStyle(order.order_status)}`}>

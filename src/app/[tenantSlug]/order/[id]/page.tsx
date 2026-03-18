@@ -117,7 +117,7 @@ export default function OrderStatusPage() {
                         <h3 className="text-[13px] font-semibold text-neutral-400 uppercase tracking-wider">Item Details</h3>
                         <div className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-500 bg-neutral-50 px-2.5 py-1 rounded-lg">
                             <Clock className="w-3.5 h-3.5" />
-                            {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                     </div>
 
@@ -140,6 +140,14 @@ export default function OrderStatusPage() {
                                 <span className="text-[15px] font-bold text-neutral-900">₹{item.price * item.quantity}</span>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="pt-5 pb-5 border-t border-dashed border-neutral-200">
+                        <h4 className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Customer Details</h4>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-[14px] font-bold text-neutral-900">{order.customer_name}</p>
+                            <p className="text-[13px] font-medium text-neutral-500">{order.customer_mobile}</p>
+                        </div>
                     </div>
 
                     <div className="pt-5 border-t border-dashed border-neutral-200">

@@ -2,7 +2,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase';
 import { withErrorHandling } from '@/lib/server-utils';
-
+import { cartRateLimiter } from '@/lib/ratelimit';
  
  
 
@@ -34,6 +34,9 @@ export async function getCart(tenantId: string, sessionId: string) {
 
 export async function addToCartDB(tenantId: string, sessionId: string, menuItemId: string, customizations: any[] = []) {
     return withErrorHandling(async () => {
+        const { success: rateLimitOk } = await cartRateLimiter.limit(`cart:${sessionId}`);
+        if (!rateLimitOk) throw new Error("Too many cart operations. Please try again later.");
+
         const { data: existing } = await supabaseAdmin
             .from('carts')
             .select('id, quantity')
@@ -68,6 +71,9 @@ export async function addToCartDB(tenantId: string, sessionId: string, menuItemI
 
 export async function updateCartQuantityDB(tenantId: string, sessionId: string, cartId: string, delta: number) {
     return withErrorHandling(async () => {
+        const { success: rateLimitOk } = await cartRateLimiter.limit(`cart:${sessionId}`);
+        if (!rateLimitOk) throw new Error("Too many cart operations. Please try again later.");
+
         const { data: existing } = await supabaseAdmin
             .from('carts')
             .select('quantity')

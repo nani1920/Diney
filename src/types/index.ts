@@ -40,13 +40,22 @@ export type PromoCode = {
 
 export type OrderStatus = 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled';
 
+export type OrderItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url?: string;
+  customizations?: Customization[];
+};
+
 export type Order = {
   order_id: string;
   short_id: string;
   customer_name: string;
   customer_mobile: string;
   order_note?: string;
-  items: CartItem[];
+  items: OrderItem[];
   total_amount: number;
   discount_amount?: number;  
   applied_promo_code?: string;  

@@ -9,6 +9,7 @@ export const OrderSchema = z.object({
     name: z.string(),
     price: z.number(),
     quantity: z.number().min(1),
+    image_url: z.string().optional(),
     customizations: z.array(z.any()).optional()
   })).min(1, "Order must have at least one item"),
   totalAmount: z.number().positive()

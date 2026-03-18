@@ -240,6 +240,7 @@ export async function exitImpersonation() {
 
 export async function getMasterProducts() {
     return withErrorHandling(async () => {
+        await ensureSuperAdmin();
         const { data, error } = await supabaseAdmin
             .from('master_products')
             .select('*')

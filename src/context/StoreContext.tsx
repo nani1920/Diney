@@ -1,9 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { MenuItem, Order, Customer, CartItem, PromoCode } from '@/types';
+import { MenuItem, Order, Customer, CartItem, PromoCode, ServerActionResult } from '@/types';
 import { getTenantData, getTenantMenu, upsertMenuItem, deleteMenuItemServer, updateTenantConfig, getTenantCategories } from '@/app/actions/tenant';
-import { createOrder as createCloudOrder, getTenantOrders, updateOrderStatusServer, getTenantCustomers } from '@/app/actions/orders';
+import { createOrder as createCloudOrder, getTenantOrders, updateOrderStatusServer, getTenantCustomers, getCustomerOrders, getOrderById } from '@/app/actions/orders';
+import { supabase } from '@/lib/supabase';
 import { getCart, addToCartDB, updateCartQuantityDB, clearCartDB } from '@/app/actions/cart';
 import { toast } from 'react-hot-toast';
 
@@ -60,6 +61,7 @@ interface StoreContextType {
     setOpeningTime: (time: string) => void;
     setClosingTime: (time: string) => void;
     fetchStoreData: (slug: string) => Promise<void>;
+    fetchCustomerOrders: (tenantId: string, mobile: string) => Promise<void>;
     isLoading: boolean;
     isInitialLoading: boolean;
     sessionId: string | null;
@@ -111,7 +113,19 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem('customerName', name);
         localStorage.setItem('customerMobile', mobile);
         setCustomer({ name, mobile });
+        if (tenant) {
+            fetchCustomerOrders(tenant.id, mobile);
+        }
     };
+
+    const fetchCustomerOrders = useCallback(async (tenantId: string, mobile: string) => {
+        const result = await getCustomerOrders(tenantId, mobile);
+        if (result.success) {
+            setOrders(result.data || []);
+            return result.data;
+        }
+        return [];
+    }, []);
     const [openingTime, setOpeningTimeState] = useState('10:00');
     const [closingTime, setClosingTimeState] = useState('22:00');
 
@@ -144,11 +158,21 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             const ordersRes = await getTenantOrders(tenantData.id);
             if (ordersRes.success) {
                 setOrders(ordersRes.data || []);
+            } else {
+                 
+                const savedMobile = localStorage.getItem('customerMobile');
+                if (savedMobile) {
+                    await fetchCustomerOrders(tenantData.id, savedMobile);
+                } else {
+                    setOrders([]);
+                }
             }
             
             const customersRes = await getTenantCustomers(tenantData.id);
             if (customersRes.success) {
                 setCustomers(customersRes.data || []);
+            } else {
+                setCustomers([]);
             }
 
              
@@ -174,6 +198,60 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
             setIsInitialized(true);
         }
     }, []);
+
+    useEffect(() => {
+        if (!tenant) return;
+
+        const channel = supabase
+            .channel(`tenant_orders_${tenant.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'orders',
+                    filter: `tenant_id=eq.${tenant.id}`
+                },
+                async (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        const newOrderRaw = payload.new;
+                        // Small delay to ensure DB items are ready
+                        setTimeout(async () => {
+                            const result = await getOrderById(newOrderRaw.id, tenant.id);
+                            if (result.success && result.data) {
+                                const newOrder = result.data as Order; // Explicit cast to help TS narrowing
+                                setOrders(prev => {
+                                    if (prev.some(o => o.order_id === newOrder.order_id)) return prev;
+                                    if (newOrder.order_status === 'received') {
+                                        toast.success(`New order received! #${newOrder.short_id}`, {
+                                            duration: 5000,
+                                            icon: '🔔'
+                                        });
+                                    }
+                                    return [newOrder, ...prev];
+                                });
+                            }
+                        }, 1000);
+                    } else if (payload.eventType === 'UPDATE') {
+                        const updatedOrder = payload.new;
+                        setOrders(prev => 
+                            prev.map(o => o.order_id === updatedOrder.id 
+                                ? { ...o, order_status: updatedOrder.status } 
+                                : o
+                            )
+                        );
+                    } else if (payload.eventType === 'DELETE') {
+                        const deletedId = payload.old.id;
+                        setOrders(prev => prev.filter(o => o.order_id !== deletedId));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [tenant]);
 
 
 
@@ -528,6 +606,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
                 setOpeningTime: setOpeningTimeState,
                 setClosingTime: setClosingTimeState,
                 fetchStoreData,
+                fetchCustomerOrders,
                 isLoading,
                 isInitialLoading,
                 sessionId

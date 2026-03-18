@@ -8,9 +8,13 @@ import {
     Calendar,
     ArrowLeft,
     Download,
-    Clock
+    Clock,
+    X,
+    User,
+    ShoppingBag
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -22,7 +26,8 @@ export default function AllOrdersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 20;
+    const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+    const ITEMS_PER_PAGE = 10;
 
      
     const filteredOrders = useMemo(() => {
@@ -48,6 +53,43 @@ export default function AllOrdersPage() {
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         return filteredOrders.slice(start, start + ITEMS_PER_PAGE);
     }, [filteredOrders, currentPage]);
+
+    const handleExportCSV = () => {
+        if (!filteredOrders || filteredOrders.length === 0) return;
+
+        const headers = ['Order ID', 'Date', 'Time', 'Customer Name', 'Customer Mobile', 'Items', 'Total Amount', 'Status', 'Notes'];
+        
+        const csvRows = filteredOrders.map(order => {
+            const date = new Date(order.order_time).toLocaleDateString();
+            const time = new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const itemsStr = order.items && order.items.length > 0 
+                ? order.items.map((i: any) => `${i.quantity}x ${i.name}`).join('; ')
+                : '';
+            
+            return [
+                order.short_id,
+                date,
+                time,
+                `"${order.customer_name.replace(/"/g, '""')}"`,
+                order.customer_mobile || '',
+                `"${itemsStr.replace(/"/g, '""')}"`,
+                order.total_amount,
+                order.order_status,
+                `"${(order.order_note || '').replace(/"/g, '""')}"`
+            ].join(',');
+        });
+
+        const csvContent = [headers.join(','), ...csvRows].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${tenant?.slug || 'store'}_orders_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const getStatusStyle = (status: string) => {
         switch (status) {
@@ -77,7 +119,7 @@ export default function AllOrdersPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl text-xs font-bold text-gray-600 border border-gray-100 shadow-sm hover:bg-gray-50 transition-all">
+                    <button onClick={handleExportCSV} disabled={filteredOrders.length === 0} className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl text-xs font-bold text-gray-600 border border-gray-100 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                         <Download className="w-4 h-4" />
                         Export CSV
                     </button>
@@ -129,7 +171,7 @@ export default function AllOrdersPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {paginatedOrders.map((order) => (
-                            <tr key={order.order_id} className="hover:bg-gray-50 transition-colors group">
+                            <tr key={order.order_id} onClick={() => setSelectedOrder(order)} className="hover:bg-gray-50 transition-colors group cursor-pointer">
                                 <td className="px-8 py-6">
                                     <div className="font-black text-sm text-neutral-900 tracking-[0.2em] mb-1">
                                         #{order.short_id}
@@ -218,6 +260,100 @@ export default function AllOrdersPage() {
                     </div>
                 </div>
             )}
+
+            { /* Order Details Modal */ }
+            <AnimatePresence>
+                {selectedOrder && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                        onClick={() => setSelectedOrder(null)}
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.95, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-3xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]"
+                        >
+                            <div className="flex justify-between items-center p-6 border-b border-neutral-100 bg-white">
+                                <div>
+                                    <h3 className="text-xl font-bold text-neutral-900 flex items-center gap-2 tracking-tight">
+                                        <ShoppingBag className="w-5 h-5 text-neutral-400" />
+                                        Order #{selectedOrder.short_id}
+                                    </h3>
+                                    <p className="text-sm text-neutral-500 mt-1 font-medium">
+                                        {new Date(selectedOrder.order_time).toLocaleString()}
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedOrder(null)}
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-50 text-neutral-500 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-200 transition-colors border border-neutral-100"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto flex-1 bg-neutral-50/50 space-y-4">
+                                <div className="bg-white p-5 rounded-2xl border border-neutral-100 shadow-sm">
+                                    <h4 className="text-[11px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-4">Customer Info</h4>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 border border-green-100 flex items-center justify-center font-bold text-lg">
+                                            {selectedOrder.customer_name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-neutral-900 text-base">{selectedOrder.customer_name}</p>
+                                            <p className="text-sm text-neutral-500 font-medium">{selectedOrder.customer_mobile || 'No Mobile'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-5 rounded-2xl border border-neutral-100 shadow-sm">
+                                    <h4 className="text-[11px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-4">Order Items</h4>
+                                    <div className="space-y-4">
+                                        {selectedOrder.items && selectedOrder.items.map((item: any, idx: number) => (
+                                            <div key={idx} className="flex justify-between items-center py-3 border-b border-neutral-50 last:border-0 last:pb-0">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="w-7 h-7 rounded-lg bg-neutral-100 text-xs font-bold flex items-center justify-center text-neutral-600 border border-neutral-200">
+                                                        {item.quantity}x
+                                                    </span>
+                                                    <span className="font-bold text-neutral-800 text-[15px]">{item.name}</span>
+                                                </div>
+                                                <span className="font-black text-neutral-900 text-[15px]">₹{item.price * item.quantity}</span>
+                                            </div>
+                                        ))}
+                                        {(!selectedOrder.items || selectedOrder.items.length === 0) && (
+                                            <p className="text-sm text-neutral-400 italic font-medium">No items were saved for this older order.</p>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {selectedOrder.order_note && (
+                                    <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 shadow-sm">
+                                        <h4 className="text-[11px] font-black text-amber-800 uppercase tracking-[0.2em] mb-2">Order Note</h4>
+                                        <p className="text-sm text-amber-900 font-medium italic">"{selectedOrder.order_note}"</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="p-6 border-t border-neutral-100 bg-white flex justify-between items-center h-24">
+                                <div>
+                                    <p className="text-[11px] text-neutral-500 font-black uppercase tracking-[0.2em] mb-1">Total Amount</p>
+                                    <p className="text-3xl font-black text-neutral-900 tracking-tighter">₹{selectedOrder.total_amount}</p>
+                                </div>
+                                <span className={clsx(
+                                    "px-6 py-2.5 rounded-xl text-xs font-black border shadow-sm uppercase tracking-widest",
+                                    getStatusStyle(selectedOrder.order_status)
+                                )}>
+                                    {selectedOrder.order_status}
+                                </span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
