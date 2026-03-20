@@ -26,7 +26,7 @@ export async function getGlobalStats() {
         const { data: allOrders, error: ordersError } = await supabaseAdmin
             .from('orders')
             .select('total_amount, status, created_at, tenant_id, tenants(name)')
-            .neq('status', 'cancelled')
+            .eq('status', 'completed')
             .gte('created_at', sixtyDaysAgo.toISOString());
 
         if (ordersError) throw ordersError;

@@ -68,15 +68,12 @@ export default function AdminDashboard() {
     }, [orders, timeframe]);
 
     const totalRevenue = filteredOrders
-        .filter(o => o.order_status !== 'cancelled')
+        .filter(o => o.order_status === 'completed')
         .reduce((sum, o) => sum + o.total_amount, 0);
 
     const preparingCount = filteredOrders.filter(o => o.order_status === 'preparing').length;
     const completedCount = filteredOrders.filter(o => o.order_status === 'completed').length;
-
-     
-    const activeOrderCount = filteredOrders.filter(o => o.order_status !== 'cancelled').length;
-    const averageOrderValue = activeOrderCount > 0 ? Math.round(totalRevenue / activeOrderCount) : 0;
+    const averageOrderValue = completedCount > 0 ? Math.round(totalRevenue / completedCount) : 0;
 
      
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
@@ -179,7 +176,7 @@ export default function AdminDashboard() {
                     title="Total Orders"
                     value={filteredOrders.length.toString()}
                     icon={ShoppingBag}
-                    trend={`${activeOrderCount} completed`}
+                    trend={`${completedCount} completed`}
                     color="blue"
                 />
                 <StatCard

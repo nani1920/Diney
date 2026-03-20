@@ -15,7 +15,8 @@ import {
     QrCode,
     TrendingUp,
     History,
-    Layers
+    Layers,
+    ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
@@ -25,8 +26,6 @@ export default function AdminSidebar() {
     const pathname = usePathname();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
-    const [isOpen, setIsOpen] = useState(false);
-
      
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
     const baseHost = baseDomain.split(':')[0];
@@ -39,16 +38,54 @@ export default function AdminSidebar() {
         return `/${tenantSlug}${path}`;  
     };
 
-    const menuItems = [
-        { name: 'Dashboard', href: getLink('/admin'), icon: LayoutDashboard },
-        { name: 'Live Orders', href: getLink('/admin/orders'), icon: ClipboardList },
-        { name: 'Order History', href: getLink('/admin/all-orders'), icon: History },
-        { name: 'Categories', href: getLink('/admin/categories'), icon: Layers },
-        { name: 'Menu', href: getLink('/admin/menu'), icon: UtensilsCrossed },
-        { name: 'Analytics', href: getLink('/admin/analytics'), icon: TrendingUp },
-        { name: 'QR Generator', href: getLink('/admin/qr-generator'), icon: QrCode },
-        { name: 'Settings', href: getLink('/admin/settings'), icon: Store },
+    const menuSections = [
+        {
+            title: 'Overview',
+            icon: LayoutDashboard,
+            items: [
+                { name: 'Dashboard', href: getLink('/admin'), icon: LayoutDashboard },
+                { name: 'Analytics', href: getLink('/admin/analytics'), icon: TrendingUp },
+            ]
+        },
+        {
+            title: 'Order Center',
+            icon: ClipboardList,
+            items: [
+                { name: 'Live Orders', href: getLink('/admin/orders'), icon: ClipboardList },
+                { name: 'Order History', href: getLink('/admin/all-orders'), icon: History },
+            ]
+        },
+        {
+            title: 'Menu Management',
+            icon: UtensilsCrossed,
+            items: [
+                { name: 'Categories', href: getLink('/admin/categories'), icon: Layers },
+                { name: 'Menu', href: getLink('/admin/menu'), icon: UtensilsCrossed },
+            ]
+        },
+        {
+            title: 'Tools & Settings',
+            icon: QrCode,
+            items: [
+                { name: 'QR Generator', href: getLink('/admin/qr-generator'), icon: QrCode },
+                { name: 'Settings', href: getLink('/admin/settings'), icon: Store },
+            ]
+        }
     ];
+
+    const [isOpen, setIsOpen] = useState(false);
+    
+     
+    const [expandedSection, setExpandedSection] = useState<string | null>(() => {
+        const activeSection = menuSections.find(section => 
+            section.items.some(item => pathname === item.href)
+        );
+        return activeSection ? activeSection.title : 'Overview';
+    });
+
+    const toggleSection = (title: string) => {
+        setExpandedSection(prev => prev === title ? null : title);
+    };
 
     return (
         <>
@@ -87,34 +124,91 @@ export default function AdminSidebar() {
                     </div>
 
                     { }
-                    <nav className="flex-1 p-4 space-y-2 mt-4">
-                        {menuItems.map((item) => {
-                            const isActive = pathname === item.href;
-                            const Icon = item.icon;
+                    <nav className="flex-1 px-3 py-6 space-y-4 overflow-y-auto scrollbar-hide">
+                        {menuSections.map((section) => {
+                            const isExpanded = expandedSection === section.title;
+                            const hasActiveItem = section.items.some(item => pathname === item.href);
 
                             return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className="relative block"
-                                >
-                                    {isActive && (
+                                <div key={section.title} className="space-y-1">
+                                    <button 
+                                        onClick={() => toggleSection(section.title)}
+                                        className={clsx(
+                                            "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group",
+                                            isExpanded ? "bg-white/5 shadow-sm" : "hover:bg-white/5"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={clsx(
+                                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+                                                hasActiveItem ? "bg-green-500 text-black shadow-lg shadow-green-500/20" : 
+                                                isExpanded ? "bg-neutral-700 text-neutral-300" : "bg-neutral-800 text-neutral-500 group-hover:text-neutral-300"
+                                            )}>
+                                                <section.icon className="w-4 h-4" />
+                                            </div>
+                                            <span className={clsx(
+                                                "text-sm font-bold tracking-tight transition-colors duration-300",
+                                                hasActiveItem ? "text-white" : 
+                                                isExpanded ? "text-neutral-200" : "text-neutral-400 group-hover:text-neutral-200"
+                                            )}>
+                                                {section.title}
+                                            </span>
+                                        </div>
+                                        <ChevronDown className={clsx(
+                                            "w-4 h-4 text-neutral-600 group-hover:text-neutral-400 transition-all duration-500",
+                                            isExpanded && "rotate-180 text-neutral-400"
+                                        )} />
+                                    </button>
+
+                                    <div className="relative ml-7 overflow-hidden">
+                                        {isExpanded && (
+                                            <div className="absolute left-0 top-0 bottom-0 w-px bg-neutral-800/50" />
+                                        )}
+                                        
                                         <motion.div
-                                            layoutId="activeTab"
-                                            className="absolute inset-0 bg-green-500/10 border-r-4 border-green-500 rounded-lg"
                                             initial={false}
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
-                                    <div className={clsx(
-                                        "relative flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200",
-                                        isActive ? "text-green-400 font-medium" : "text-neutral-400 hover:text-white hover:bg-neutral-800"
-                                    )}>
-                                        <Icon className="w-5 h-5" />
-                                        <span>{item.name}</span>
+                                            animate={{ 
+                                                height: isExpanded ? 'auto' : 0,
+                                                opacity: isExpanded ? 1 : 0
+                                            }}
+                                            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                                            className="space-y-1 pt-1"
+                                        >
+                                            {section.items.map((item) => {
+                                                const isActive = pathname === item.href;
+                                                const ItemIcon = item.icon;
+
+                                                return (
+                                                    <Link
+                                                        key={item.href}
+                                                        href={item.href}
+                                                        onClick={() => setIsOpen(false)}
+                                                        className={clsx(
+                                                            "group relative flex items-center gap-3 pl-6 pr-4 py-2.5 rounded-r-xl transition-all duration-300",
+                                                            isActive 
+                                                                ? "text-green-400 bg-green-500/10" 
+                                                                : "text-neutral-500 hover:text-neutral-200 hover:bg-white/5"
+                                                        )}
+                                                    >
+                                                        {isActive && (
+                                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-2/3 bg-green-500 rounded-full" />
+                                                        )}
+                                                        <ItemIcon className={clsx(
+                                                            "w-4 h-4 transition-transform duration-300 group-hover:scale-110",
+                                                            isActive ? "text-green-400" : "text-neutral-600 group-hover:text-neutral-400"
+                                                        )} />
+                                                        <span className={clsx(
+                                                            "text-[13px] transition-all duration-300",
+                                                            isActive ? "font-bold tracking-tight" : "font-medium"
+                                                        )}>
+                                                            {item.name}
+                                                        </span>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </motion.div>
                                     </div>
-                                </Link>
+                                </div>
                             );
                         })}
                     </nav>

@@ -15,7 +15,7 @@ export async function getStoreAnalytics(
       .from('orders')
       .select('id, total_amount, status, created_at, customer_name, customer_mobile, order_items(id, name, price, quantity)')
       .eq('tenant_id', tenantId)
-      .neq('status', 'cancelled');
+      .eq('status', 'completed');
 
     const now = new Date();
     if (timeframe === 'today') {
