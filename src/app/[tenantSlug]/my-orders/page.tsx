@@ -20,12 +20,12 @@ export default function MyOrdersPage() {
     const router = useRouter();
     const tenantSlug = params.tenantSlug as string;
 
-    // Sync mobile filter when customer data loads from store
+    // Initial sync of mobile filter when customer data loads
     useEffect(() => {
-        if (customer?.mobile && !mobileFilter) {
+        if (customer?.mobile) {
             setMobileFilter(customer.mobile);
         }
-    }, [customer?.mobile, mobileFilter]);
+    }, [customer?.mobile]);
 
     useEffect(() => {
         const loadOrders = async () => {

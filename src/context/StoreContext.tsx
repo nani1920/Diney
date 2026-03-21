@@ -1,9 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import type { PromoCode, TenantConfig } from '@/types';
-import { getTenantData, updateTenantConfig } from '@/app/actions/tenant';
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from 'react';
+import type { TenantConfig } from '@/types';
+import { updateTenantConfig } from '@/app/actions/tenant';
 import { toast } from 'react-hot-toast';
+import { useStoreStore } from '@/store/useStoreStore';
+import { usePathname } from 'next/navigation';
 
 export interface TenantData {
     id: string;
@@ -37,67 +39,32 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
-    const [tenant, setTenant] = useState<TenantData | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
+    // 1. Get stable actions from Zustand
+    const fetchStoreDataStore = useStoreStore(s => s.fetchStoreData);
+    const initializeSession = useStoreStore(s => s.initializeSession);
+    const setCustomer = useStoreStore(s => s.setCustomer);
+    const setIsStoreOpen = useStoreStore(s => s.setIsStoreOpen);
+    const setIsAdmin = useStoreStore(s => s.setIsAdmin);
+    const setTenant = useStoreStore(s => s.setTenant);
 
-    const [isStoreOpen, setIsStoreOpen] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [customer, setCustomer] = useState<{ name: string; mobile: string } | null>(null);
-    const [sessionId, setSessionId] = useState<string | null>(null);
-    const [openingTime, setOpeningTimeState] = useState('10:00');
-    const [closingTime, setClosingTimeState] = useState('22:00');
+    // 2. Get selective state from Zustand
+    const tenant = useStoreStore(s => s.tenant);
+    const customer = useStoreStore(s => s.customer);
+    const isStoreOpen = useStoreStore(s => s.isStoreOpen);
+    const isInitialLoading = useStoreStore(s => s.isInitialLoading);
+    const isAdmin = useStoreStore(s => s.isAdmin);
+    const sessionId = useStoreStore(s => s.sessionId);
 
-    useEffect(() => {
-        const savedName = localStorage.getItem('customerName');
-        const savedMobile = localStorage.getItem('customerMobile');
-        if (savedName && savedMobile) {
-            setCustomer({ name: savedName, mobile: savedMobile });
-        }
-
-        let sId = localStorage.getItem('sessionId');
-        if (!sId) {
-            sId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = Math.random() * 16 | 0;
-                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-            });
-            localStorage.setItem('sessionId', sId);
-        }
-        setSessionId(sId);
-    }, []);
-
-    const updateCustomer = (name: string, mobile: string) => {
-        localStorage.setItem('customerName', name);
-        localStorage.setItem('customerMobile', mobile);
-        setCustomer({ name, mobile });
-    };
-
+    // 3. Memoized Bridge Actions
     const fetchStoreData = useCallback(async (slug: string) => {
-        setIsInitialLoading(true);
-        try {
-            const tenantRes = await getTenantData(slug);
-            if (!tenantRes.success || !tenantRes.data) {
-                setTenant(null);
-                toast.error(tenantRes.error || 'Store not found');
-                return;
-            }
-            const tenantData = tenantRes.data;
-            setTenant(tenantData);
+        await fetchStoreDataStore(slug);
+    }, [fetchStoreDataStore]);
 
-            if (tenantData.config) {
-                setIsStoreOpen(tenantData.config.isStoreOpen ?? true);
-                setOpeningTimeState(tenantData.config.openingTime ?? '10:00');
-                setClosingTimeState(tenantData.config.closingTime ?? '22:00');
-            }
-        } catch (error) {
-            console.error('Failed to fetch store data:', error);
-            toast.error('Error loading store data');
-        } finally {
-            setIsInitialLoading(false);
-        }
-    }, []);
+    const updateCustomer = useCallback((name: string, mobile: string) => {
+        setCustomer(name, mobile);
+    }, [setCustomer]);
 
-    const toggleStoreStatus = async () => {
+    const toggleStoreStatus = useCallback(async () => {
         if (!tenant) return;
         const newStatus = !isStoreOpen;
         setIsStoreOpen(newStatus);
@@ -106,59 +73,64 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         if (result.success) {
             setTenant({ ...tenant, config: newConfig });
         } else {
-            toast.error('Failed to update store status');
+            toast.error('Failed to update status');
             setIsStoreOpen(!newStatus);
         }
-    };
+    }, [tenant, isStoreOpen, setIsStoreOpen, setTenant]);
 
-    const setOpeningTime = async (time: string) => {
+    const setOpeningTime = useCallback(async (time: string) => {
         if (!tenant) return;
-        const previousTime = openingTime;
-        setOpeningTimeState(time);
-        
         const newConfig = { ...tenant.config, openingTime: time };
         const result = await updateTenantConfig(tenant.id, tenant.slug, newConfig);
-        if (result.success) {
-            setTenant({ ...tenant, config: newConfig });
-        } else {
-            setOpeningTimeState(previousTime);
-            toast.error('Failed to update opening time');
-        }
-    };
+        if (result.success) setTenant({ ...tenant, config: newConfig });
+    }, [tenant, setTenant]);
 
-    const setClosingTime = async (time: string) => {
+    const setClosingTime = useCallback(async (time: string) => {
         if (!tenant) return;
-        const previousTime = closingTime;
-        setClosingTimeState(time);
-        
         const newConfig = { ...tenant.config, closingTime: time };
         const result = await updateTenantConfig(tenant.id, tenant.slug, newConfig);
-        if (result.success) {
-            setTenant({ ...tenant, config: newConfig });
-        } else {
-            setClosingTimeState(previousTime);
-            toast.error('Failed to update closing time');
+        if (result.success) setTenant({ ...tenant, config: newConfig });
+    }, [tenant, setTenant]);
+
+    // 4. Effects
+    const store = useStoreStore();
+    const pathname = usePathname();
+
+    useEffect(() => {
+        store.initializeSession();
+    }, [store]);
+
+    useEffect(() => {
+        const isCurrentlyAdmin = pathname.includes('/admin');
+        if (store.isAdmin !== isCurrentlyAdmin) {
+            store.setIsAdmin(isCurrentlyAdmin);
         }
-    };
+    }, [pathname, store]);
+
+    const value = useMemo(() => ({
+        tenant,
+        customer,
+        isStoreOpen,
+        isInitialLoading,
+        isLoading: isInitialLoading,
+        isAdmin,
+        sessionId,
+        setIsAdmin,
+        updateCustomer,
+        fetchStoreData,
+        toggleStoreStatus,
+        openingTime: tenant?.config?.openingTime || '10:00',
+        closingTime: tenant?.config?.closingTime || '22:00',
+        setOpeningTime,
+        setClosingTime
+    }), [
+        tenant, customer, isStoreOpen, isInitialLoading, isAdmin, sessionId, 
+        setIsAdmin, updateCustomer, fetchStoreData, toggleStoreStatus,
+        setOpeningTime, setClosingTime
+    ]);
 
     return (
-        <StoreContext.Provider value={{
-            tenant,
-            isStoreOpen,
-            customer,
-            updateCustomer,
-            toggleStoreStatus,
-            openingTime,
-            closingTime,
-            setOpeningTime,
-            setClosingTime,
-            fetchStoreData,
-            isLoading,
-            isInitialLoading,
-            isAdmin,
-            setIsAdmin,
-            sessionId
-        }}>
+        <StoreContext.Provider value={value}>
             {children}
         </StoreContext.Provider>
     );
@@ -166,6 +138,6 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useStore = () => {
     const context = useContext(StoreContext);
-    if (!context) throw new Error('useStore must be used within a StoreProvider');
+    if (!context) throw new Error('useStore error');
     return context;
 };

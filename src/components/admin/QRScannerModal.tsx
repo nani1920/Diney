@@ -40,13 +40,10 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
         
         setIsVerifying(true);
         
-        // 1. Notify all other admin devices
-        broadcastQRScan(rawValue);
-
-        // 2. Find and set the order locally for this device
         const foundOrder = orders.find(o => o.order_id === rawValue || o.short_id === rawValue);
-
+        
         if (foundOrder) {
+            broadcastQRScan(foundOrder);
             if (foundOrder.order_status === 'completed') {
                 setErrorMsg('This order has already been completed.');
             } else if (foundOrder.order_status !== 'ready' && foundOrder.order_status !== 'preparing') {

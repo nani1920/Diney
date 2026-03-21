@@ -26,9 +26,9 @@ import clsx from "clsx";
 export default function Home() {
   const { 
     tenant, isStoreOpen, openingTime, closingTime, 
-    isLoading, customer 
+    isLoading: isStoreLoading, customer 
   } = useStore();
-  const { menuItems, categories } = useAdmin();
+  const { menuItems, categories, isLoading: isAdminLoading } = useAdmin();
   const { cart, addToCart, updateCartQuantity } = useCart();
   const { orders } = useOrders();
   
@@ -69,7 +69,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#FAFAF8] relative max-w-[520px] mx-auto overflow-x-hidden">
       { }
-      {tenant?.is_active === false && !isLoading && (
+      {tenant?.is_active === false && !isStoreLoading && (
         <div className="fixed inset-0 z-[60] bg-neutral-900 flex flex-col items-center justify-center p-8 text-center text-white">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center text-4xl mb-6">
@@ -238,7 +238,21 @@ export default function Home() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-3"
             >
-              {filteredItems.length === 0 ? (
+              {isAdminLoading ? (
+                /* MENU SKELETONS */
+                <div className="flex flex-col gap-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white p-4 rounded-2xl border border-neutral-200/30 flex items-center gap-4 animate-pulse">
+                      <div className="w-[88px] h-[88px] bg-neutral-100 rounded-2xl" />
+                      <div className="flex-1 space-y-3">
+                        <div className="h-4 bg-neutral-100 rounded w-2/3" />
+                        <div className="h-3 bg-neutral-100 rounded w-1/2" />
+                        <div className="h-6 bg-neutral-100 rounded w-1/4 mt-2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredItems.length === 0 ? (
                 <div className="py-16 text-center">
                   <div className="w-16 h-16 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
                     <ImageIcon className="w-8 h-8 text-neutral-200" />

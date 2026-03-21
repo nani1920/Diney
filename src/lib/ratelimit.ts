@@ -28,7 +28,7 @@ export const cartRateLimiter = new Ratelimit({
 // View Orders: Increased to 40/min to prevent blocking customers during navigation
 export const viewOrderRateLimiter = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.slidingWindow(40, "1 m"),
+  limiter: Ratelimit.slidingWindow(60, "1 m"),
   analytics: true,
   prefix: "@upstash/ratelimit/vieworder",
 });

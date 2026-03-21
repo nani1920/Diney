@@ -133,10 +133,6 @@ export async function createOrder(
       .from('order_items')
       .insert(orderItems);
 
-    if (itemsError) {
-      console.error('Error inserting order items:', itemsError);
-    }
-
     return { orderId: order.id, shortId: order.short_id };
   }, "createOrder");
 }

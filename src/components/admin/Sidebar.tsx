@@ -52,6 +52,7 @@ export default function AdminSidebar() {
             icon: ClipboardList,
             items: [
                 { name: 'Live Orders', href: getLink('/admin/orders'), icon: ClipboardList },
+                { name: 'Prep Queue', href: getLink('/admin/prep-queue'), icon: Layers },
                 { name: 'Order History', href: getLink('/admin/all-orders'), icon: History },
             ]
         },

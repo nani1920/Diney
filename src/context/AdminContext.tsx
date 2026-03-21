@@ -1,18 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { MenuItem, Customer, Category } from '@/types';
-import { 
-    getTenantMenu, 
-    upsertMenuItem, 
-    deleteMenuItemServer, 
-    getTenantCategories,
-    upsertCategory as upsertCategoryServer,
-    deleteCategory as deleteCategoryServer
-} from '@/app/actions/tenant';
-import { getTenantCustomers } from '@/app/actions/orders';
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from 'react';
+import type { MenuItem, Category, Customer } from '@/types';
 import { useStore } from '@/context/StoreContext';
-import { toast } from 'react-hot-toast';
+import { useAdminStore } from '@/store/useAdminStore';
 
 interface AdminContextType {
     menuItems: MenuItem[];
@@ -33,196 +24,79 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     const { tenant, isAdmin, setIsAdmin } = useStore();
-    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    
+    // 1. Stable actions from Zustand
+    const fetchAdminDataStore = useAdminStore(s => s.fetchAdminData);
+    const addMenuItemStore = useAdminStore(s => s.addMenuItem);
+    const updateMenuItemStore = useAdminStore(s => s.updateMenuItem);
+    const deleteMenuItemStore = useAdminStore(s => s.deleteMenuItem);
+    const upsertCategoryStore = useAdminStore(s => s.upsertCategory);
+    const deleteCategoryStore = useAdminStore(s => s.deleteCategory);
 
+    // 2. Selective state from Zustand
+    const menuItems = useAdminStore(s => s.menuItems);
+    const categories = useAdminStore(s => s.categories);
+    const customers = useAdminStore(s => s.customers);
+    const isLoading = useAdminStore(s => s.isLoading);
+
+    // 3. Memoized Bridge Actions
     const fetchAdminData = useCallback(async () => {
-        if (!tenant) return;
-        setIsLoading(true);
-        try {
-            // Fetch public and cached menu data first
-            const [menuRes, categoriesRes] = await Promise.all([
-                getTenantMenu(tenant.id, tenant.slug),
-                getTenantCategories(tenant.id)
-            ]);
-
-            if (menuRes.success) setMenuItems(menuRes.data || []);
-            if (categoriesRes.success) setCategories(categoriesRes.data || []);
-
-            // Fetch admin-heavy customer data asynchronously without blocking the UI
-            getTenantCustomers(tenant.id).then(customersRes => {
-                if (customersRes.success) {
-                    setCustomers(customersRes.data || []);
-                    setIsAdmin(true);
-                }
-            }).catch(e => console.error("Failed to fetch customers background:", e));
-
-        } finally {
-            setIsLoading(false);
+        if (tenant) {
+            await fetchAdminDataStore(tenant.id, tenant.slug);
         }
-    }, [tenant, setIsAdmin]);
+    }, [tenant?.id, tenant?.slug, fetchAdminDataStore]);
 
+    const addMenuItem = useCallback(async (item: MenuItem) => {
+        if (!tenant) return false;
+        return await addMenuItemStore(tenant.id, tenant.slug, item);
+    }, [tenant?.id, tenant?.slug, addMenuItemStore]);
+
+    const updateMenuItem = useCallback(async (item: MenuItem) => {
+        if (!tenant) return false;
+        return await updateMenuItemStore(tenant.id, tenant.slug, item);
+    }, [tenant?.id, tenant?.slug, updateMenuItemStore]);
+
+    const deleteMenuItem = useCallback(async (itemId: string) => {
+        if (!tenant) return false;
+        return await deleteMenuItemStore(tenant.id, tenant.slug, itemId);
+    }, [tenant?.id, tenant?.slug, deleteMenuItemStore]);
+
+    const upsertCategory = useCallback(async (category: Partial<Category>) => {
+        if (!tenant) return false;
+        return await upsertCategoryStore(tenant.id, tenant.slug, category);
+    }, [tenant?.id, tenant?.slug, upsertCategoryStore]);
+
+    const deleteCategory = useCallback(async (categoryId: string) => {
+        if (!tenant) return false;
+        return await deleteCategoryStore(tenant.id, tenant.slug, categoryId);
+    }, [tenant?.id, tenant?.slug, deleteCategoryStore]);
+
+    // 4. Effects
     useEffect(() => {
         fetchAdminData();
     }, [fetchAdminData]);
 
-    const addMenuItem = async (item: MenuItem) => {
-        if (!tenant) return false;
-        
-        const previousMenu = [...menuItems];
-        const optimisticId = item.id || 'temp-' + Date.now();
-        const optimisticItem = { ...item, id: optimisticId };
-        
-        setMenuItems((prev) => [...prev, optimisticItem]);
-        
-        try {
-            const result = await upsertMenuItem(tenant.id, tenant.slug, item);
-            if (result.success && result.data) {
-                const itemData = result.data as MenuItem & { is_available?: boolean };
-                const mappedItem: MenuItem = {
-                    ...itemData,
-                    availability_status: itemData.is_available ?? itemData.availability_status
-                };
-                setMenuItems((prev) => 
-                    prev.map(i => i.id === optimisticId ? mappedItem : i)
-                );
-                toast.success('Item added successfully');
-                return true;
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            setMenuItems(previousMenu);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast.error('Failed to add item: ' + message);
-            return false;
-        }
-    };
-
-    const updateMenuItem = async (item: MenuItem) => {
-        if (!tenant) return false;
-        
-        const previousMenu = [...menuItems];
-        setMenuItems((prev) => prev.map((i) => (i.id === item.id ? { ...item } : i)));
-        
-        try {
-            const result = await upsertMenuItem(tenant.id, tenant.slug, item);
-            if (result.success && result.data) {
-                const itemData = result.data as MenuItem & { is_available?: boolean };
-                const mappedItem: MenuItem = {
-                    ...itemData,
-                    availability_status: itemData.is_available ?? itemData.availability_status
-                };
-                setMenuItems((prev) => prev.map((i) => (i.id === item.id ? mappedItem : i)));
-                toast.success('Item updated successfully');
-                return true;
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            setMenuItems(previousMenu);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast.error('Failed to update item: ' + message);
-            return false;
-        }
-    };
-
-    const deleteMenuItem = async (itemId: string) => {
-        if (!tenant) return false;
-        
-        const previousMenu = [...menuItems];
-        setMenuItems((prev) => prev.filter((i) => i.id !== itemId));
-        
-        try {
-            const result = await deleteMenuItemServer(tenant.id, tenant.slug, itemId);
-            if (result.success) {
-                toast.success('Item deleted successfully');
-                return true;
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            setMenuItems(previousMenu);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast.error('Failed to delete item: ' + message);
-            return false;
-        }
-    };
-
-    const upsertCategory = async (category: Partial<Category>) => {
-        if (!tenant) return false;
-        
-        const previousCategories = [...categories];
-        const isNew = !category.id;
-        const optimisticId = category.id || 'temp-' + Date.now();
-        const optimisticCategory = { ...category, id: optimisticId } as Category;
-        
-        if (isNew) {
-            setCategories((prev) => [...prev, optimisticCategory]);
-        } else {
-            setCategories((prev) => prev.map(c => c.id === category.id ? optimisticCategory : c));
-        }
-        
-        try {
-            const result = await upsertCategoryServer(tenant.id, tenant.slug, category);
-            if (result.success) {
-                if (isNew && result.data) {
-                    setCategories((prev) => 
-                        prev.map(c => c.id === optimisticId ? result.data as Category : c)
-                    );
-                }
-                toast.success(isNew ? 'Category created' : 'Category updated');
-                return true;
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            setCategories(previousCategories);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast.error('Failed to save category: ' + message);
-            return false;
-        }
-    };
-
-    const deleteCategory = async (categoryId: string) => {
-        if (!tenant) return false;
-        
-        const previousCategories = [...categories];
-        setCategories((prev) => prev.filter(c => c.id !== categoryId));
-        
-        try {
-            const result = await deleteCategoryServer(tenant.id, tenant.slug, categoryId);
-            if (result.success) {
-                toast.success('Category deleted');
-                return true;
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            setCategories(previousCategories);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast.error('Failed to delete category: ' + message);
-            return false;
-        }
-    };
+    const value = useMemo(() => ({
+        menuItems,
+        categories,
+        customers,
+        isLoading,
+        isAdmin,
+        setIsAdmin,
+        fetchAdminData,
+        addMenuItem,
+        updateMenuItem,
+        deleteMenuItem,
+        upsertCategory,
+        deleteCategory
+    }), [
+        menuItems, categories, customers, isLoading, isAdmin, setIsAdmin, 
+        fetchAdminData, addMenuItem, updateMenuItem, deleteMenuItem, 
+        upsertCategory, deleteCategory
+    ]);
 
     return (
-        <AdminContext.Provider value={{
-            menuItems,
-            categories,
-            customers,
-            isAdmin,
-            setIsAdmin,
-            addMenuItem,
-            updateMenuItem,
-            deleteMenuItem,
-            upsertCategory,
-            deleteCategory,
-            fetchAdminData,
-            isLoading
-        }}>
+        <AdminContext.Provider value={value}>
             {children}
         </AdminContext.Provider>
     );
@@ -230,6 +104,6 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAdmin = () => {
     const context = useContext(AdminContext);
-    if (!context) throw new Error('useAdmin must be used within an AdminProvider');
+    if (!context) throw new Error('useAdmin error');
     return context;
 };
