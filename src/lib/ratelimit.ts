@@ -10,9 +10,10 @@ export const actionRateLimiter = new Ratelimit({
 });
 
  
+// Order Creation: Range [10, 20]. Current: 15 (50% increase from 10)
 export const orderRateLimiter = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.slidingWindow(2, "1 m"),
+  limiter: Ratelimit.slidingWindow(15, "1 m"),
   analytics: true,
   prefix: "@upstash/ratelimit/order",
 });
@@ -24,9 +25,10 @@ export const cartRateLimiter = new Ratelimit({
   prefix: "@upstash/ratelimit/cart",
 });
 
+// View Orders: Range [10, 20]. Current: 15 (50% increase from 10)
 export const viewOrderRateLimiter = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.slidingWindow(20, "1 m"),
+  limiter: Ratelimit.slidingWindow(15, "1 m"),
   analytics: true,
   prefix: "@upstash/ratelimit/vieworder",
 });

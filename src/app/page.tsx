@@ -24,7 +24,8 @@ export default function SovereignLanding() {
    const [isChecking, setIsChecking] = useState(true);
 
    const { scrollYProgress } = useScroll();
-   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+   const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20, restDelta: 0.001 });
+   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     
    const heroOpacity = useTransform(smoothProgress, [0, 0.15], [1, 0]);
@@ -77,20 +78,20 @@ export default function SovereignLanding() {
          <div className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#025E43]/[0.03] blur-[150px] rounded-full pointer-events-none" />
 
          { }
-         <div className="fixed top-8 left-0 right-0 z-[100] px-6 md:px-12 flex justify-center">
+         <div className="fixed top-4 md:top-8 left-0 right-0 z-[100] px-4 md:px-12 flex justify-center">
             <motion.nav
                initial={{ y: -100, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-               className="w-full max-w-[1100px] glass-morphism py-4 px-10 flex items-center justify-between rounded-[2.5rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)] border border-white/50"
+               className="w-full max-w-[1100px] glass-morphism py-3 md:py-4 px-6 md:px-10 flex items-center justify-between rounded-[1.5rem] md:rounded-[2.5rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)] border border-white/50 backdrop-blur-2xl"
             >
                <div className="flex items-center">
-                  <img src="/logo.png" alt="Diney" className="h-10 w-auto hover:opacity-80 transition-all cursor-pointer transform scale-[1.5] origin-left ml-2" />
+                  <img src="/logo.png" alt="Diney" className="h-8 md:h-10 w-auto hover:opacity-80 transition-all cursor-pointer transform scale-[1.2] md:scale-[1.5] origin-left ml-2" />
                </div>
 
                <div className="hidden md:flex items-center gap-12">
                   {['Features', 'Market', 'Pricing'].map(item => (
-                     <a key={item} href={`#${item.toLowerCase()}`} className="relative group text-[10px] font-black uppercase tracking-[0.3em] text-black/50 hover:text-black transition-all">
+                     <a key={item} href={`#${item.toLowerCase()}`} className="relative group text-[11px] font-black uppercase tracking-[0.3em] text-black/50 hover:text-black transition-all">
                         <span>{item}</span>
                         <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-[#025E43] group-hover:w-full transition-all duration-500" />
                      </a>
@@ -102,17 +103,61 @@ export default function SovereignLanding() {
 
                { }
                <div className="md:hidden flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-black/5 flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-black/10 transition-colors">
-                     <div className="w-4 h-[1.5px] bg-black" />
-                     <div className="w-4 h-[1.5px] bg-black" />
-                  </div>
+                  <button 
+                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                     className="w-10 h-10 rounded-full bg-black/5 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-black/10 transition-colors z-[101]"
+                  >
+                     <motion.div 
+                        animate={mobileMenuOpen ? { rotate: 45, y: 3.5 } : { rotate: 0, y: 0 }}
+                        className="w-5 h-[1.5px] bg-black origin-center" 
+                     />
+                     <motion.div 
+                        animate={mobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+                        className="w-5 h-[1.5px] bg-black" 
+                     />
+                     <motion.div 
+                        animate={mobileMenuOpen ? { rotate: -45, y: -3.5 } : { rotate: 0, y: 0 }}
+                        className="w-5 h-[1.5px] bg-black origin-center" 
+                     />
+                  </button>
                </div>
             </motion.nav>
+
+            { }
+            <motion.div
+               initial={false}
+               animate={mobileMenuOpen ? { opacity: 1, y: 0, pointerEvents: 'auto' } : { opacity: 0, y: -20, pointerEvents: 'none' }}
+               className="absolute top-20 left-4 right-4 bg-white/95 backdrop-blur-3xl rounded-[2rem] p-8 shadow-2xl border border-black/5 z-[99] md:hidden"
+            >
+               <div className="flex flex-col gap-8">
+                  {['Features', 'Market', 'Pricing'].map((item, idx) => (
+                     <motion.a 
+                        key={item} 
+                        href={`#${item.toLowerCase()}`} 
+                        onClick={() => setMobileMenuOpen(false)}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={mobileMenuOpen ? { opacity: 1, x: 0 } : {}}
+                        transition={{ delay: idx * 0.1 }}
+                        className="text-2xl font-black uppercase tracking-tighter text-black/40 hover:text-[#025E43] transition-colors"
+                     >
+                        {item}
+                     </motion.a>
+                  ))}
+                  <div className="h-[1px] bg-black/5 w-full" />
+                  <Link 
+                     href="/admin/login" 
+                     className="w-full py-5 bg-[#1A1A1A] text-white rounded-2xl flex items-center justify-center font-black uppercase tracking-[0.2em] text-sm"
+                     onClick={() => setMobileMenuOpen(false)}
+                  >
+                     Initialize Node
+                  </Link>
+               </div>
+            </motion.div>
          </div>
 
          <main>
             { }
-            <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-12">
+            <section className="relative min-h-screen flex flex-col items-center justify-center pt-44 md:pt-32 pb-20 px-6 md:px-12">
                <motion.div
                   initial="hidden"
                   animate="visible"
@@ -137,7 +182,7 @@ export default function SovereignLanding() {
                      }}
                      className="space-y-4 text-center"
                   >
-                     <h1 className="text-[4.5rem] md:text-[8.5rem] font-black leading-[0.85] tracking-[-0.08em] holographic-text">
+                     <h1 className="text-[3.5rem] md:text-[8.5rem] font-black leading-[0.9] md:leading-[0.85] tracking-[-0.08em] holographic-text will-change-transform">
                         Boost Profits with <br />
                         <span className="font-serif-lux italic font-normal text-gradient-emerald">QR Ordering.</span>
                      </h1>
@@ -159,7 +204,7 @@ export default function SovereignLanding() {
                         hidden: { opacity: 0, scale: 0.95 },
                         visible: { opacity: 1, scale: 1, transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
                      }}
-                     className="flex flex-col sm:flex-row gap-8 justify-center pt-12"
+                     className="flex flex-col sm:flex-row gap-6 md:gap-8 justify-center pt-20 md:pt-12"
                   >
                    <Link href="/admin/login" className="group relative flex items-center gap-6 px-14 py-6 bg-[#1A1A1A] text-white rounded-full font-black text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-[#025E43] hover:-translate-y-2 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] overflow-hidden border border-white/10">
                      <span className="relative z-20">Initialize Account</span>
@@ -180,26 +225,26 @@ export default function SovereignLanding() {
                </motion.div>
 
              { }
-            <motion.div 
-               initial={{ opacity: 0, y: 120 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
-               className="mt-32 w-full max-w-[1400px] relative px-10 group perspective-3000"
-            >
+               <motion.div 
+                  initial={{ opacity: 0, y: 120 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                  className="mt-10 md:mt-32 w-full max-w-[1400px] relative px-4 md:px-10 group perspective-3000"
+               >
                { }
                <motion.div 
                   whileHover={{ rotateX: 3, rotateY: -3, scale: 1.03 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative z-10 aspect-[16/9] bg-white rounded-[4.5rem] p-4 border border-white/20 shadow-[0_150px_250px_-80px_rgba(0,0,0,0.25)] overflow-hidden transform-style-3d cursor-crosshair"
+                  className="relative z-10 aspect-[3/4] md:aspect-[16/9] bg-white rounded-[1.5rem] md:rounded-[4.5rem] p-1.5 md:p-4 border border-white/20 shadow-[0_100px_200px_-50px_rgba(0,0,0,0.15)] overflow-hidden transform-style-3d cursor-crosshair"
                >
                  <img 
                     src="/dashboard.jpg" 
                     alt="Diney Sovereign Dashboard" 
-                    className="w-full h-full object-cover rounded-[3.8rem] brightness-[1.01] contrast-[1.02]"
+                    className="w-full h-full object-cover rounded-[1.2rem] md:rounded-[3.8rem] brightness-[1.01] contrast-[1.02]"
                  />
                  
                  { }
-                 <div className="absolute top-[45%] left-1/2 -translate-x-1/2 pointer-events-none z-30">
+                 <div className="hidden md:block absolute top-[45%] left-1/2 -translate-x-1/2 pointer-events-none z-30">
                     <motion.div 
                        animate={{ y: [0, -10, 0] }}
                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -219,7 +264,7 @@ export default function SovereignLanding() {
                  initial={{ x: 100, opacity: 0 }}
                  whileInView={{ x: 0, opacity: 1 }}
                  transition={{ delay: 1.2, duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-                 className="absolute -top-12 -right-6 z-20 w-80 glass-morphism p-8 rounded-[2.5rem] shadow-2xl border border-white/50 backdrop-blur-3xl"
+                 className="hidden md:block absolute -top-12 -right-6 z-20 w-80 glass-morphism p-8 rounded-[2.5rem] shadow-2xl border border-white/50 backdrop-blur-3xl"
               >
                  <div className="space-y-6">
                     <div className="flex justify-between items-end">
@@ -252,9 +297,9 @@ export default function SovereignLanding() {
                  initial={{ x: -100, opacity: 0 }}
                  whileInView={{ x: 0, opacity: 1 }}
                  transition={{ delay: 1.4, duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-                 className="absolute -bottom-12 -left-8 z-20 w-72 bg-black/[0.92] backdrop-blur-2xl p-8 rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/10"
+                 className="hidden md:block absolute -bottom-12 -left-8 z-20 w-72 bg-black/[0.92] backdrop-blur-2xl p-8 rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/10"
               >
-                 <div className="flex items-center gap-6">
+                 <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                     <div className="w-14 h-14 bg-[#025E43] rounded-2xl flex items-center justify-center shadow-lg shadow-[#025E43]/20">
                        <Zap className="text-white" size={24} />
                     </div>
@@ -284,7 +329,7 @@ export default function SovereignLanding() {
             </section>
 
             { }
-            <section id="features" className="pt-24 pb-48 bg-white relative overflow-hidden mesh-gradient-aura scroll-mt-32">
+            <section id="features" className="pt-40 md:pt-24 pb-48 bg-white relative overflow-hidden mesh-gradient-aura scroll-mt-32 md:scroll-mt-32">
                { }
                <div className="absolute top-[10%] left-[-10%] w-[60%] h-[60%] bg-[#025E43]/[0.05] blur-[180px] rounded-full pointer-events-none animate-pulse-slow" />
                <div className="absolute bottom-[10%] right-[-10%] w-[50%] h-[50%] bg-[#025E43]/[0.03] blur-[150px] rounded-full pointer-events-none" />
@@ -329,7 +374,7 @@ export default function SovereignLanding() {
             <ProtocolReveal />
             <PricingSection />
 
-            <section className="py-72 px-6 md:px-12 relative overflow-hidden bg-white">
+            <section className="py-32 md:py-72 px-6 md:px-12 relative overflow-hidden bg-white">
                <motion.div 
                   initial={{ opacity: 0, scale: 0.98 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -356,12 +401,12 @@ export default function SovereignLanding() {
                         Join the elite tier of restaurant owners who leverage Diney to scale their profitability and service quality.
                      </p>
                      <div className="flex flex-col sm:flex-row gap-10 justify-center pt-12 items-center">
-                        <Link href="/admin/login" className="group relative px-16 py-8 bg-white text-black rounded-full font-bold text-2xl transition-all hover:scale-105 active:scale-95 shadow-2xl">
+                        <Link href="/admin/login" className="group relative px-10 md:px-16 py-4 md:py-8 bg-white text-black rounded-full font-bold text-lg md:text-2xl transition-all hover:scale-105 active:scale-95 shadow-2xl">
                            <span className="relative z-20">Initialize Account</span>
                            <div className="absolute inset-[2px] bg-[#025E43] scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 rounded-full z-10" />
                            <span className="absolute inset-0 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30">Initialize Account</span>
                         </Link>
-                        <Link href="/legal/contact" className="px-16 py-8 border border-white/10 text-white rounded-full font-bold text-2xl hover:bg-white/5 transition-all hover:border-white/30 backdrop-blur-sm flex items-center justify-center">
+                        <Link href="/legal/contact" className="px-10 md:px-16 py-4 md:py-8 border border-white/10 text-black rounded-full font-bold text-lg md:text-2xl hover:bg-black/5 transition-all hover:border-black/30 backdrop-blur-sm flex items-center justify-center text-center">
                            Book Consultant
                         </Link>
                      </div>
@@ -372,7 +417,7 @@ export default function SovereignLanding() {
          </main>
 
          { }
-          <footer className="pt-32 pb-8 px-12 bg-[#0A0A0A] relative overflow-hidden border-t border-white/5">
+          <footer className="pt-24 md:pt-32 pb-12 px-6 md:px-12 bg-[#0A0A0A] relative overflow-hidden border-t border-white/5 text-center md:text-left">
              { }
              <div className="absolute top-0 left-1/4 w-[50%] h-[50%] bg-[#025E43]/[0.05] blur-[150px] rounded-full pointer-events-none" />
              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#025E43]/[0.02] blur-[120px] rounded-full pointer-events-none" />
@@ -380,26 +425,26 @@ export default function SovereignLanding() {
              <div className="w-full max-w-[1440px] mx-auto relative z-10 flex flex-col gap-12">
                 <div className="flex flex-col lg:flex-row justify-between gap-12">
                    <div className="space-y-8">
-                      <div className="flex items-center gap-6">
+                      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                          <img src="/logo.png" alt="Diney" className="h-12 w-auto" />
-                         <span className="text-5xl font-serif-lux text-white tracking-tighter">Diney</span>
+                         <span className="text-4xl md:text-5xl font-serif-lux text-white tracking-tighter">Diney</span>
                          <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/10 backdrop-blur-md">
                             <span className="text-[10px] font-black text-[#025E43] uppercase tracking-[0.3em]">Sovereign v2.4</span>
                          </div>
                       </div>
-                      <p className="text-xl text-white/30 font-medium max-w-sm leading-relaxed tracking-tight">
+                      <p className="text-lg md:text-xl text-white/30 font-medium max-w-sm mx-auto md:mx-0 leading-relaxed tracking-tight">
                          The infrastructure layer for elite hospitality. Defining the future of sovereign restaurant operations.
                       </p>
                       
                       { }
                       <div className="pt-4">
-                         <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl w-fit backdrop-blur-xl">
+                         <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto md:mx-0 backdrop-blur-xl">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse-slow shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
                             <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">All Systems Nominal</span>
                          </div>
                       </div>
                    </div>
-                   <div className="grid grid-cols-2 lg:grid-cols-12 gap-16 lg:gap-8">
+                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
                       <div className="lg:col-span-3">
                          <FooterList 
                             title="Index" 
@@ -431,7 +476,7 @@ export default function SovereignLanding() {
                       </div>
                       
                       { }
-                      <div className="lg:col-span-4 space-y-10">
+                      <div className="lg:col-span-4 space-y-8 md:space-y-10 border-t border-white/5 pt-12 lg:pt-0 lg:border-t-0">
                          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#025E43]">Join Our Newsletter</p>
                          <div className="space-y-6">
                             <p className="text-xl font-bold text-white/40 leading-relaxed">Efficiency is on the Menu.</p>
@@ -453,8 +498,8 @@ export default function SovereignLanding() {
                    </div>
                 </div>
 
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-[11px] font-black uppercase tracking-[0.5em] text-white/20">
-                   <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
+                <div className="pt-8 border-t border-white/5 flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-8 text-[10px] md:text-[11px] font-black uppercase tracking-[0.5em] text-white/20">
+                   <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-16 text-center lg:text-left">
                       <p>© 2026 DINEY / MATKACAFE OPERATIONS</p>
                       <div className="flex gap-10">
                          <Link href="/legal/privacy" className="hover:text-white cursor-pointer transition-colors duration-500">GDPR Compliant</Link>
@@ -529,8 +574,8 @@ function PricingSection() {
    ];
 
    return (
-      <section id="pricing" className="py-48 bg-white relative overflow-hidden scroll-mt-32">
-         <div className="w-full max-w-[1440px] mx-auto px-12 md:px-24">
+      <section id="pricing" className="pt-40 md:py-48 pb-32 bg-white relative overflow-hidden scroll-mt-32 md:scroll-mt-32">
+         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-24">
             <motion.div 
                initial={{ opacity: 0, y: 30 }}
                whileInView={{ opacity: 1, y: 0 }}
@@ -553,7 +598,7 @@ function PricingSection() {
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ delay: idx * 0.15, duration: 1 }}
                      viewport={{ once: true }}
-                     className={`relative group p-12 rounded-[4rem] border transition-all duration-700 ${tier.accent ? 'bg-[#1A1A1A] border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)]' : 'bg-[#FCFAF7] border-black/[0.03] hover:shadow-2xl'}`}
+                     className={`relative group p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] border transition-all duration-700 ${tier.accent ? 'bg-[#1A1A1A] border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)]' : 'bg-[#FCFAF7] border-black/[0.03] hover:shadow-2xl'}`}
                   >
                      {tier.accent && (
                         <div className="absolute top-0 right-0 w-full h-full bg-[#025E43]/[0.1] blur-[100px] pointer-events-none -z-10" />
@@ -566,7 +611,7 @@ function PricingSection() {
                         </div>
 
                         <div className="flex items-baseline gap-2">
-                           <span className={`text-6xl font-black tracking-tighter ${tier.accent ? 'text-white' : 'text-black'}`}>{tier.price}</span>
+                           <span className={`text-5xl md:text-6xl font-black tracking-tighter ${tier.accent ? 'text-white' : 'text-black'}`}>{tier.price}</span>
                            <span className={`text-lg font-medium ${tier.accent ? 'text-white/40' : 'text-black/30'}`}>{tier.period}</span>
                         </div>
 
@@ -676,8 +721,8 @@ function ProtocolReveal() {
    ];
 
    return (
-      <section id="market" ref={containerRef} className="relative h-[450vh] bg-[#FCFAF7] scroll-mt-32">
-         <div className="sticky top-0 h-screen w-full flex overflow-hidden">
+      <section id="market" ref={containerRef} className="relative h-[450vh] bg-[#FCFAF7] scroll-mt-32 md:scroll-mt-32">
+         <div className="sticky top-0 h-screen w-full flex overflow-hidden relative">
             { }
             <div className="hidden lg:flex w-1/2 h-full flex-col justify-center px-24 border-r border-black/[0.03] bg-white">
                <motion.div 
@@ -697,7 +742,7 @@ function ProtocolReveal() {
             { }
             <div className="w-full lg:w-1/2 h-full relative">
                { }
-               <div className="lg:hidden absolute top-12 left-0 right-0 px-8 z-30 text-center">
+               <div className="lg:hidden absolute top-24 left-0 right-0 px-8 z-30 text-center">
                   <h2 className="text-[3rem] font-bold tracking-tight">The Protocol</h2>
                </div>
 
@@ -726,7 +771,7 @@ function RevealLayer({ step, index, scrollYProgress }: { step: any, index: numbe
    return (
       <motion.div 
          style={{ opacity, x, scale }}
-         className="absolute inset-0 flex flex-col justify-center px-12 md:px-24 bg-white/5 backdrop-blur-3xl"
+         className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 bg-white/5 backdrop-blur-3xl z-10"
       >
          <div className="space-y-12">
             <div className="w-24 h-24 bg-white border border-black/[0.03] rounded-3xl flex items-center justify-center text-[#025E43] shadow-2xl">
@@ -737,8 +782,8 @@ function RevealLayer({ step, index, scrollYProgress }: { step: any, index: numbe
                   <span className="text-[12px] font-black text-[#025E43] tracking-[0.4em] uppercase">Stage {step.number}</span>
                   <div className="h-[1px] w-12 bg-[#025E43]/20" />
                </div>
-               <h4 className="text-[3.5rem] md:text-[5rem] font-bold tracking-[-0.05em] leading-[0.9]">{step.title}</h4>
-               <p className="text-xl md:text-2xl text-black/40 font-medium leading-relaxed max-wxl">
+               <h4 className="text-[2.8rem] md:text-[5rem] font-bold tracking-[-0.05em] leading-[0.9]">{step.title}</h4>
+               <p className="text-lg md:text-2xl text-black/40 font-medium leading-relaxed max-w-xl">
                   {step.desc}
                </p>
             </div>

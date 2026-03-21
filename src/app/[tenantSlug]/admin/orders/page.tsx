@@ -1,6 +1,7 @@
 'use client';
 
 import { useStore } from '@/context/StoreContext';
+import { useOrders } from '@/context/OrderContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Clock,
@@ -22,7 +23,7 @@ import { useEffect, useState, useRef } from 'react';
 type TabStatus = 'received' | 'preparing' | 'ready';
 
 export default function AdminOrdersPage() {
-    const { orders } = useStore();
+    const { orders } = useOrders();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [activeTab, setActiveTab] = useState<TabStatus>('received');
     const [searchQuery, setSearchQuery] = useState('');
@@ -227,7 +228,7 @@ function KanbanColumn({ title, count, children, color, icon: Icon }: any) {
 }
 
 function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
-    const { updateOrderStatus } = useStore();
+    const { updateOrderStatus } = useOrders();
 
     const colors = "border-neutral-100 hover:border-neutral-200";
 

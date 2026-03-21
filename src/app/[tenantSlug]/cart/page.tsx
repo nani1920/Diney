@@ -1,13 +1,13 @@
 'use client';
 
-import { useStore } from '@/context/StoreContext';
+import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Minus, Plus, Ticket, ArrowRight, Trash2, ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
-    const { cart, updateCartQuantity } = useStore();
+    const { cart, updateCartQuantity } = useCart();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
 
@@ -64,7 +64,7 @@ export default function CartPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, x: -50 }}
                                     transition={{ delay: index * 0.04, duration: 0.3 }}
-                                    key={item.id}
+                                    key={item.uniqueId}
                                     className="bg-white p-4 rounded-2xl border border-neutral-200/30 flex items-center gap-4 shadow-sm shadow-neutral-100/40"
                                 >
                                     { }
@@ -88,7 +88,7 @@ export default function CartPage() {
                                             <div className="flex items-center bg-emerald-600 rounded-xl overflow-hidden shadow-sm shadow-emerald-600/20">
                                                 <motion.button
                                                     whileTap={{ scale: 0.85 }}
-                                                    onClick={() => updateCartQuantity(item.id, -1)}
+                                                    onClick={() => updateCartQuantity(item.uniqueId, -1)}
                                                     className="w-9 h-9 flex items-center justify-center text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
                                                 >
                                                     {item.quantity === 1 ? <Trash2 className="w-3.5 h-3.5" /> : <Minus className="w-4 h-4" />}
@@ -96,7 +96,7 @@ export default function CartPage() {
                                                 <span className="text-white text-[14px] font-bold w-7 text-center">{item.quantity}</span>
                                                 <motion.button
                                                     whileTap={{ scale: 0.85 }}
-                                                    onClick={() => updateCartQuantity(item.id, 1)}
+                                                    onClick={() => updateCartQuantity(item.uniqueId, 1)}
                                                     className="w-9 h-9 flex items-center justify-center text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
                                                 >
                                                     <Plus className="w-4 h-4" />

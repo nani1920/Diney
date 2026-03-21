@@ -8,6 +8,14 @@ import { redirect } from 'next/navigation';
 import { ensureSuperAdmin } from '@/lib/auth-utils';
 import { withErrorHandling } from '@/lib/server-utils';
 
+interface RawStatsOrder {
+    total_amount: number;
+    status: string;
+    created_at: string;
+    tenant_id: string;
+    tenants: { name: string } | null | any;
+}
+
 export async function getGlobalStats() {
     return withErrorHandling(async () => {
         await ensureSuperAdmin();
@@ -32,11 +40,11 @@ export async function getGlobalStats() {
         if (ordersError) throw ordersError;
 
          
-        const currentOrders = allOrders.filter((o: any) => new Date(o.created_at) >= thirtyDaysAgo);
-        const previousOrders = allOrders.filter((o: any) => new Date(o.created_at) < thirtyDaysAgo);
+        const currentOrders = (allOrders as RawStatsOrder[] || []).filter((o: RawStatsOrder) => new Date(o.created_at) >= thirtyDaysAgo);
+        const previousOrders = (allOrders as RawStatsOrder[] || []).filter((o: RawStatsOrder) => new Date(o.created_at) < thirtyDaysAgo);
 
-        const totalRevenue = currentOrders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
-        const prevRevenue = previousOrders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
+        const totalRevenue = currentOrders.reduce((sum: number, o: RawStatsOrder) => sum + (Number(o.total_amount) || 0), 0);
+        const prevRevenue = previousOrders.reduce((sum: number, o: RawStatsOrder) => sum + (Number(o.total_amount) || 0), 0);
         
         const revenueGrowth = prevRevenue === 0 ? 100 : Math.round(((totalRevenue - prevRevenue) / prevRevenue) * 100);
 
@@ -47,7 +55,7 @@ export async function getGlobalStats() {
             hourlyTrend[h.toISOString()] = 0;
         }
 
-        currentOrders.forEach((o: any) => {
+        currentOrders.forEach((o: RawStatsOrder) => {
             const orderDate = new Date(o.created_at);
             orderDate.setMinutes(0, 0, 0);
             const key = orderDate.toISOString();
@@ -61,9 +69,9 @@ export async function getGlobalStats() {
             .sort((a, b) => a.date.localeCompare(b.date));
 
         const tenantPerformance: Record<string, { name: string, revenue: number, orders: number }> = {};
-        currentOrders.forEach((o: any) => {
+        currentOrders.forEach((o: RawStatsOrder) => {
             const tId = o.tenant_id;
-            const tName = (o.tenants as any)?.name || 'Unknown';
+            const tName = (o.tenants as { name: string } | null)?.name || 'Unknown';
             if (!tenantPerformance[tId]) {
                 tenantPerformance[tId] = { name: tName, revenue: 0, orders: 0 };
             }

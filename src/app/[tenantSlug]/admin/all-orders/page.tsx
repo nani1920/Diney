@@ -1,6 +1,7 @@
 'use client';
 
 import { useStore } from '@/context/StoreContext';
+import { useOrders } from '@/context/OrderContext';
 import { 
     Search, 
     Filter, 
@@ -20,7 +21,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 export default function AllOrdersPage() {
-    const { orders, tenant } = useStore();
+    const { tenant } = useStore();
+    const { orders } = useOrders();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
     const [searchQuery, setSearchQuery] = useState('');

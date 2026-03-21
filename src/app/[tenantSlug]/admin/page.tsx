@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useStore } from '@/context/StoreContext';
+import { useOrders } from '@/context/OrderContext';
 import Link from 'next/link';
 import clsx from 'clsx';
 import {
@@ -22,7 +23,8 @@ import {
 import { useParams } from 'next/navigation';
 
 export default function AdminDashboard() {
-    const { orders, tenant } = useStore();
+    const { tenant } = useStore();
+    const { orders } = useOrders();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
     const [timeframe, setTimeframe] = useState('all');

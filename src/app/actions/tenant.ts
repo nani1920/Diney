@@ -13,8 +13,8 @@ export async function getTenantData(slug: string) {
     const cacheKey = getCacheKey(slug, 'config');
     
      
-    const cached = await redis.get(cacheKey) as any;
-    if (cached && cached.owner_id) {
+    const cached = await redis.get(cacheKey) as MenuItem[] | null;
+    if (cached) {
       return cached;
     }
 
@@ -67,7 +67,7 @@ export async function getTenantMenu(tenantId: string, slug: string) {
      
     await redis.set(cacheKey, mappedItems, { ex: DEFAULT_TTL });
 
-    return mappedItems as any[];
+    return mappedItems as MenuItem[];
   }, "getTenantMenu");
 }
 
@@ -121,7 +121,7 @@ export async function registerTenant(name: string, slug: string, ownerId?: strin
 }
  
 
-export async function upsertMenuItem(tenantId: string, slug: string, item: any) {
+export async function upsertMenuItem(tenantId: string, slug: string, item: Partial<MenuItem>) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
     
@@ -202,7 +202,7 @@ export async function deleteMenuItemServer(tenantId: string, slug: string, itemI
     return true;
   }, "deleteMenuItemServer");
 }
-export async function updateTenantConfig(tenantId: string, slug: string, config: any) {
+export async function updateTenantConfig(tenantId: string, slug: string, config: Record<string, unknown>) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
      
@@ -236,7 +236,7 @@ export async function getTenantCategories(tenantId: string) {
   }, "getTenantCategories");
 }
 
-export async function upsertCategory(tenantId: string, slug: string, category: any) {
+export async function upsertCategory(tenantId: string, slug: string, category: Record<string, unknown>) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
     const { data, error } = await supabaseAdmin

@@ -124,7 +124,7 @@ export default function AdminSidebar() {
                     </div>
 
                     { }
-                    <nav className="flex-1 px-3 py-6 space-y-4 overflow-y-auto scrollbar-hide">
+                    <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto scrollbar-hide">
                         {menuSections.map((section) => {
                             const isExpanded = expandedSection === section.title;
                             const hasActiveItem = section.items.some(item => pathname === item.href);
@@ -134,7 +134,7 @@ export default function AdminSidebar() {
                                     <button 
                                         onClick={() => toggleSection(section.title)}
                                         className={clsx(
-                                            "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group",
+                                            "w-full flex items-center justify-between px-4 py-2 rounded-xl transition-all duration-300 group",
                                             isExpanded ? "bg-white/5 shadow-sm" : "hover:bg-white/5"
                                         )}
                                     >

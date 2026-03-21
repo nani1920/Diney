@@ -17,7 +17,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         const name = key + "=";
         const ca = document.cookie.split(';');
         for(let i = 0; i < ca.length; i++) {
-          let c = ca[i].trim();
+          const c = ca[i].trim();
           if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
         }
         return null;
@@ -52,4 +52,4 @@ export const supabaseAdmin = supabaseServiceKey
         persistSession: false
       }
     })
-  : null as any;
+  : null as (ReturnType<typeof createClient> | null) as any;

@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 import './globals.css';
 import { StoreProvider } from '@/context/StoreContext';
+import { AdminProvider } from '@/context/AdminContext';
+import { OrderProvider } from '@/context/OrderContext';
+import { CartProvider } from '@/context/CartContext';
 import DomainGuard from '@/components/auth/DomainGuard';
 
 const outfit = Outfit({ subsets: ['latin'] });
@@ -25,10 +28,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={outfit.className}>
+      <body className={outfit.className} suppressHydrationWarning={true}>
         <StoreProvider>
-          <DomainGuard />
-          {children}
+          <AdminProvider>
+            <CartProvider>
+              <OrderProvider>
+                <DomainGuard />
+                {children}
+              </OrderProvider>
+            </CartProvider>
+          </AdminProvider>
         </StoreProvider>
       </body>
     </html>

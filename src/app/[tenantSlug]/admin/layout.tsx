@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { exitImpersonation } from '@/app/actions/super-admin';
 import { ShieldAlert, LogOut } from 'lucide-react';
+import { isSuperAdmin } from '@/lib/auth-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,8 +56,13 @@ export default async function AdminLayout({
         redirect(`${mainDomain}/admin/login?returnTo=${encodeURIComponent(currentUrl)}`);
     }
 
-     
-    if (user && !isImpersonating && tenant?.owner_id !== user.id) {
+    if (isImpersonating) {
+        const isAdmin = await isSuperAdmin();
+        if (!isAdmin) {
+            console.error(`[Security Violation] Non-admin user attempted to spoof impersonation cookie for ${tenantSlug}`);
+            redirect(`${mainDomain}/admin/login?error=forbidden`);
+        }
+    } else if (user && tenant?.owner_id !== user.id) {
         console.warn(`[Security Alert] User ${user.id} attempted unauthorized access to tenant ${tenantSlug}. Owner: ${tenant?.owner_id}`);
         redirect(`${mainDomain}/admin/dashboard`);
     }

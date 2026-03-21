@@ -1,6 +1,9 @@
 "use client";
 
 import { useStore } from "@/context/StoreContext";
+import { useAdmin } from "@/context/AdminContext";
+import { useCart } from "@/context/CartContext";
+import { useOrders } from "@/context/OrderContext";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,10 +24,12 @@ import clsx from "clsx";
 
 export default function Home() {
   const { 
-    tenant, menuItems, categories, addToCart, updateCartQuantity, 
-    cart, orders, isStoreOpen, openingTime, closingTime, 
+    tenant, isStoreOpen, openingTime, closingTime, 
     isLoading, customer 
   } = useStore();
+  const { menuItems, categories } = useAdmin();
+  const { cart, addToCart, updateCartQuantity } = useCart();
+  const { orders } = useOrders();
   
   const [activeCategoryId, setActiveCategoryId] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,7 +59,7 @@ export default function Home() {
     });
   }, [menuItems, activeCategoryId, searchQuery]);
 
-  const getItemInCart = (itemId: string) => cart.find(c => c.id === itemId);
+  const getItemInCart = (itemId: string) => cart.find(c => c.uniqueId === `${itemId}-[]`);
 
   const activeCategoryLabel = activeCategoryId === "all" 
     ? "All Items" 
@@ -298,7 +303,7 @@ export default function Home() {
                           {item.availability_status && (
                             cartItem ? (
                               <div className="flex items-center bg-emerald-600 h-9 rounded-xl overflow-hidden shadow-lg shadow-emerald-600/10">
-                                <button onClick={() => updateCartQuantity(item.id, -1)}
+                                <button onClick={() => updateCartQuantity(cartItem.uniqueId, -1)}
                                   className="w-9 h-9 flex items-center justify-center text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors">
                                   <Minus className="w-3.5 h-3.5" strokeWidth={3} />
                                 </button>

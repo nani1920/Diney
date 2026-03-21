@@ -35,15 +35,15 @@ export async function verifyTenantOwnership(tenantId: string) {
              
              
              
-            
-            const cacheKeySlug = `slug_to_id:${impersonationTarget}`;
+            const targetSlug = impersonationTarget.toLowerCase();
+            const cacheKeySlug = `slug_to_id:${targetSlug}`;
             let targetId = await redis.get(cacheKeySlug) as string;
             
             if (!targetId) {
                 const { data } = await supabaseAdmin
                     .from('tenants')
                     .select('id')
-                    .eq('slug', impersonationTarget)
+                    .eq('slug', targetSlug)
                     .single();
                 if (data) {
                     targetId = data.id;
@@ -51,7 +51,7 @@ export async function verifyTenantOwnership(tenantId: string) {
                 }
             }
 
-            if (targetId === tenantId || impersonationTarget === tenantId) return true;
+            if (targetId === tenantId || targetSlug === tenantId.toLowerCase()) return true;
         }
     }
 

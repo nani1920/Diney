@@ -18,7 +18,7 @@ export type MenuItem = {
   master_product_id?: string;
 };
 
-export type ServerActionResult<T = any> = {
+export type ServerActionResult<T = unknown> = {
   success: boolean;
   data?: T;
   error?: string;
@@ -26,6 +26,8 @@ export type ServerActionResult<T = any> = {
 };
 
 export type CartItem = MenuItem & {
+  cart_id?: string; // Database primary key
+  uniqueId: string; // UI unique identifier (menuItemId + customizations)
   quantity: number;
   customizations?: Customization[];  
 };
@@ -41,7 +43,7 @@ export type PromoCode = {
 export type OrderStatus = 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled';
 
 export type OrderItem = {
-  id: string;
+  id?: string;
   name: string;
   price: number;
   quantity: number;
@@ -70,4 +72,18 @@ export type Customer = {
   mobile: string;
   total_spent: number;
   last_order_date: string;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  display_order: number;
+  tenant_id?: string;
+};
+
+export type TenantConfig = {
+  isStoreOpen?: boolean;
+  openingTime?: string;
+  closingTime?: string;
+  [key: string]: any;
 };

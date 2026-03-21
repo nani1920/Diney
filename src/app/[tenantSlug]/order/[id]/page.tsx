@@ -1,6 +1,9 @@
 'use client';
 
 import { useStore } from '@/context/StoreContext';
+import { useOrders } from '@/context/OrderContext';
+import { useCart } from '@/context/CartContext';
+import { useAdmin } from '@/context/AdminContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -12,7 +15,10 @@ import { useRouter } from 'next/navigation';
 export default function OrderStatusPage() {
     const params = useParams();
     const router = useRouter();
-    const { orders, reorderPastOrder, menuItems, fetchCustomerOrders, tenant } = useStore();
+    const { tenant } = useStore();
+    const { orders, fetchCustomerOrders } = useOrders();
+    const { reorderPastOrder } = useCart();
+    const { menuItems } = useAdmin();
     const [order, setOrder] = useState<Order | null>(null);
     const [hasSynced, setHasSynced] = useState(false);
 

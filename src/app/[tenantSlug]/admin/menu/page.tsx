@@ -1,6 +1,7 @@
 "use client";
 
 import { useStore } from "@/context/StoreContext";
+import { useAdmin } from "@/context/AdminContext";
 import { MenuItem } from "@/types";
 import { useState, useEffect } from "react";
 import {
@@ -9,7 +10,6 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTenantCategories } from "@/app/actions/tenant";
 import { getMasterProducts } from "@/app/actions/super-admin";
 import { toast } from "react-hot-toast";
 
@@ -25,10 +25,10 @@ const generateUUID = () => {
 };
 
 export default function MenuManagementPage() {
-  const { tenant, menuItems, addMenuItem, updateMenuItem, deleteMenuItem } = useStore();
+  const { tenant } = useStore();
+  const { menuItems, addMenuItem, updateMenuItem, deleteMenuItem, categories } = useAdmin();
 
    
-  const [categories, setCategories] = useState<any[]>([]);
   const [masterProducts, setMasterProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,14 +51,9 @@ export default function MenuManagementPage() {
   }, [tenant?.id]);
 
   const loadData = async () => {
-     
-    if (categories.length === 0) setIsLoading(true);
-    
-    const [catRes, masterRes] = await Promise.all([
-      getTenantCategories(tenant!.id),
-      getMasterProducts()
-    ]);
-    if (catRes.success) setCategories(catRes.data || []);
+    if (!tenant) return;
+    setIsLoading(true);
+    const masterRes = await getMasterProducts();
     if (masterRes.success) setMasterProducts(masterRes.data || []);
     setIsLoading(false);
   };

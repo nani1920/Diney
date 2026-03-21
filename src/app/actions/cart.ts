@@ -27,7 +27,8 @@ export async function getCart(tenantId: string, sessionId: string) {
             cart_id: item.id,
             ...item.menu_item,
             quantity: item.quantity,
-            customizations: item.customizations
+            customizations: item.customizations,
+            uniqueId: `${item.menu_item.id}-${JSON.stringify(item.customizations || [])}`
         }));
     }, "getCart");
 }
@@ -52,8 +53,9 @@ export async function addToCartDB(tenantId: string, sessionId: string, menuItemI
                 .update({ quantity: existing.quantity + 1 })
                 .eq('id', existing.id);
             if (error) throw error;
+            return existing.id;
         } else {
-            const { error } = await supabaseAdmin
+            const { data, error } = await supabaseAdmin
                 .from('carts')
                 .insert({
                     tenant_id: tenantId,
@@ -61,11 +63,12 @@ export async function addToCartDB(tenantId: string, sessionId: string, menuItemI
                     menu_item_id: menuItemId,
                     quantity: 1,
                     customizations
-                });
+                })
+                .select('id')
+                .single();
             if (error) throw error;
+            return data.id;
         }
-
-        return true;
     }, "addToCartDB");
 }
 

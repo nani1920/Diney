@@ -1,11 +1,12 @@
 'use server';
 
 import { supabaseAdmin } from '@/lib/supabase';
-import { Order, CartItem, Customer, ServerActionResult } from '@/types';
-import { ensureTenantOwner } from '@/lib/auth-utils';
+import { Order, OrderItem, CartItem, OrderStatus, Customization, ServerActionResult } from '@/types';
+import { ensureTenantOwner, isSuperAdmin } from '@/lib/auth-utils';
 import { OrderSchema } from '@/lib/validations';
 import { orderRateLimiter, viewOrderRateLimiter } from '@/lib/ratelimit';
 import { withErrorHandling } from '@/lib/server-utils';
+import { cookies } from 'next/headers';
 
 function generateShortId() {
   const chars = '0123456789';
@@ -42,6 +43,30 @@ export async function createOrder(
     });
 
      
+    // [SECURITY FIX S3] Server-side Price Verification
+    const menuItemIds = validatedData.items.map(i => i.id).filter(Boolean) as string[];
+    const { data: liveItems, error: itemsFetchError } = await supabaseAdmin
+      .from('menu_items')
+      .select('id, price')
+      .in('id', menuItemIds);
+
+    if (itemsFetchError) throw itemsFetchError;
+
+    const priceMap: Record<string, number> = {};
+    liveItems?.forEach((item: any) => {
+      priceMap[item.id] = Number(item.price);
+    });
+
+    let serverTotal = 0;
+    validatedData.items.forEach((item: OrderItem) => {
+      const livePrice = item.id ? priceMap[item.id] : item.price; // Fallback to client price if not found (shouldn't happen for valid items)
+      serverTotal += (livePrice || 0) * item.quantity;
+    });
+
+    // Override with server-calculated total for database insertion
+    const finalTotal = serverTotal || validatedData.totalAmount;
+
+    // Verify the tenant exists and is active
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
       .select('status')
@@ -56,7 +81,7 @@ export async function createOrder(
       throw new Error(`Store is currently ${tenant.status}. Orders are not being accepted.`);
     }
 
-     
+    // Insert the order
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
@@ -64,7 +89,7 @@ export async function createOrder(
         short_id: generateShortId(),
         customer_name: validatedData.customerName,
         customer_mobile: validatedData.customerMobile,
-        total_amount: validatedData.totalAmount,
+        total_amount: finalTotal, // Use verified total
         status: 'received'
       })
       .select()
@@ -74,11 +99,25 @@ export async function createOrder(
       throw new Error(`Order creation failed`);
     }
 
-     
+    // [SECURITY FIX S2] Set a secure cookie to "authorize" this mobile for this browser session
+    // We set it on the base domain if available so it works across subdomains
+    const cookieStore = await cookies();
+    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN?.split(':')[0]; // Remove port if present
+    const isLocalhost = baseDomain === 'localhost' || baseDomain === 'lvh.me' || !baseDomain;
+
+    cookieStore.set(`auth_mobile_${validatedData.tenantId}`, validatedData.customerMobile, {
+        maxAge: 3600 * 24 * 30, // 30 days
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        sameSite: 'lax',
+        ...(isLocalhost ? {} : { domain: `.${baseDomain}` }) // Share across subdomains in prod
+    });
+
     const orderItems = validatedData.items.map(item => ({
       order_id: order.id,
       name: item.name,
-      price: item.price,
+      price: item.id ? priceMap[item.id] : item.price, // Use verified price
       quantity: item.quantity,
       image_url: item.image_url
     }));
@@ -189,25 +228,75 @@ export async function getCustomerOrders(tenantId: string, customerMobile: string
 
     if (error) throw error;
 
+    // [SECURITY FIX S2.1] Device-Locked History Lookup
+    // We only return orders if the browser has a matching session cookie
+    // (set when they placed an order on this specific device).
+    const authedMobile = (await cookies()).get(`auth_mobile_${tenantId}`)?.value;
+    
+    if (authedMobile !== customerMobile) {
+      // If not authenticated for this number on this device, return nothing.
+      // This prevents malicious actors from "guessing" numbers to see other people's PII.
+      return [];
+    }
+
     return (data || []).map((o: any) => ({
-      order_id: o.id,
-      short_id: o.short_id || o.id.replace(/\D/g, '').slice(0, 6) || '000000',
-      customer_name: o.customer_name,
-      customer_mobile: o.customer_mobile,
-      order_note: o.order_note,
+      order_id: o.id as string,
+      short_id: (o.short_id as string) || (o.id as string).replace(/\D/g, '').slice(0, 6) || '000000',
+      customer_name: (o.customer_name as string) || 'Guest',
+      customer_mobile: (o.customer_mobile as string).replace(/.(?=.{4})/g, 'X'), // Mask mobile for safety: XXXXXX1234
+      order_note: o.order_note as string,
       total_amount: Number(o.total_amount),
-      order_status: o.status,
-      order_time: o.created_at,
+      order_status: o.status as OrderStatus,
+      order_time: o.created_at as string,
       items: (o.order_items || []).map((oi: any) => ({
-        id: oi.id,
-        name: oi.name,
+        id: oi.id as string,
+        name: oi.name as string,
         price: Number(oi.price),
-        quantity: oi.quantity,
-        image_url: oi.image_url,
-        customizations: oi.customizations
+        quantity: oi.quantity as number,
+        image_url: oi.image_url as string,
+        customizations: oi.customizations as Customization[]
       }))
     }));
   }, "getCustomerOrders");
+}
+
+export async function getAuthenticatedOrder(orderId: string, tenantId: string) {
+  return withErrorHandling(async () => {
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .select('*, order_items(*)')
+      .eq('id', orderId)
+      .eq('tenant_id', tenantId)
+      .single();
+
+    if (error) throw error;
+    if (!data) return null;
+
+    // Strict Device Check
+    const authedMobile = (await cookies()).get(`auth_mobile_${tenantId}`)?.value;
+    if (authedMobile !== data.customer_mobile) {
+      return null; // Not authorized on this device
+    }
+
+    return {
+      order_id: data.id,
+      short_id: data.short_id || data.id.replace(/\D/g, '').slice(0, 6) || '000000',
+      customer_name: data.customer_name as string,
+      customer_mobile: (data.customer_mobile as string).replace(/.(?=.{4})/g, 'X'),
+      order_note: data.order_note as string,
+      total_amount: Number(data.total_amount),
+      order_status: data.status as OrderStatus,
+      order_time: data.created_at as string,
+      items: (data.order_items || []).map((oi: any) => ({
+        id: oi.id as string,
+        name: oi.name as string,
+        price: Number(oi.price),
+        quantity: oi.quantity as number,
+        image_url: oi.image_url as string,
+        customizations: oi.customizations as Customization[]
+      }))
+    } as Order;
+  }, "getAuthenticatedOrder");
 }
 
 export async function getOrderById(orderId: string, tenantId: string): Promise<ServerActionResult<Order>> {
@@ -225,19 +314,19 @@ export async function getOrderById(orderId: string, tenantId: string): Promise<S
     return {
       order_id: data.id,
       short_id: data.short_id || data.id.replace(/\D/g, '').slice(0, 6) || '000000',
-      customer_name: data.customer_name,
-      customer_mobile: data.customer_mobile,
-      order_note: data.order_note,
+      customer_name: data.customer_name as string,
+      customer_mobile: (data.customer_mobile as string).replace(/.(?=.{4})/g, 'X'), // Mask mobile: XXXXXX1234
+      order_note: data.order_note as string,
       total_amount: Number(data.total_amount),
-      order_status: data.status,
-      order_time: data.created_at,
+      order_status: data.status as OrderStatus,
+      order_time: data.created_at as string,
       items: (data.order_items || []).map((oi: any) => ({
-        id: oi.id,
-        name: oi.name,
+        id: oi.id as string,
+        name: oi.name as string,
         price: Number(oi.price),
-        quantity: oi.quantity,
-        image_url: oi.image_url,
-        customizations: oi.customizations
+        quantity: oi.quantity as number,
+        image_url: oi.image_url as string,
+        customizations: oi.customizations as Customization[]
       }))
     };
   }, "getOrderById");

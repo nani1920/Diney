@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useStore } from '@/context/StoreContext';
+import { useCart } from '@/context/CartContext';
+import { useOrders } from '@/context/OrderContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
@@ -9,7 +11,9 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, User, Phone, StickyNote, CreditCard, ChevronRight, MapPin } from 'lucide-react';
 
 export default function CheckoutPage() {
-    const { cart, placeOrder, clearCart, customer, updateCustomer } = useStore();
+    const { customer, updateCustomer } = useStore();
+    const { cart, clearCart } = useCart();
+    const { placeOrder } = useOrders();
     const router = useRouter();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;

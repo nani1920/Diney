@@ -1,6 +1,8 @@
 'use client';
 
 import { useStore } from '@/context/StoreContext';
+import { useOrders } from '@/context/OrderContext';
+import { useCart } from '@/context/CartContext';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,7 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package } from 'lucide-react';
 
 export default function MyOrdersPage() {
-    const { reorderPastOrder, customer, tenant, fetchCustomerOrders } = useStore();
+    const { customer, tenant } = useStore();
+    const { orders, fetchCustomerOrders } = useOrders();
+    const { reorderPastOrder } = useCart();
     const [localOrders, setLocalOrders] = useState<any[]>([]);
     const [mobileFilter, setMobileFilter] = useState(customer?.mobile || '');
     const params = useParams();
@@ -19,15 +23,12 @@ export default function MyOrdersPage() {
         const loadOrders = async () => {
              
             if (tenant && mobileFilter.length === 10) {
-                const result = await fetchCustomerOrders(tenant.id, mobileFilter);
-                 
+                await fetchCustomerOrders(tenant.id, mobileFilter);
             }
         };
         loadOrders();
     }, [tenant, mobileFilter, fetchCustomerOrders]);
 
-     
-    const { orders } = useStore();
     useEffect(() => {
         if (mobileFilter.length === 10) {
             const filtered = orders.filter(o => String(o.customer_mobile) === mobileFilter);
@@ -230,8 +231,10 @@ export default function MyOrdersPage() {
                                     <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mb-5">
                                         <Package className="w-8 h-8 text-emerald-300" />
                                     </div>
-                                    <h3 className="text-[18px] font-bold text-neutral-900 tracking-[-0.01em] mb-2">No orders yet</h3>
-                                    <p className="text-[14px] text-neutral-400 font-medium mb-6 max-w-xs">Your order history will appear here</p>
+                                    <h3 className="text-[18px] font-bold text-neutral-900 tracking-[-0.01em] mb-2">No orders found</h3>
+                                    <p className="text-[14px] text-neutral-400 font-medium mb-6 max-w-xs leading-relaxed">
+                                        For your privacy, order history is only accessible on the device used to place the orders.
+                                    </p>
                                     <Link href={`/${tenantSlug}`}>
                                         <button className="h-11 px-6 bg-emerald-600 text-white rounded-xl font-bold text-[13px] hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-600/15">
                                             Browse Menu

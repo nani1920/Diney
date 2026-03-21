@@ -2,22 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
+import { useAdmin } from "@/context/AdminContext";
 import { 
   Plus, Search, Trash2, Edit3, Grid, Save, X, GripVertical, 
   Layers, Package, ChevronRight, Hash
 } from "lucide-react";
-import { 
-  getTenantCategories, 
-  upsertCategory, 
-  deleteCategory 
-} from "@/app/actions/tenant";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function CategoriesPage() {
   const { tenant } = useStore();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { categories, upsertCategory, deleteCategory, isLoading } = useAdmin();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
@@ -25,19 +20,6 @@ export default function CategoriesPage() {
     name: "",
     display_order: 0
   });
-
-  useEffect(() => {
-    if (tenant?.id) fetchCategories();
-  }, [tenant?.id]);
-
-  const fetchCategories = async () => {
-    setIsLoading(true);
-    const result = await getTenantCategories(tenant!.id);
-    if (result.success) {
-      setCategories(result.data || []);
-    }
-    setIsLoading(false);
-  };
 
   const handleOpenModal = (item: any = null) => {
     if (item) {
@@ -65,13 +47,9 @@ export default function CategoriesPage() {
       ? { ...formData, id: editingItem.id }
       : formData;
 
-    const result = await upsertCategory(tenant.id, tenant.slug, payload);
-    if (result.success) {
-      toast.success(editingItem ? "Category updated" : "Category created");
+    const success = await upsertCategory(payload);
+    if (success) {
       setIsModalOpen(false);
-      fetchCategories();
-    } else {
-      toast.error("Failed to save category");
     }
   };
 
@@ -79,13 +57,7 @@ export default function CategoriesPage() {
     if (!tenant) return;
     if (!confirm("Are you sure? Items in this category might become uncategorized.")) return;
     
-    const result = await deleteCategory(tenant.id, tenant.slug, id);
-    if (result.success) {
-      toast.success("Category deleted");
-      fetchCategories();
-    } else {
-      toast.error("Failed to delete category");
-    }
+    await deleteCategory(id);
   };
 
   return (
