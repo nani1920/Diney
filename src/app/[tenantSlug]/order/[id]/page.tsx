@@ -11,6 +11,7 @@ import { Order } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Clock, CheckCircle2, ShoppingBag, UtensilsCrossed, Receipt, ChevronRight, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { QRCode } from 'react-qrcode-logo';
 
 export default function OrderStatusPage() {
     const params = useParams();
@@ -177,6 +178,34 @@ export default function OrderStatusPage() {
                         {order.order_status === 'completed' ? "We hope you enjoyed your legendary meal. See you again soon!" : visuals.subLabel}
                     </motion.p>
                 </div>
+
+                {/* QR Code Validation */}
+                {['received', 'preparing', 'ready'].includes(order.order_status) && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }} 
+                        animate={{ opacity: 1, scale: 1 }} 
+                        transition={{ delay: 0.2 }}
+                        className="w-full bg-white p-6 rounded-[2.5rem] border border-neutral-100 shadow-xl shadow-black/[0.02] mb-6 flex flex-col items-center text-center"
+                    >
+                        <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-4">
+                            {order.order_status === 'ready' ? "Scan at counter to collect" : "Your Pickup Code"}
+                        </p>
+                        <div className="p-4 bg-white rounded-3xl border-2 border-dashed border-emerald-100">
+                            <QRCode 
+                                value={order.order_id} 
+                                size={180} 
+                                qrStyle="dots" 
+                                eyeRadius={8} 
+                                fgColor="#059669" 
+                            />
+                        </div>
+                        {order.order_status === 'ready' && (
+                            <div className="mt-4 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold animate-pulse">
+                                READY FOR HANDOVER
+                            </div>
+                        )}
+                    </motion.div>
+                )}
 
                 {/* Details Card */}
                 <motion.div 

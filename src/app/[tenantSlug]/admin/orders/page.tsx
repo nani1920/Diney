@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect, useState, useRef } from 'react';
+import { QRScannerModal } from '@/components/admin/QRScannerModal';
 
 type TabStatus = 'received' | 'preparing' | 'ready';
 
@@ -27,6 +28,7 @@ export default function AdminOrdersPage() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [activeTab, setActiveTab] = useState<TabStatus>('received');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -99,6 +101,14 @@ export default function AdminOrdersPage() {
                         </button>
                     )}
                 </div>
+
+                <button 
+                    onClick={() => setIsScannerOpen(true)}
+                    className="h-[50px] px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 shrink-0 w-full md:w-auto justify-center"
+                >
+                    <span className="text-lg">📸</span> 
+                    Scan & Verify QR
+                </button>
             </header>
 
             { }
@@ -193,6 +203,11 @@ export default function AdminOrdersPage() {
                 </div>
 
             </div>
+
+            <QRScannerModal 
+                isOpen={isScannerOpen} 
+                onClose={() => setIsScannerOpen(false)} 
+            />
         </div>
     );
 }
