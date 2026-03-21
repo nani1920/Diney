@@ -15,15 +15,27 @@ export default function MyOrdersPage() {
     const { reorderPastOrder } = useCart();
     const [localOrders, setLocalOrders] = useState<any[]>([]);
     const [mobileFilter, setMobileFilter] = useState(customer?.mobile || '');
+    const [isLoading, setIsLoading] = useState(false);
     const params = useParams();
     const router = useRouter();
     const tenantSlug = params.tenantSlug as string;
 
+    // Sync mobile filter when customer data loads from store
+    useEffect(() => {
+        if (customer?.mobile && !mobileFilter) {
+            setMobileFilter(customer.mobile);
+        }
+    }, [customer?.mobile, mobileFilter]);
+
     useEffect(() => {
         const loadOrders = async () => {
-             
             if (tenant && mobileFilter.length === 10) {
-                await fetchCustomerOrders(tenant.id, mobileFilter);
+                setIsLoading(true);
+                try {
+                    await fetchCustomerOrders(tenant.id, mobileFilter);
+                } finally {
+                    setIsLoading(false);
+                }
             }
         };
         loadOrders();
@@ -31,7 +43,11 @@ export default function MyOrdersPage() {
 
     useEffect(() => {
         if (mobileFilter.length === 10) {
-            const filtered = orders.filter(o => String(o.customer_mobile) === mobileFilter);
+            const filtered = orders.filter(o => {
+                const orderMobile = String(o.customer_mobile).replace(/\D/g, '');
+                const filterMobile = mobileFilter.replace(/\D/g, '');
+                return orderMobile === filterMobile;
+            });
             setLocalOrders(filtered);
         } else {
             setLocalOrders([]);
@@ -121,10 +137,31 @@ export default function MyOrdersPage() {
                     </div>
                 </motion.div>
 
-                <AnimatePresence>
-                    {mobileFilter.length >= 10 && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                            { }
+                <AnimatePresence mode="wait">
+                    {isLoading ? (
+                        <motion.div 
+                            key="loading"
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }}
+                            className="space-y-4"
+                        >
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="bg-white p-5 rounded-2xl border border-neutral-100 shadow-sm animate-pulse">
+                                    <div className="flex justify-between mb-4">
+                                        <div className="space-y-2">
+                                            <div className="h-4 w-24 bg-neutral-100 rounded" />
+                                            <div className="h-3 w-32 bg-neutral-50 rounded" />
+                                        </div>
+                                        <div className="h-8 w-16 bg-neutral-100 rounded-lg" />
+                                    </div>
+                                    <div className="h-10 w-full bg-neutral-50 rounded-xl mt-4" />
+                                </div>
+                            ))}
+                        </motion.div>
+                    ) : mobileFilter.length >= 10 && (
+                        <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                            {/* Active Orders */}
                             {activeOrders.length > 0 && (
                                 <section>
                                     <h2 className="text-[12px] font-semibold text-emerald-600 uppercase tracking-wider mb-3 ml-1 flex items-center gap-2">
@@ -183,7 +220,7 @@ export default function MyOrdersPage() {
                                 </section>
                             )}
 
-                            { }
+                            {/* Past Orders */}
                             {completedOrders.length > 0 && (
                                 <section>
                                     <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Past Orders</h2>
@@ -225,7 +262,7 @@ export default function MyOrdersPage() {
                                 </section>
                             )}
 
-                            { }
+                            {/* Empty State */}
                             {activeOrders.length === 0 && completedOrders.length === 0 && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 text-center">
                                     <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mb-5">

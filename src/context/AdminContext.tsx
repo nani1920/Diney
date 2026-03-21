@@ -42,18 +42,23 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
         if (!tenant) return;
         setIsLoading(true);
         try {
-            const [menuRes, categoriesRes, customersRes] = await Promise.all([
+            // Fetch public and cached menu data first
+            const [menuRes, categoriesRes] = await Promise.all([
                 getTenantMenu(tenant.id, tenant.slug),
-                getTenantCategories(tenant.id),
-                getTenantCustomers(tenant.id)
+                getTenantCategories(tenant.id)
             ]);
 
             if (menuRes.success) setMenuItems(menuRes.data || []);
             if (categoriesRes.success) setCategories(categoriesRes.data || []);
-            if (customersRes.success) {
-                setCustomers(customersRes.data || []);
-                setIsAdmin(true);
-            }
+
+            // Fetch admin-heavy customer data asynchronously without blocking the UI
+            getTenantCustomers(tenant.id).then(customersRes => {
+                if (customersRes.success) {
+                    setCustomers(customersRes.data || []);
+                    setIsAdmin(true);
+                }
+            }).catch(e => console.error("Failed to fetch customers background:", e));
+
         } finally {
             setIsLoading(false);
         }

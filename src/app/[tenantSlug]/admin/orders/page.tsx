@@ -19,16 +19,20 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect, useState, useRef } from 'react';
-import { QRScannerModal } from '@/components/admin/QRScannerModal';
+import dynamic from 'next/dynamic';
+
+const QRScannerModal = dynamic(
+  () => import('@/components/admin/QRScannerModal').then((mod) => mod.QRScannerModal),
+  { ssr: false, loading: () => <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent flex items-center justify-center rounded-full animate-spin"></div></div> }
+);
 
 type TabStatus = 'received' | 'preparing' | 'ready';
 
 export default function AdminOrdersPage() {
-    const { orders } = useOrders();
+    const { orders, isQRScannerOpen, setIsQRScannerOpen, setQrScannedOrder } = useOrders();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [activeTab, setActiveTab] = useState<TabStatus>('received');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -103,7 +107,10 @@ export default function AdminOrdersPage() {
                 </div>
 
                 <button 
-                    onClick={() => setIsScannerOpen(true)}
+                    onClick={() => {
+                        setQrScannedOrder(null); // Reset for manual start
+                        setIsQRScannerOpen(true);
+                    }}
                     className="h-[50px] px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 shrink-0 w-full md:w-auto justify-center"
                 >
                     <span className="text-lg">📸</span> 
@@ -205,8 +212,8 @@ export default function AdminOrdersPage() {
             </div>
 
             <QRScannerModal 
-                isOpen={isScannerOpen} 
-                onClose={() => setIsScannerOpen(false)} 
+                isOpen={isQRScannerOpen} 
+                onClose={() => setIsQRScannerOpen(false)} 
             />
         </div>
     );

@@ -59,8 +59,15 @@ export async function createOrder(
 
     let serverTotal = 0;
     validatedData.items.forEach((item: OrderItem) => {
-      const livePrice = item.id ? priceMap[item.id] : item.price; // Fallback to client price if not found (shouldn't happen for valid items)
-      serverTotal += (livePrice || 0) * item.quantity;
+      const livePrice = item.id ? priceMap[item.id] : item.price;
+      
+      // [SECURITY REVENUE LOCK] 
+      // Since customization prices are not currently stored in the master menu_items table,
+      // we treat them as "Free Special Instructions" on the server.
+      // This prevents a malicious actor from sending a negative price in the customizations JSON.
+      const itemCustomizationsTotal = 0; 
+      
+      serverTotal += ((Number(livePrice) || 0) + itemCustomizationsTotal) * item.quantity;
     });
 
     // Override with server-calculated total for database insertion
@@ -243,7 +250,7 @@ export async function getCustomerOrders(tenantId: string, customerMobile: string
       order_id: o.id as string,
       short_id: (o.short_id as string) || (o.id as string).replace(/\D/g, '').slice(0, 6) || '000000',
       customer_name: (o.customer_name as string) || 'Guest',
-      customer_mobile: (o.customer_mobile as string).replace(/.(?=.{4})/g, 'X'), // Mask mobile for safety: XXXXXX1234
+      customer_mobile: (o.customer_mobile as string), // Remove masking for authenticated requests
       order_note: o.order_note as string,
       total_amount: Number(o.total_amount),
       order_status: o.status as OrderStatus,

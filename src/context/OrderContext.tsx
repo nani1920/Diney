@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { Order, OrderStatus } from '@/types';
 import { createOrder as createCloudOrder, updateOrderStatusServer, getTenantOrders, getCustomerOrders, getOrderById, getAuthenticatedOrder } from '@/app/actions/orders';
 import { supabase } from '@/lib/supabase';
@@ -16,15 +16,26 @@ interface OrderContextType {
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
     fetchCustomerOrders: (tenantId: string, mobile: string) => Promise<Order[]>;
     refreshOrders: () => Promise<void>;
+    isQRScannerOpen: boolean;
+    setIsQRScannerOpen: (isOpen: boolean) => void;
+    qrScannedOrder: Order | null;
+    setQrScannedOrder: (order: Order | null) => void;
+    broadcastQRScan: (orderId: string) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
-    const { tenant, isAdmin } = useStore();
+    const { tenant, isAdmin, customer } = useStore();
     const { cart, appliedPromo } = useCart();
     const [orders, setOrders] = useState<Order[]>([]);
+    const ordersRef = useRef<Order[]>([]);
     const pathname = usePathname();
+
+    // Keep the ref updated with the latest orders for the realtime listeners
+    useEffect(() => {
+        ordersRef.current = orders;
+    }, [orders]);
 
     const fetchCustomerOrders = useCallback(async (tenantId: string, mobile: string) => {
         const result = await getCustomerOrders(tenantId, mobile);
@@ -65,7 +76,43 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [tenant, isAdmin, refreshOrders]);
 
-    // Real-time listener
+    const [isPollingFallback, setIsPollingFallback] = useState(false);
+
+    // HTTP Polling Fallback (Activated only when WebSockets fail)
+    useEffect(() => {
+        if (!isPollingFallback || !tenant) return;
+
+        console.warn('Realtime Socket unavailable. Starting 15s HTTP Polling Fallback...');
+        const interval = setInterval(() => {
+            if (isAdmin) {
+                refreshOrders();
+            } else if (customer?.mobile) {
+                fetchCustomerOrders(tenant.id, customer.mobile);
+            }
+        }, 15000);
+
+        return () => clearInterval(interval);
+    }, [isPollingFallback, tenant, isAdmin, customer, refreshOrders, fetchCustomerOrders]);
+
+    const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+    const [qrScannedOrder, setQrScannedOrder] = useState<Order | null>(null);
+
+    // Broadcast a QR scan event to all other admin devices
+    const broadcastQRScan = useCallback((orderId: string) => {
+        if (!tenant || !isAdmin) return;
+        
+        supabase.channel(`tenant_orders_${tenant.id}`).send({
+            type: 'broadcast',
+            event: 'qr_scanned',
+            payload: { 
+                orderId,
+                isInternal: true,
+                sourceTenantId: tenant.id
+            }
+        });
+    }, [tenant, isAdmin]);
+
+    // Real-time listener with Auto-Healing & QR Broadcast Sync
     useEffect(() => {
         if (!tenant) return;
 
@@ -99,15 +146,53 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
                 } else if (payload.eventType === 'UPDATE') {
                     const updatedOrder = payload.new;
                     setOrders(prev => prev.map(o => o.order_id === updatedOrder.id ? { ...o, order_status: updatedOrder.status } : o));
+                    
+                    // AUTO-CLOSE SYNC: If the currently scanned order is completed by another admin, close the popups everywhere.
+                    if (updatedOrder.status === 'completed') {
+                        setQrScannedOrder(prev => {
+                            if (prev?.order_id === updatedOrder.id) {
+                                setIsQRScannerOpen(false);
+                                return null;
+                            }
+                            return prev;
+                        });
+                    }
                 } else if (payload.eventType === 'DELETE') {
                     const deletedId = payload.old.id;
                     setOrders(prev => prev.filter(o => o.order_id !== deletedId));
                 }
             })
-            .subscribe();
+            // [SECURITY HARDENING S2] Verify broadcast source signature
+            // This prevents customers from spamming "Order Scanned" popups on admin tablets.
+            .on('broadcast', { event: 'qr_scanned' }, (payload) => {
+                const { orderId, isInternal, sourceTenantId } = payload.payload;
+                if (isAdmin && orderId && isInternal && sourceTenantId === tenant?.id) {
+                    // Use ordersRef.current to avoid closing/opening the socket just to refresh this listener
+                    const foundOrder = ordersRef.current.find(o => o.order_id === orderId || o.short_id === orderId);
+                    if (foundOrder) {
+                        setQrScannedOrder(foundOrder);
+                        setIsQRScannerOpen(true);
+                        playNotificationChime();
+                    }
+                }
+            });
+
+        channel.subscribe((status) => {
+            console.log(`Supabase Realtime Status: ${status}`);
+            if (status === 'SUBSCRIBED') {
+                setIsPollingFallback(prev => {
+                    if (prev) {
+                        toast.success('Real-time connection restored', { position: 'bottom-center', style: { fontSize: '12px' } });
+                    }
+                    return false;
+                });
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                setIsPollingFallback(true);
+            }
+        });
 
         return () => { supabase.removeChannel(channel); };
-    }, [tenant, isAdmin]);
+    }, [tenant, isAdmin, customer, pathname]);
 
     const placeOrder = async (customerData: { name: string; mobile: string; note?: string }) => {
         if (!tenant) { toast.error('Store data not loaded'); return null; }
@@ -167,7 +252,12 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
             placeOrder,
             updateOrderStatus,
             fetchCustomerOrders,
-            refreshOrders
+            refreshOrders,
+            isQRScannerOpen,
+            setIsQRScannerOpen,
+            qrScannedOrder,
+            setQrScannedOrder,
+            broadcastQRScan
         }}>
             {children}
         </OrderContext.Provider>

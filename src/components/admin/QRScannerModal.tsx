@@ -15,20 +15,15 @@ interface QRScannerModalProps {
 }
 
 export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
-    const { orders, updateOrderStatus } = useOrders();
-    const [scannedOrderId, setScannedOrderId] = useState<string | null>(null);
-    const [scannedOrder, setScannedOrder] = useState<Order | null>(null);
+    const { orders, updateOrderStatus, qrScannedOrder, setQrScannedOrder, broadcastQRScan } = useOrders();
     const [isVerifying, setIsVerifying] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    // Reset state when modal opens
+    // Reset error when modal state changes
     useEffect(() => {
         if (isOpen) {
-            setScannedOrderId(null);
-            setScannedOrder(null);
             setErrorMsg(null);
             setIsVerifying(false);
-            // eslint-disable-next-line react-hooks/exhaustive-deps
         }
     }, [isOpen]);
 
@@ -40,36 +35,40 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
             : (result as { text?: string })?.text || (result as string);
         if (!rawValue || typeof rawValue !== 'string') return;
         
-        // We only want to handle a scan once until it's reset
-        if (scannedOrderId) return;
+        // Prevent double scans
+        if (qrScannedOrder) return;
         
         setIsVerifying(true);
-        setScannedOrderId(rawValue);
+        
+        // 1. Notify all other admin devices
+        broadcastQRScan(rawValue);
 
-        // Find the order in the active orders list
+        // 2. Find and set the order locally for this device
         const foundOrder = orders.find(o => o.order_id === rawValue || o.short_id === rawValue);
 
         if (foundOrder) {
             if (foundOrder.order_status === 'completed') {
                 setErrorMsg('This order has already been completed.');
             } else if (foundOrder.order_status !== 'ready' && foundOrder.order_status !== 'preparing') {
-                setScannedOrder(foundOrder);
+                setQrScannedOrder(foundOrder);
                 setErrorMsg(`Order is currently '${foundOrder.order_status}'. Are you sure you want to complete it?`);
             } else {
-                setScannedOrder(foundOrder);
+                setQrScannedOrder(foundOrder);
                 setErrorMsg(null);
             }
         } else {
-            setErrorMsg('Order not found on the active board. It might be an old or invalid QR code.');
+            // Set a dummy state to show the error view
+            setQrScannedOrder({ order_id: 'not_found' } as any);
+            setErrorMsg('Order not found on the active board.');
         }
         
         setIsVerifying(false);
     };
 
     const handleComplete = async () => {
-        if (!scannedOrder) return;
+        if (!qrScannedOrder) return;
         try {
-            await updateOrderStatus(scannedOrder.order_id, 'completed');
+            await updateOrderStatus(qrScannedOrder.order_id, 'completed');
             toast.success('Order completed successfully!');
             onClose();
         } catch {
@@ -78,8 +77,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
     };
 
     const handleBackToScanner = () => {
-        setScannedOrderId(null);
-        setScannedOrder(null);
+        setQrScannedOrder(null);
         setErrorMsg(null);
     };
 
@@ -101,7 +99,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                     <X className="w-5 h-5 text-gray-800" />
                 </button>
 
-                {!scannedOrderId ? (
+                {!qrScannedOrder ? (
                     // SCANNER VIEW
                     <div className="flex flex-col h-full">
                         <div className="p-6 pb-4 text-center">
@@ -123,7 +121,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                     } else {
                                         setErrorMsg(e?.message || 'Camera access error.');
                                     }
-                                    setScannedOrderId('error');
+                                    setQrScannedOrder({ order_id: 'error' } as any);
                                 }}
                                 formats={['qr_code']}
                                 components={{
@@ -138,7 +136,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                     // VERIFICATION CARD VIEW
                     <div className="flex flex-col h-full bg-[#FAFAF8] overflow-y-auto scrollbar-hide">
                         <div className="p-6 pt-10 text-center relative overflow-hidden bg-white border-b border-neutral-100">
-                            {scannedOrder && !errorMsg ? (
+                            {qrScannedOrder && qrScannedOrder.order_id !== 'not_found' && qrScannedOrder.order_id !== 'error' && !errorMsg ? (
                                 <>
                                     <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-50 shadow-lg shadow-emerald-500/20">
                                         <CheckCircle2 className="w-10 h-10 text-emerald-600" strokeWidth={3} />
@@ -165,21 +163,21 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                 </div>
                             )}
 
-                            {scannedOrder && (
+                            {qrScannedOrder && qrScannedOrder.order_id !== 'not_found' && qrScannedOrder.order_id !== 'error' && (
                                 <div className="bg-white rounded-3xl p-5 border border-neutral-100/80 shadow-sm">
                                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-100 border-dashed">
                                         <div>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Customer</p>
-                                            <h3 className="text-lg font-black tracking-tight text-neutral-900 leading-none">{scannedOrder.customer_name}</h3>
+                                            <h3 className="text-lg font-black tracking-tight text-neutral-900 leading-none">{qrScannedOrder.customer_name}</h3>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Order #</p>
-                                            <span className="text-lg font-black tracking-widest text-emerald-600 leading-none">{scannedOrder.short_id}</span>
+                                            <span className="text-lg font-black tracking-widest text-emerald-600 leading-none">{qrScannedOrder.short_id}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-3">
-                                        {scannedOrder.items.map((item, idx) => (
+                                        {qrScannedOrder.items.map((item: any, idx: number) => (
                                             <div key={idx} className="flex gap-3 items-start">
                                                 <div className="w-7 h-7 bg-neutral-50 rounded-lg border border-neutral-100 flex items-center justify-center flex-shrink-0">
                                                     <span className="text-[12px] font-black text-neutral-700">{item.quantity}</span>
@@ -194,7 +192,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                             )}
 
                             <div className="flex flex-col gap-3 pt-4">
-                                {scannedOrder && (
+                                {qrScannedOrder && qrScannedOrder.order_id !== 'not_found' && qrScannedOrder.order_id !== 'error' && (
                                     <button 
                                         onClick={handleComplete}
                                         className="w-full h-14 bg-emerald-600 text-white rounded-2xl font-bold text-[15px] shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
@@ -208,7 +206,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                     onClick={handleBackToScanner}
                                     className={clsx(
                                         "w-full h-14 rounded-2xl font-bold text-[15px] transition-all flex items-center justify-center gap-2 active:scale-[0.98]",
-                                        scannedOrder ? "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50" : "bg-neutral-900 text-white shadow-lg"
+                                        qrScannedOrder && qrScannedOrder.order_id !== 'not_found' && qrScannedOrder.order_id !== 'error' ? "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50" : "bg-neutral-900 text-white shadow-lg"
                                     )}
                                 >
                                     Scan Another Code

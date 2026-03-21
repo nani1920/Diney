@@ -7,7 +7,10 @@ import { OrderProvider } from '@/context/OrderContext';
 import { CartProvider } from '@/context/CartContext';
 import DomainGuard from '@/components/auth/DomainGuard';
 
-const outfit = Outfit({ subsets: ['latin'] });
+const outfit = Outfit({ 
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const viewport: Viewport = {
   width: 'device-width',

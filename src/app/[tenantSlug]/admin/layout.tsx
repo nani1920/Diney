@@ -122,7 +122,7 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="flex h-screen bg-gray-50 font-inter overflow-hidden text-neutral-900">
+        <div className="flex flex-col md:flex-row h-screen bg-gray-50 font-inter overflow-hidden text-neutral-900">
             <AdminSidebar />
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {isImpersonating && (

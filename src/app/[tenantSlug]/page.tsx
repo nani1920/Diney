@@ -5,6 +5,7 @@ import { useAdmin } from "@/context/AdminContext";
 import { useCart } from "@/context/CartContext";
 import { useOrders } from "@/context/OrderContext";
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -209,7 +210,7 @@ export default function Home() {
           { }
           <div className="px-5 pt-4">
             <div className="relative h-44 rounded-3xl overflow-hidden shadow-sm">
-              <img src="/hero-bg.png" alt="" className="w-full h-full object-cover" />
+              <Image src="/hero-bg.png" alt="" fill className="object-cover" priority />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5">
                 <p className="text-white/60 text-[11px] font-semibold uppercase tracking-wider mb-1">Today's picks</p>
@@ -263,7 +264,7 @@ export default function Home() {
                       { }
                       <div className="relative flex-shrink-0 w-[94px] h-[94px] rounded-2xl bg-neutral-50 overflow-hidden">
                         {item.image_url ? (
-                            <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
+                            <Image src={item.image_url} fill sizes="94px" className="object-cover" alt={item.name} />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-neutral-300">
                                 <span className="text-[42px]">{getFoodEmoji(item.name)}</span>
@@ -333,7 +334,7 @@ export default function Home() {
             
             <div className="mt-20 pb-12 flex flex-col items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Powered By</span>
-               <img src="/logo.png" alt="Diney" className="h-8 w-auto" />
+               <Image src="/logo.png" alt="Diney" width={100} height={32} className="h-8 w-auto object-contain" />
             </div>
           </div>
 
