@@ -114,13 +114,16 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                 onScan={handleScan}
                                 onError={(error: unknown) => {
                                     const e = error as Error;
-                                    if (e?.message?.includes('secure context') || e?.name === 'NotAllowedError') {
-                                        setErrorMsg('Camera access requires HTTPS or localhost. For local testing, please use http://localhost:3000 instead of a custom domain.');
-                                        setScannedOrderId('error'); // Trigger the UI to show the error message
+                                    if (e?.message?.toLowerCase().includes('secure')) {
+                                        setErrorMsg('Camera access requires HTTPS or localhost. Please use http://localhost:3000 for local testing.');
+                                    } else if (e?.name === 'NotAllowedError') {
+                                        setErrorMsg('Camera permission denied! Please click the camera icon in your URL address bar (or site settings) and choose "Allow".');
+                                    } else if (e?.name === 'NotFoundError') {
+                                        setErrorMsg('No camera hardware found on this device.');
                                     } else {
-                                        setErrorMsg(e?.message || 'Camera access denied or unavailable.');
-                                        setScannedOrderId('error');
+                                        setErrorMsg(e?.message || 'Camera access error.');
                                     }
+                                    setScannedOrderId('error');
                                 }}
                                 formats={['qr_code']}
                                 components={{
