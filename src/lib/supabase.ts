@@ -23,19 +23,37 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         return null;
       },
       setItem: (key, value) => {
-         
-        const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
-         
-        const rootDomain = baseDomain ? `.${baseDomain.split(':')[0]}` : '';
-        const domain = rootDomain ? `; Domain=${rootDomain}` : '';
+        const currentHost = window.location.hostname;
+        const baseDomainEnv = (process.env.NEXT_PUBLIC_BASE_DOMAIN || '').split(':')[0];
+        
+        let domain = '';
+        if (baseDomainEnv && currentHost.endsWith(baseDomainEnv)) {
+          // If we're on the expected base domain or a subdomain, use the base
+          domain = `; Domain=.${baseDomainEnv}`;
+        } else if (currentHost.includes('.') && !/^\d+\.\d+\.\d+\.\d+$/.test(currentHost) && currentHost !== 'localhost') {
+          // Fallback: try to guess the root domain (e.g., app.diney.tech -> .diney.tech)
+          const parts = currentHost.split('.');
+          if (parts.length >= 2) {
+              domain = `; Domain=.${parts.slice(-2).join('.')}`;
+          }
+        }
         
         const secure = window.location.protocol === 'https:' ? '; Secure' : '';
         document.cookie = `${key}=${value}${domain}; Path=/; SameSite=Lax${secure}; Max-Age=31536000`;
       },
       removeItem: (key) => {
-        const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
-        const rootDomain = baseDomain ? `.${baseDomain.split(':')[0]}` : '';
-        const domain = rootDomain ? `; Domain=${rootDomain}` : '';
+        const currentHost = window.location.hostname;
+        const baseDomainEnv = (process.env.NEXT_PUBLIC_BASE_DOMAIN || '').split(':')[0];
+        
+        let domain = '';
+        if (baseDomainEnv && currentHost.endsWith(baseDomainEnv)) {
+          domain = `; Domain=.${baseDomainEnv}`;
+        } else if (currentHost.includes('.') && !/^\d+\.\d+\.\d+\.\d+$/.test(currentHost) && currentHost !== 'localhost') {
+            const parts = currentHost.split('.');
+            if (parts.length >= 2) {
+                domain = `; Domain=.${parts.slice(-2).join('.')}`;
+            }
+        }
         
         document.cookie = `${key}=; Path=/; SameSite=Lax${domain}; Max-Age=0`;
       }

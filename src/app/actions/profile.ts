@@ -1,13 +1,17 @@
 'use server';
 
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { withErrorHandling } from '@/lib/server-utils';
 import { ProfileSchema } from '@/lib/validations';
 
- 
+/**
+ * Get current user's profile
+ */
 export async function getProfile() {
   return withErrorHandling(async () => {
+    const supabase = await createServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
@@ -26,16 +30,19 @@ export async function getProfile() {
   }, "getProfile");
 }
 
- 
+/**
+ * Create or update user's profile info
+ */
 export async function updateProfile(data: { full_name?: string, phone_number: string }) {
   return withErrorHandling(async () => {
+    const supabase = await createServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
 
-     
+    // Validate input
     const validatedData = ProfileSchema.parse(data);
 
     const profileData = {

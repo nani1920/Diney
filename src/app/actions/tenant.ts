@@ -1,6 +1,7 @@
 'use server';
 
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 import { redis, getCacheKey, DEFAULT_TTL } from '@/lib/redis';
 import { MenuItem, ServerActionResult } from '@/types';
 import { ensureTenantOwner } from '@/lib/auth-utils';
@@ -47,6 +48,7 @@ export async function getTenantMenu(tenantId: string, slug: string) {
     }
 
      
+    const supabase = await createServerClient();
     const { data: items, error } = await supabase
       .from('menu_items')
       .select(`
@@ -76,6 +78,7 @@ export async function registerTenant(name: string, slug: string, ownerId?: strin
     console.log('[registerTenant] Starting registration for:', { name, slug, ownerId });
     
     // 1. Auth Check
+    const supabase = await createServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         console.error('[registerTenant] Auth failed:', authError);
