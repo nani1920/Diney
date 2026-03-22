@@ -30,6 +30,15 @@ export default function PendingCalibrationPage() {
 
        
       if (tenant?.status === 'active') {
+        const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
+        const protocol = process.env.NEXT_PUBLIC_PROTOCOL || 'http';
+        
+        // Always jump to subdomain in production
+        if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+          window.location.href = `${protocol}://${tenant.slug}.${baseDomain}/admin`;
+          return;
+        }
+        
         router.push(`/${tenant.slug}/admin`);
         return;
       }

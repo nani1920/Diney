@@ -248,7 +248,8 @@ export async function exitImpersonation() {
 
 export async function getMasterProducts() {
     return withErrorHandling(async () => {
-        await ensureSuperAdmin();
+        // Removed ensureSuperAdmin() to allow merchants to browse catalog for importing.
+        // Reading the master catalog is safe for all authenticated users.
         const { data, error } = await supabaseAdmin
             .from('master_products')
             .select('*')

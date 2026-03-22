@@ -39,7 +39,7 @@ export default function AdminSidebar() {
         // 2. Fallback: If it's a multi-level domain (like mario.diney.tech)
         // and doesn't exactly match the base domain, it's a subdomain
         const parts = hostname.split('.');
-        if (parts.length >= 3) return true;
+        if (parts.length >= 3 && parts[0].toLowerCase() !== 'www') return true;
         
         return false;
     })();

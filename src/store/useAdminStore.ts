@@ -112,11 +112,14 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         }
 
         const res = await upsertCategoryServer(tenantId, tenantSlug, category);
-        if (res.success && res.data) {
-            set({ categories: get().categories.map(c => c.id === tempId ? res.data as Category : c) });
+        if (res.success) {
+            const finalData = res.data || category;
+            set({ categories: get().categories.map(c => c.id === tempId ? finalData as Category : c) });
+            toast.success(isNew ? "Category created" : "Category updated");
             return true;
         } else {
             set({ categories: previous });
+            toast.error(res.error || "Failed to save category");
             return false;
         }
     },
