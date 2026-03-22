@@ -83,7 +83,7 @@ export default function PendingCalibrationPage() {
           </motion.div>
           
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
-            <div className="px-6 py-2 bg-[#025E43] text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl">
+            <div className="px-6 py-2 bg-gradient-to-r from-[#025E43] to-[#014230] text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl shadow-emerald-900/20 whitespace-nowrap">
               Registry Transmitted
             </div>
           </div>

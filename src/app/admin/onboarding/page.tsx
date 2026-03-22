@@ -170,13 +170,14 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={submitting || loading}
-            className="w-full h-18 bg-[#025E43] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-2 hover:bg-[#1A1A1A] transition-all active:scale-95 shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:scale-100 group"
+            className="w-full h-18 bg-gradient-to-r from-[#025E43] to-[#014230] text-white rounded-3xl font-black uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-3 hover:from-[#014230] hover:to-[#025E43] transition-all duration-500 active:scale-[0.98] shadow-2xl shadow-emerald-900/40 disabled:opacity-50 disabled:scale-100 group overflow-hidden relative"
           >
+            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             {submitting ? (
               <Loader2 className="animate-spin w-5 h-5" />
             ) : (
               <>
-                Create My Store <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                Create My Store <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform duration-300" />
               </>
             )}
           </button>
