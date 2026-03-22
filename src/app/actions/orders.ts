@@ -311,7 +311,7 @@ export async function getAuthenticatedOrder(orderId: string, tenantId: string) {
       order_id: data.id,
       short_id: data.short_id || data.id.replace(/\D/g, '').slice(0, 6) || '000000',
       customer_name: data.customer_name as string,
-      customer_mobile: (data.customer_mobile as string).replace(/.(?=.{4})/g, 'X'),
+      customer_mobile: data.customer_mobile as string,
       order_note: data.order_note as string,
       total_amount: Number(data.total_amount),
       order_status: data.status as OrderStatus,
@@ -344,7 +344,7 @@ export async function getOrderById(orderId: string, tenantId: string): Promise<S
       order_id: data.id,
       short_id: data.short_id || data.id.replace(/\D/g, '').slice(0, 6) || '000000',
       customer_name: data.customer_name as string,
-      customer_mobile: (data.customer_mobile as string).replace(/.(?=.{4})/g, 'X'), // Mask mobile: XXXXXX1234
+      customer_mobile: data.customer_mobile as string,
       order_note: data.order_note as string,
       total_amount: Number(data.total_amount),
       order_status: data.status as OrderStatus,

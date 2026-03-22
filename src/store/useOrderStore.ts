@@ -165,22 +165,25 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                     }, 500);
                 } else if (payload.eventType === 'UPDATE') {
                     const upOrder = payload.new;
+                    const isOurOrder = get().orders.some(o => o.order_id === upOrder.id);
                     
-                    // NEW: Virtual Pager Alerts for Customers
-                    if (!isAdmin && upOrder.status === 'ready') {
-                        // Play the special customer-ready chime
-                        playUserReadyChime();
-                        // Trigger high-intensity triple pulse (Android)
-                        triggerReadyVibration();
-                        
-                        toast.success(`Your order is ready! 🥡`, { 
-                            duration: 10000,
-                            id: 'order-ready-alert',
-                            icon: '🔔'
-                        });
-                    } else if (!isAdmin) {
-                        // Soft pulse for any other status update (Preparing, etc)
-                        triggerStatusVibration();
+                    if (isOurOrder) {
+                        // NEW: Virtual Pager Alerts for Customers (Scoped)
+                        if (!isAdmin && upOrder.status === 'ready') {
+                            // Play the special customer-ready chime
+                            playUserReadyChime();
+                            // Trigger high-intensity triple pulse (Android)
+                            triggerReadyVibration();
+                            
+                            toast.success(`Your order is ready! 🥡`, { 
+                                duration: 10000,
+                                id: 'order-ready-alert',
+                                icon: '🔔'
+                            });
+                        } else if (!isAdmin) {
+                            // Soft pulse for any other status update (Preparing, etc)
+                            triggerStatusVibration();
+                        }
                     }
 
                     set(state => ({

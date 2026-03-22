@@ -186,7 +186,8 @@ export async function upsertMenuItem(tenantId: string, slug: string, item: Parti
       veg_or_nonveg: validatedData.veg_or_nonveg,
       is_available: validatedData.availability_status,
       image_url: validatedData.image_url,
-      prep_time_minutes: validatedData.prep_time_minutes
+      prep_time_minutes: validatedData.prep_time_minutes,
+      master_product_id: (validatedData as any).master_product_id
     };
 
      

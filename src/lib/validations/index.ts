@@ -19,12 +19,13 @@ export const MenuItemSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(2, "Name is too short").max(200),
   description: z.string().max(1000).optional(),
-  price: z.number().positive(),
-  veg_or_nonveg: z.enum(['veg', 'nonveg', 'egg']).default('veg'),
-  category_id: z.string().uuid().optional(),
+  price: z.number().nonnegative(),
+  veg_or_nonveg: z.enum(['veg', 'non-veg', 'egg']).default('veg'),
+  category_id: z.string().uuid().optional().or(z.literal('')),
   image_url: z.string().url().optional().or(z.literal('')),
   availability_status: z.boolean().default(true),
-  prep_time_minutes: z.number().int().min(1).max(120).default(10)
+  prep_time_minutes: z.number().int().min(1).max(120).default(10),
+  master_product_id: z.string().uuid().optional().or(z.literal(''))
 });
 
 export const TenantSchema = z.object({

@@ -5,6 +5,7 @@ import { updateTenantStatus } from '@/app/actions/super-admin';
 import { Power, PowerOff, Loader2, Clock, ShieldAlert } from 'lucide-react';
 import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export default function TenantStatusToggle({ 
     tenantId, 
@@ -26,12 +27,14 @@ export default function TenantStatusToggle({
             const result = await updateTenantStatus(tenantId, nextStatus);
             if (result.success) {
                 setStatus(nextStatus);
-                router.refresh();
+                // Force a full reload to ensure server component and middleware see the change
+                window.location.reload();
             } else {
-                alert(result.error || 'Failed to update status');
+                toast.error(result.error || 'Failed to update status');
             }
         } catch (error) {
             console.error('Failed to update status:', error);
+            toast.error('An unexpected error occurred');
         } finally {
             setIsLoading(false);
         }

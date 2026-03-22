@@ -15,7 +15,9 @@ import {
     Search,
     SearchX,
     ChevronRight,
-    Zap
+    Zap,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect, useState, useRef } from 'react';
@@ -33,6 +35,7 @@ export default function AdminOrdersPage() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [activeTab, setActiveTab] = useState<TabStatus>('received');
     const [searchQuery, setSearchQuery] = useState('');
+    const [showMobile, setShowMobile] = useState(false);
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -106,6 +109,22 @@ export default function AdminOrdersPage() {
                     )}
                 </div>
 
+                <button
+                    onClick={() => setShowMobile(!showMobile)}
+                    className={clsx(
+                        "h-[50px] px-5 rounded-2xl border transition-all flex items-center gap-2.5 shadow-sm active:scale-95",
+                        showMobile 
+                            ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100" 
+                            : "bg-white border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                    )}
+                    title={showMobile ? "Mask customer mobile numbers" : "Show full customer mobile numbers"}
+                >
+                    {showMobile ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <span className="text-[13px] font-bold tracking-tight">
+                        {showMobile ? "Hide Numbers" : "Show Numbers"}
+                    </span>
+                </button>
+
                 <button 
                     onClick={() => {
                         setQrScannedOrder(null); // Reset for manual start
@@ -163,6 +182,7 @@ export default function AdminOrdersPage() {
                             <OrderCard
                                 key={order.order_id}
                                 order={order}
+                                showMobile={showMobile}
                                 nextStatus="preparing"
                                 timeElapsed={getTimeElapsed(order.order_time)}
                                 accentColor="yellow"
@@ -182,6 +202,7 @@ export default function AdminOrdersPage() {
                             <OrderCard
                                 key={order.order_id}
                                 order={order}
+                                showMobile={showMobile}
                                 nextStatus="ready"
                                 timeElapsed={getTimeElapsed(order.order_time)}
                                 accentColor="orange"
@@ -201,6 +222,7 @@ export default function AdminOrdersPage() {
                             <OrderCard
                                 key={order.order_id}
                                 order={order}
+                                showMobile={showMobile}
                                 nextStatus="completed"
                                 timeElapsed={getTimeElapsed(order.order_time)}
                                 accentColor="green"
@@ -249,7 +271,7 @@ function KanbanColumn({ title, count, children, color, icon: Icon }: any) {
     )
 }
 
-function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
+function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: any) {
     const { updateOrderStatus } = useOrders();
 
     const colors = "border-neutral-100 hover:border-neutral-200";
@@ -292,14 +314,24 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 </div>
                 <div className="flex-1">
                     <h4 className="text-[16px] font-extrabold text-neutral-900 tracking-tight leading-tight">{order.customer_name}</h4>
-                    <p className="flex items-center gap-1.5 text-[10px] font-black text-neutral-300 uppercase tracking-widest mt-0.5">
-                        Dine-in
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <p className="flex items-center gap-1.5 text-[10px] font-black text-neutral-300 uppercase tracking-widest">
+                            Dine-in
+                        </p>
+                        <span className="text-neutral-200">|</span>
+                        <p className="text-[10px] font-bold text-neutral-400">
+                            {order.customer_mobile 
+                                ? (showMobile ? order.customer_mobile : order.customer_mobile.replace(/.(?=.{4})/g, '*'))
+                                : 'No Mobile'}
+                        </p>
+                    </div>
+                    <div className="mt-1">
                         {order.payment_status === 'paid' ? (
-                            <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">Paid Online</span>
+                            <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-widest font-black">Paid Online</span>
                         ) : (
-                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Cash on Pickup</span>
+                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest font-black">Cash on Pickup</span>
                         )}
-                    </p>
+                    </div>
                 </div>
                 {isDelayed && order.order_status !== 'ready' && (
                     <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 animate-pulse">

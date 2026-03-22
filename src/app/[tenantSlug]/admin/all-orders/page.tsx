@@ -12,7 +12,9 @@ import {
     Clock,
     X,
     User,
-    ShoppingBag
+    ShoppingBag,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +31,7 @@ export default function AllOrdersPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+    const [showMobile, setShowMobile] = useState(false);
     const ITEMS_PER_PAGE = 10;
 
      
@@ -141,7 +144,20 @@ export default function AllOrdersPage() {
                     />
                 </div>
                 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowMobile(!showMobile)}
+                        className={clsx(
+                            "h-10 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border",
+                            showMobile 
+                                ? "bg-amber-50 border-amber-200 text-amber-700" 
+                                : "bg-white border-neutral-100 text-neutral-400 hover:text-neutral-600"
+                        )}
+                        title={showMobile ? "Mask mobile numbers" : "Show full mobile numbers"}
+                    >
+                        {showMobile ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showMobile ? "Hide Numbers" : "Show Numbers"}
+                    </button>
                     {['all', 'received', 'preparing', 'ready', 'completed', 'cancelled'].map((status) => (
                         <button
                             key={status}
@@ -190,7 +206,9 @@ export default function AllOrdersPage() {
                                         {order.customer_name}
                                     </div>
                                     <div className="text-xs text-gray-500">
-                                        {order.customer_mobile || 'No Mobile'}
+                                        {order.customer_mobile 
+                                            ? (showMobile ? order.customer_mobile : order.customer_mobile.replace(/.(?=.{4})/g, '*'))
+                                            : 'No Mobile'}
                                     </div>
                                 </td>
                                 <td className="px-8 py-6 text-center">
@@ -312,7 +330,11 @@ export default function AllOrdersPage() {
                                         </div>
                                         <div>
                                             <p className="font-bold text-neutral-900 text-base">{selectedOrder.customer_name}</p>
-                                            <p className="text-sm text-neutral-500 font-medium">{selectedOrder.customer_mobile || 'No Mobile'}</p>
+                                            <p className="text-sm text-neutral-500 font-medium">
+                                                {selectedOrder.customer_mobile 
+                                                    ? (showMobile ? selectedOrder.customer_mobile : selectedOrder.customer_mobile.replace(/.(?=.{4})/g, '*'))
+                                                    : 'No Mobile'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

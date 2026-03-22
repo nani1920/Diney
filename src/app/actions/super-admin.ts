@@ -105,7 +105,10 @@ export async function updateTenantStatus(tenantId: string, status: 'pending' | '
             .eq('id', tenantId)
             .single();
 
-        if (fetchError || !tenant) throw fetchError || new Error('Tenant not found');
+        if (fetchError || !tenant) {
+            console.error(`[updateTenantStatus] Tenant fetch error for ID ${tenantId}:`, fetchError);
+            throw fetchError || new Error('Tenant not found');
+        }
 
          
         const { error } = await supabaseAdmin
@@ -113,7 +116,10 @@ export async function updateTenantStatus(tenantId: string, status: 'pending' | '
             .update({ status })
             .eq('id', tenantId);
 
-        if (error) throw error;
+        if (error) {
+            console.error(`[updateTenantStatus] DB Error updating status for tenant ${tenantId}:`, error);
+            throw error;
+        }
 
          
         const configKey = getCacheKey(tenant.slug, 'config');
