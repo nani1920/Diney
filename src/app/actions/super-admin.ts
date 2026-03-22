@@ -289,3 +289,17 @@ export async function deleteMasterProduct(id: string) {
         return true;
     }, "deleteMasterProduct");
 }
+
+export async function getAllPlatformRatings() {
+    return withErrorHandling(async () => {
+        await ensureSuperAdmin();
+        const { data, error } = await supabaseAdmin
+            .from('order_ratings')
+            .select('*, orders(customer_name, short_id), tenants(name, slug)')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) throw error;
+        return data;
+    }, "getAllPlatformRatings");
+}

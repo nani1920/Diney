@@ -16,7 +16,8 @@ import {
     TrendingUp,
     History,
     Layers,
-    ChevronDown
+    ChevronDown,
+    Star
 } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
@@ -45,6 +46,7 @@ export default function AdminSidebar() {
             items: [
                 { name: 'Dashboard', href: getLink('/admin'), icon: LayoutDashboard },
                 { name: 'Analytics', href: getLink('/admin/analytics'), icon: TrendingUp },
+                { name: 'Customer Ratings', href: getLink('/admin/ratings'), icon: Star },
             ]
         },
         {

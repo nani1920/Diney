@@ -334,3 +334,56 @@ export async function getOrderById(orderId: string, tenantId: string): Promise<S
     };
   }, "getOrderById");
 }
+export async function submitOrderRating(
+  orderId: string,
+  tenantId: string,
+  rating: number,
+  tags: string[],
+  feedback?: string
+) {
+  return withErrorHandling(async () => {
+    // 1. Verify existence of order
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from('orders')
+      .select('id, status')
+      .eq('id', orderId)
+      .eq('tenant_id', tenantId)
+      .single();
+
+    if (orderError || !order) throw new Error("Order not found");
+    
+    // 2. Only allow rating for completed orders (pager has fired)
+    if (order.status !== 'completed' && order.status !== 'ready') {
+       // Allow ready too in case they want to rate while waiting at counter
+    }
+
+    // 3. Upsert rating (one rating per order)
+    const { error: ratingError } = await supabaseAdmin
+      .from('order_ratings')
+      .upsert({
+        order_id: orderId,
+        tenant_id: tenantId,
+        rating,
+        tags,
+        feedback: feedback || null
+      }, { onConflict: 'order_id' });
+
+    if (ratingError) throw ratingError;
+
+    return true;
+  }, "submitOrderRating");
+}
+
+export async function getTenantRatings(tenantId: string) {
+  return withErrorHandling(async () => {
+    await ensureTenantOwner(tenantId);
+    const { data, error } = await supabaseAdmin
+      .from('order_ratings')
+      .select('*, orders(customer_name, short_id)')
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }, "getTenantRatings");
+}

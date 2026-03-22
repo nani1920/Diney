@@ -18,6 +18,7 @@ interface OrderContextType {
     qrScannedOrder: Order | null;
     setQrScannedOrder: (order: Order | null) => void;
     broadcastQRScan: (order: Order) => void;
+    lastCompletedOrderId: string | null;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -43,6 +44,7 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
     const qrScannedOrder = useOrderStore(s => s.qrScannedOrder);
     const isQRScannerOpen = useOrderStore(s => s.isQRScannerOpen);
     const isPollingFallback = useOrderStore(s => s.isPollingFallback);
+    const lastCompletedOrderId = useOrderStore(s => s.lastCompletedOrderId);
 
     // 3. Memoized Bridge Actions (The "Senior" Resilience Fix)
     const fetchCustomerOrders = useCallback(async (tid: string, mobile: string) => {
@@ -101,11 +103,12 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
         updateOrderStatus,
         fetchCustomerOrders,
         refreshOrders,
-        broadcastQRScan
+        broadcastQRScan,
+        lastCompletedOrderId
     }), [
         orders, qrScannedOrder, isQRScannerOpen, setIsQRScannerOpenStore, 
         setQrScannedOrderStore, placeOrder, updateOrderStatus, 
-        fetchCustomerOrders, refreshOrders, broadcastQRScan
+        fetchCustomerOrders, refreshOrders, broadcastQRScan, lastCompletedOrderId
     ]);
 
     return (

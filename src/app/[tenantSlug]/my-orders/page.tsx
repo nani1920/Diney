@@ -7,15 +7,22 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package } from 'lucide-react';
+import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package, Star } from 'lucide-react';
+import { RatingModal } from '@/components/customer/RatingModal';
+import { Order } from '@/types';
 
 export default function MyOrdersPage() {
     const { customer, tenant } = useStore();
-    const { orders, fetchCustomerOrders } = useOrders();
+    const { orders, fetchCustomerOrders, lastCompletedOrderId } = useOrders();
     const { reorderPastOrder } = useCart();
     const [localOrders, setLocalOrders] = useState<any[]>([]);
     const [mobileFilter, setMobileFilter] = useState(customer?.mobile || '');
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Rating State
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isRatingOpen, setIsRatingOpen] = useState(false);
+
     const params = useParams();
     const router = useRouter();
     const tenantSlug = params.tenantSlug as string;
@@ -59,6 +66,38 @@ export default function MyOrdersPage() {
         setTimeout(() => {
             router.push(`/${tenantSlug}/cart`);
         }, 500);
+    };
+
+    // Aggressive Eager Trigger for Rating Modal (Like Swiggy/Zomato)
+    useEffect(() => {
+        if (orders.length > 0) {
+            // Find the most recently completed order that hasn't been rated or skipped yet
+            const unratedCompletedOrder = [...orders]
+                .filter(o => o.order_status === 'completed')
+                .sort((a, b) => new Date(b.order_time).getTime() - new Date(a.order_time).getTime())
+                .find(o => {
+                    // Only prompt if it's within the last 24 hours to avoid annoying users with 2-year old orders
+                    const isRecent = (Date.now() - new Date(o.order_time).getTime()) < (24 * 60 * 60 * 1000);
+                    const hasSeen = localStorage.getItem(`rated_${o.order_id}`);
+                    return isRecent && !hasSeen;
+                });
+
+            if (unratedCompletedOrder && !isRatingOpen) {
+                // slight delay for smoother UX if they just navigated here
+                const timer = setTimeout(() => {
+                    setSelectedOrder(unratedCompletedOrder as Order);
+                    setIsRatingOpen(true);
+                }, 800);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [orders, isRatingOpen]);
+
+    const handleRatingClose = () => {
+        if (selectedOrder) {
+            localStorage.setItem(`rated_${selectedOrder.order_id}`, 'true');
+        }
+        setIsRatingOpen(false);
     };
 
     const filteredOrders = localOrders;
@@ -303,6 +342,14 @@ export default function MyOrdersPage() {
                     )}
                 </AnimatePresence>
             </div>
+            {/* Rating Modal */}
+            <RatingModal 
+                isOpen={isRatingOpen}
+                onClose={handleRatingClose}
+                orderId={selectedOrder?.order_id || ''}
+                shortId={selectedOrder?.short_id || ''}
+                tenantId={tenant?.id || ''}
+            />
         </main>
     );
 }

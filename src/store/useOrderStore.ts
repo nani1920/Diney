@@ -10,7 +10,7 @@ import {
     getAuthenticatedOrder 
 } from '@/app/actions/orders';
 import { toast } from 'react-hot-toast';
-import { playNotificationChime } from '@/lib/sounds';
+import { playNotificationChime, playUserReadyChime, triggerReadyVibration, triggerStatusVibration } from '@/lib/sounds';
 
 interface OrderState {
     orders: Order[];
@@ -19,6 +19,7 @@ interface OrderState {
     realtimeChannel: any | null;
     isLoading: boolean;
     isPollingFallback: boolean;
+    lastCompletedOrderId: string | null;
 
     // Actions
     setOrders: (orders: Order[]) => void;
@@ -43,6 +44,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     realtimeChannel: null,
     isLoading: false,
     isPollingFallback: false,
+    lastCompletedOrderId: null,
 
     setOrders: (orders) => set({ orders }),
     setIsQRScannerOpen: (isQRScannerOpen) => set({ isQRScannerOpen }),
@@ -163,7 +165,26 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                     }, 500);
                 } else if (payload.eventType === 'UPDATE') {
                     const upOrder = payload.new;
+                    
+                    // NEW: Virtual Pager Alerts for Customers
+                    if (!isAdmin && upOrder.status === 'ready') {
+                        // Play the special customer-ready chime
+                        playUserReadyChime();
+                        // Trigger high-intensity triple pulse (Android)
+                        triggerReadyVibration();
+                        
+                        toast.success(`Your order is ready! 🥡`, { 
+                            duration: 10000,
+                            id: 'order-ready-alert',
+                            icon: '🔔'
+                        });
+                    } else if (!isAdmin) {
+                        // Soft pulse for any other status update (Preparing, etc)
+                        triggerStatusVibration();
+                    }
+
                     set(state => ({
+                        lastCompletedOrderId: (!isAdmin && upOrder.status === 'completed') ? upOrder.id : state.lastCompletedOrderId,
                         orders: state.orders.map(o => o.order_id === upOrder.id ? { ...o, order_status: upOrder.status } : o)
                     }));
                     if (upOrder.status === 'completed' && get().qrScannedOrder?.order_id === upOrder.id) {

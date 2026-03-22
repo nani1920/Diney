@@ -137,6 +137,7 @@ export default function MerchantDashboard() {
         )}
       </div>
 
+
       <footer className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/5 flex justify-between items-center opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
         <div className="flex items-center gap-2">
           <ShieldCheck size={14} className="text-[#025E43]" />

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Settings, LogOut, ShieldCheck, Megaphone, Package } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, ShieldCheck, Megaphone, Package, Star } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -18,6 +18,7 @@ export default function SuperAdminClientLayout({
         { name: 'Tenants', href: '/super-admin/tenants', icon: Users },
         { name: 'Master Catalog', href: '/super-admin/catalog', icon: Package },
         { name: 'Broadcaster', href: '/super-admin/announcements', icon: Megaphone },
+        { name: 'Platform Reviews', href: '/super-admin/reviews', icon: Star },
         { name: 'Platform Settings', href: '/super-admin/settings', icon: Settings },
     ];
 

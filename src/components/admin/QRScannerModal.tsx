@@ -19,6 +19,27 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
     const [isVerifying, setIsVerifying] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+    // Derived Validation State - Syncs across all devices
+    const validation = React.useMemo(() => {
+        if (!qrScannedOrder || qrScannedOrder.order_id === 'not_found' || qrScannedOrder.order_id === 'error') {
+            return { isAttention: true, message: errorMsg, isReady: false };
+        }
+
+        if (qrScannedOrder.order_status === 'completed') {
+            return { isAttention: true, message: 'This order has already been completed.', isReady: false };
+        }
+
+        if (qrScannedOrder.order_status !== 'ready' && qrScannedOrder.order_status !== 'preparing') {
+            return { 
+                isAttention: true, 
+                message: `Order is currently '${qrScannedOrder.order_status}'. Are you sure you want to complete it?`,
+                isReady: false 
+            };
+        }
+
+        return { isAttention: false, message: null, isReady: true };
+    }, [qrScannedOrder, errorMsg]);
+
     // Reset error when modal state changes
     useEffect(() => {
         if (isOpen) {
@@ -44,15 +65,8 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
         
         if (foundOrder) {
             broadcastQRScan(foundOrder);
-            if (foundOrder.order_status === 'completed') {
-                setErrorMsg('This order has already been completed.');
-            } else if (foundOrder.order_status !== 'ready' && foundOrder.order_status !== 'preparing') {
-                setQrScannedOrder(foundOrder);
-                setErrorMsg(`Order is currently '${foundOrder.order_status}'. Are you sure you want to complete it?`);
-            } else {
-                setQrScannedOrder(foundOrder);
-                setErrorMsg(null);
-            }
+            setQrScannedOrder(foundOrder);
+            setErrorMsg(null);
         } else {
             // Set a dummy state to show the error view
             setQrScannedOrder({ order_id: 'not_found' } as any);
@@ -133,7 +147,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                     // VERIFICATION CARD VIEW
                     <div className="flex flex-col h-full bg-[#FAFAF8] overflow-y-auto scrollbar-hide">
                         <div className="p-6 pt-10 text-center relative overflow-hidden bg-white border-b border-neutral-100">
-                            {qrScannedOrder && qrScannedOrder.order_id !== 'not_found' && qrScannedOrder.order_id !== 'error' && !errorMsg ? (
+                            {qrScannedOrder && qrScannedOrder.order_id !== 'not_found' && qrScannedOrder.order_id !== 'error' && !validation.isAttention ? (
                                 <>
                                     <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-50 shadow-lg shadow-emerald-500/20">
                                         <CheckCircle2 className="w-10 h-10 text-emerald-600" strokeWidth={3} />
@@ -152,10 +166,10 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {errorMsg && (
+                            {validation.message && (
                                 <div className="bg-red-50 border border-red-100 p-4 rounded-2xl">
                                     <p className="text-red-600 text-[13px] font-bold text-center leading-relaxed">
-                                        {errorMsg}
+                                        {validation.message}
                                     </p>
                                 </div>
                             )}
