@@ -71,31 +71,32 @@ export default function MyOrdersPage() {
     // Aggressive Eager Trigger for Rating Modal (Like Swiggy/Zomato)
     useEffect(() => {
         if (orders.length > 0) {
-            // Find the most recently completed order that hasn't been rated or skipped yet
-            const unratedCompletedOrder = [...orders]
+            // Find ONLY the single most recently completed order
+            const mostRecentCompletedOrder = [...orders]
                 .filter(o => o.order_status === 'completed')
-                .sort((a, b) => new Date(b.order_time).getTime() - new Date(a.order_time).getTime())
-                .find(o => {
-                    // Only prompt if it's within the last 24 hours to avoid annoying users with 2-year old orders
-                    const isRecent = (Date.now() - new Date(o.order_time).getTime()) < (24 * 60 * 60 * 1000);
-                    const hasSeen = localStorage.getItem(`rated_${o.order_id}`);
-                    return isRecent && !hasSeen;
-                });
+                .sort((a, b) => new Date(b.order_time).getTime() - new Date(a.order_time).getTime())[0];
 
-            if (unratedCompletedOrder && !isRatingOpen) {
-                // slight delay for smoother UX if they just navigated here
-                const timer = setTimeout(() => {
-                    setSelectedOrder(unratedCompletedOrder as Order);
-                    setIsRatingOpen(true);
-                }, 800);
-                return () => clearTimeout(timer);
+            if (mostRecentCompletedOrder && tenant) {
+                // Only prompt if it's within the last 24 hours
+                const isRecent = (Date.now() - new Date(mostRecentCompletedOrder.order_time).getTime()) < (24 * 60 * 60 * 1000);
+                const hasSeen = localStorage.getItem(`rated_tenant_${tenant.id}_mobile_${mostRecentCompletedOrder.customer_mobile}`);
+
+                // If the absolute most recent order hasn't been rated, prompt for it.
+                // It will NOT cascade to older orders because we only check index [0].
+                if (isRecent && !hasSeen && !isRatingOpen) {
+                    const timer = setTimeout(() => {
+                        setSelectedOrder(mostRecentCompletedOrder as Order);
+                        setIsRatingOpen(true);
+                    }, 800);
+                    return () => clearTimeout(timer);
+                }
             }
         }
     }, [orders, isRatingOpen]);
 
     const handleRatingClose = () => {
-        if (selectedOrder) {
-            localStorage.setItem(`rated_${selectedOrder.order_id}`, 'true');
+        if (selectedOrder && tenant) {
+            localStorage.setItem(`rated_tenant_${tenant.id}_mobile_${selectedOrder.customer_mobile}`, 'true');
         }
         setIsRatingOpen(false);
     };
@@ -219,6 +220,11 @@ export default function MyOrdersPage() {
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
                                                             <h3 className="text-[16px] font-bold text-neutral-900 tracking-[-0.01em]">Order #{order.short_id}</h3>
+                                                            {order.payment_status === 'paid' ? (
+                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
+                                                            ) : (
+                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wider">Cash on Pickup</span>
+                                                            )}
                                                             <div className="flex items-center gap-1.5 text-[12px] text-neutral-400 font-medium mt-1">
                                                                 <Clock className="w-3 h-3" />
                                                                 {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -275,6 +281,11 @@ export default function MyOrdersPage() {
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
                                                             <h3 className="text-[15px] font-bold text-neutral-500 tracking-[-0.01em]">Order #{order.short_id}</h3>
+                                                            {order.payment_status === 'paid' ? (
+                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
+                                                            ) : (
+                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-neutral-100 text-neutral-500 border border-neutral-200 uppercase tracking-wider">Cash on Pickup</span>
+                                                            )}
                                                             <p className="text-[12px] text-neutral-400 font-medium mt-1">
                                                                 {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </p>

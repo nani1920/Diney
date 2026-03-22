@@ -147,7 +147,7 @@ export default function CheckoutPage() {
                                     <span className="text-[14px] text-neutral-500 font-medium">Total Payable</span>
                                     <div className="flex items-center gap-2 text-[12px] font-medium text-neutral-400 bg-neutral-50 px-3 py-1.5 rounded-lg">
                                         <CreditCard className="w-3.5 h-3.5" />
-                                        Pay at counter
+                                        Cash on Pickup
                                     </div>
                                 </div>
                                 <span className="text-[28px] font-extrabold text-neutral-900 tracking-tight block">₹{totalAmount}</span>

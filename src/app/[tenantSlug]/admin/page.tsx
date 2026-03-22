@@ -225,7 +225,16 @@ export default function AdminDashboard() {
                                             <div className="font-medium text-gray-900">{order.customer_name}</div>
                                             <div className="text-xs text-gray-400">{order.items.length} items</div>
                                         </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">₹{order.total_amount}</td>
+                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                            <div className="flex items-center gap-1.5">
+                                                ₹{order.total_amount}
+                                            </div>
+                                            {order.payment_status === 'paid' ? (
+                                                <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-green-50 text-green-600 border border-green-200 uppercase tracking-widest whitespace-nowrap">Paid Online</span>
+                                            ) : (
+                                                <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest whitespace-nowrap">Cash on Pickup</span>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <StatusBadge status={order.order_status} />
                                         </td>

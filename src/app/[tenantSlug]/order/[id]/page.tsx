@@ -251,6 +251,14 @@ export default function OrderStatusPage() {
                     </div>
 
                     <div className="pt-5 pb-5 border-t border-dashed border-neutral-100">
+                        <div className="flex justify-between items-center px-1 border-b border-neutral-50 pb-4 mb-4">
+                            <span className="text-[14px] font-bold text-neutral-400">Payment Status</span>
+                            {order.payment_status === 'paid' ? (
+                                <span className="px-3 py-1 rounded text-[11px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
+                            ) : (
+                                <span className="px-3 py-1 rounded text-[11px] font-black bg-neutral-50 text-neutral-600 border border-neutral-200 uppercase tracking-widest shadow-sm">Cash on Pickup</span>
+                            )}
+                        </div>
                         <div className="flex justify-between items-center px-1">
                             <span className="text-[14px] font-bold text-neutral-400">Total Amount</span>
                             <span className="text-[24px] font-black text-neutral-900 tracking-tighter">₹{order.total_amount}</span>

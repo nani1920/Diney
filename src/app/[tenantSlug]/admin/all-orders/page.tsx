@@ -198,8 +198,13 @@ export default function AllOrdersPage() {
                                         {order.items.length}
                                     </div>
                                 </td>
-                                <td className="px-8 py-6 text-center font-bold text-xl text-gray-900">
-                                    ₹{order.total_amount}
+                                <td className="px-8 py-6 text-center">
+                                    <div className="font-bold text-xl text-gray-900">₹{order.total_amount}</div>
+                                    {order.payment_status === 'paid' ? (
+                                        <div className="inline-block mt-1 text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-widest font-black">Paid Online</div>
+                                    ) : (
+                                        <div className="inline-block mt-1 text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest font-black">Cash on Pickup</div>
+                                    )}
                                 </td>
                                 <td className="px-8 py-6 text-right">
                                     <span className={clsx(
@@ -340,9 +345,16 @@ export default function AllOrdersPage() {
                                 )}
                             </div>
 
-                            <div className="p-6 border-t border-neutral-100 bg-white flex justify-between items-center h-24">
+                            <div className="p-6 border-t border-neutral-100 bg-white flex justify-between items-center h-28">
                                 <div>
-                                    <p className="text-[11px] text-neutral-500 font-black uppercase tracking-[0.2em] mb-1">Total Amount</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-[11px] text-neutral-500 font-black uppercase tracking-[0.2em]">Total Amount</p>
+                                        {selectedOrder.payment_status === 'paid' ? (
+                                            <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-widest font-black">Paid Online</span>
+                                        ) : (
+                                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest font-black">Cash on Pickup</span>
+                                        )}
+                                    </div>
                                     <p className="text-3xl font-black text-neutral-900 tracking-tighter">₹{selectedOrder.total_amount}</p>
                                 </div>
                                 <span className={clsx(

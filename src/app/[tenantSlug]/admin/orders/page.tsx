@@ -292,7 +292,14 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor }: any) {
                 </div>
                 <div className="flex-1">
                     <h4 className="text-[16px] font-extrabold text-neutral-900 tracking-tight leading-tight">{order.customer_name}</h4>
-                    <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest mt-0.5">Dine-in</p>
+                    <p className="flex items-center gap-1.5 text-[10px] font-black text-neutral-300 uppercase tracking-widest mt-0.5">
+                        Dine-in
+                        {order.payment_status === 'paid' ? (
+                            <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">Paid Online</span>
+                        ) : (
+                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Cash on Pickup</span>
+                        )}
+                    </p>
                 </div>
                 {isDelayed && order.order_status !== 'ready' && (
                     <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 animate-pulse">

@@ -73,17 +73,29 @@ export async function getTenantMenu(tenantId: string, slug: string) {
 
 export async function registerTenant(name: string, slug: string, ownerId?: string) {
   return withErrorHandling(async () => {
-     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Authentication required");
+    console.log('[registerTenant] Starting registration for:', { name, slug, ownerId });
     
+    // 1. Auth Check
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        console.error('[registerTenant] Auth failed:', authError);
+        throw new Error("Authentication required");
+    }
+    console.log('[registerTenant] User authenticated:', user.id);
+    
+    // 2. Rate Limit
     const { success: rateLimitOk } = await actionRateLimiter.limit(`register:${user.id}`);
-    if (!rateLimitOk) throw new Error("Too many registration attempts. Please wait.");
+    if (!rateLimitOk) {
+        console.warn('[registerTenant] Rate limit hit for user:', user.id);
+        throw new Error("Too many registration attempts. Please wait.");
+    }
 
-     
+    // 3. Validation
+    console.log('[registerTenant] Validating data...');
     const validatedData = TenantSchema.parse({ name, slug, owner_id: ownerId || user.id });
 
-     
+    // 4. Duplicate Check
+    console.log('[registerTenant] Checking for existing slug:', validatedData.slug);
     const { data: existing } = await supabaseAdmin
       .from('tenants')
       .select('id')
@@ -91,9 +103,12 @@ export async function registerTenant(name: string, slug: string, ownerId?: strin
       .single();
 
     if (existing) {
+      console.warn('[registerTenant] Slug already taken:', validatedData.slug);
       throw new Error('Subdomain already taken');
     }
 
+    // 5. Insert
+    console.log('[registerTenant] Inserting new tenant...');
     const { data: tenant, error } = await supabaseAdmin
       .from('tenants')
       .insert({
@@ -101,6 +116,8 @@ export async function registerTenant(name: string, slug: string, ownerId?: strin
         slug: validatedData.slug,
         owner_id: validatedData.owner_id,
         status: 'pending',
+        tier: 'free',
+        subscription_status: 'active',
         config: {
           isStoreOpen: true,
           openingTime: '10:00',
@@ -110,9 +127,14 @@ export async function registerTenant(name: string, slug: string, ownerId?: strin
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+        console.error('[registerTenant] Database insert error:', error);
+        throw new Error(error.message);
+    }
 
-     
+    console.log('[registerTenant] Registration successful:', tenant.id);
+
+    // 6. Cache invalidation
     const cacheKey = getCacheKey(validatedData.slug, 'config');
     await redis.del(cacheKey);
 

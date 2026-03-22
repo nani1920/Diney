@@ -64,6 +64,8 @@ export type Order = {
   estimated_ready_time?: string;  
   order_status: OrderStatus;
   order_time: string;  
+  payment_status?: string;
+  payment_id?: string;
 };
 
 export type Customer = {

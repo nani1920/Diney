@@ -4,7 +4,13 @@ import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Minus, Plus, Ticket, ArrowRight, Trash2, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Ticket, ArrowRight, Trash2, ShoppingCart, CreditCard, Loader2, Smartphone, AlertCircle } from 'lucide-react';
+import Script from 'next/script';
+import { useState } from 'react';
+import { createRazorpayOrder, createOrder } from '@/app/actions/orders';
+import { useStore } from '@/context/StoreContext';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export default function CartPage() {
     const { cart, updateCartQuantity } = useCart();
@@ -13,9 +19,91 @@ export default function CartPage() {
 
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const deliveryFee = 20;
+    const finalTotal = totalAmount + deliveryFee;
+
+    const { customer, tenant } = useStore();
+    const router = useRouter();
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
+
+    const handlePayOnline = async () => {
+        if (!customer) {
+            router.push(`/${tenantSlug}/checkout`);
+            return;
+        }
+        setIsProcessing(true);
+        setPaymentError(null);
+        try {
+            // 1. Create order ID on our server
+            const rzpRes = await createRazorpayOrder(finalTotal);
+            if (!rzpRes.success || !rzpRes.data) {
+                const errorMsg = rzpRes.error || "Could not initiate payment. Are your Razorpay test keys configured?";
+                setPaymentError(errorMsg);
+                // We keep isProcessing as true to show the error state in the overlay
+                return;
+            }
+
+            const orderOptions = rzpRes.data as any;
+
+            // 2. Open Razorpay Checkout Modal
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+                amount: orderOptions.amount, 
+                currency: orderOptions.currency,
+                name: "Diney SaaS",
+                description: `Payment for ${tenantSlug}`,
+                order_id: orderOptions.id, 
+                handler: async function (response: any) {
+                    toast.loading('Verifying secure payment...', { id: 'payment' });
+                    // 3. Place actual Diney order with signature for server verification
+                    const result = await createOrder(
+                        tenant?.id || '', // extract tenant ID securely
+                        customer.name,
+                        customer.mobile,
+                        cart,
+                        finalTotal,
+                        response.razorpay_payment_id,
+                        response.razorpay_order_id,
+                        response.razorpay_signature
+                    );
+                    
+                    if (result.success) {
+                        toast.success('Payment beautiful & Order placed!', { id: 'payment' });
+                        router.push(`/${tenantSlug}/my-orders`);
+                    } else {
+                        toast.error(result.error || 'Payment succeeded but order failed.', { id: 'payment' });
+                    }
+                },
+                prefill: {
+                    name: customer.name,
+                    contact: customer.mobile
+                },
+                theme: {
+                    color: "#059669" // emerald-600
+                },
+                modal: {
+                    ondismiss: function() {
+                        setIsProcessing(false);
+                        toast.error("Payment cancelled by you");
+                    }
+                }
+            };
+
+            const rzp1 = new (window as any).Razorpay(options);
+            rzp1.on('payment.failed', function (response: any){
+                toast.error(`Payment Failed: ${response.error.description}`);
+                setIsProcessing(false);
+            });
+            rzp1.open();
+        } catch (error: any) {
+            console.error("Payment error", error);
+            setIsProcessing(false);
+        }
+    };
 
     return (
         <main className="min-h-screen bg-[#FAFAF8] relative max-w-[520px] mx-auto flex flex-col">
+            <Script id="razorpay-checkout-js" src="https://checkout.razorpay.com/v1/checkout.js" />
             { }
             <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                 <div className="px-5 py-3.5 flex items-center justify-between">
@@ -156,24 +244,134 @@ export default function CartPage() {
                             </div>
                         </div>
 
-                        { }
-                        <Link href={`/${tenantSlug}/checkout`}>
+                        <div className="flex flex-col gap-3 mt-4">
                             <motion.button
+                                onClick={handlePayOnline}
+                                disabled={isProcessing}
                                 whileTap={{ scale: 0.97 }}
-                                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_8px_30px_-4px_rgba(22,163,74,0.35)] flex items-center justify-center gap-2.5 hover:bg-emerald-700 active:bg-emerald-800 transition-colors mt-2"
+                                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_8px_30px_-4px_rgba(22,163,74,0.35)] flex items-center justify-center gap-2.5 hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-70"
                             >
-                                Proceed to Checkout
-                                <div className="bg-white w-8 h-8 rounded-lg flex items-center justify-center">
-                                    <ArrowRight className="w-4 h-4 text-emerald-600" />
-                                </div>
+                                {isProcessing ? "Processing..." : "Pay Online"}
+                                {!isProcessing && <CreditCard className="w-4 h-4 ml-1" />}
                             </motion.button>
-                        </Link>
-                        <p className="text-center text-[11px] text-neutral-300 font-medium pb-4">
-                            Secure checkout · Pay at counter
+                            
+                            <Link href={`/${tenantSlug}/checkout`} className="block w-full">
+                                <motion.button
+                                    whileTap={{ scale: 0.97 }}
+                                    className="w-full bg-white text-emerald-600 border border-emerald-600/20 py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2.5 hover:bg-emerald-50 transition-colors"
+                                >
+                                    Cash on Pickup
+                                    <ArrowRight className="w-4 h-4 text-emerald-600" />
+                                </motion.button>
+                            </Link>
+                        </div>
+                        <p className="text-center text-[11px] text-neutral-400 font-medium pb-4 max-w-[200px] mx-auto leading-relaxed">
+                            Secured by Razorpay. View your receipt instantly in My Orders.
                         </p>
                     </div>
                 )}
             </div>
+
+            {/* High-Fidelity Payment Loading & Error Overlay */}
+            <AnimatePresence>
+                {isProcessing && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.1 }}
+                            className="relative w-full max-w-xs"
+                        >
+                            {!paymentError ? (
+                                <>
+                                    {/* Animated Rings - Loading State */}
+                                    <div className="relative w-32 h-32 mb-10 mx-auto">
+                                        <motion.div 
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                            className="absolute inset-0 border-4 border-emerald-100 rounded-[2.5rem]"
+                                        />
+                                        <motion.div 
+                                            animate={{ rotate: -360 }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                            className="absolute inset-0 border-t-4 border-emerald-600 rounded-[2.5rem]"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="w-16 h-16 bg-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/40">
+                                                <CreditCard className="w-8 h-8 text-white animate-pulse" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h2 className="text-[22px] font-black text-neutral-900 tracking-tight uppercase italic">
+                                            Securing <span className="text-emerald-600">Transaction</span>
+                                        </h2>
+                                        <p className="text-[13px] text-neutral-400 font-bold uppercase tracking-[0.2em] max-w-[240px] mx-auto leading-relaxed">
+                                            Initializing encrypted payment gateway
+                                        </p>
+                                    </div>
+
+                                    <div className="mt-12 w-48 h-1.5 bg-neutral-100 rounded-full mx-auto overflow-hidden">
+                                        <motion.div 
+                                            initial={{ x: "-100%" }}
+                                            animate={{ x: "100%" }}
+                                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                            className="w-full h-full bg-emerald-600 rounded-full"
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <motion.div 
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    className="space-y-6"
+                                >
+                                    <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                                        <AlertCircle className="w-10 h-10 text-red-500" />
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <h2 className="text-[20px] font-black text-neutral-900 tracking-tight uppercase italic">
+                                            Payment <span className="text-red-500">Failed</span>
+                                        </h2>
+                                        <p className="text-[13px] text-neutral-500 font-bold leading-relaxed px-4">
+                                            {paymentError}
+                                        </p>
+                                    </div>
+
+                                    <div className="pt-6">
+                                        <button 
+                                            onClick={() => {
+                                                setIsProcessing(false);
+                                                setPaymentError(null);
+                                            }}
+                                            className="w-full h-14 bg-neutral-900 text-white rounded-2xl font-black uppercase tracking-widest text-[13px] shadow-xl shadow-neutral-900/10 active:scale-95 transition-all"
+                                        >
+                                            Return to Cart
+                                        </button>
+                                        <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-4 flex items-center justify-center gap-2">
+                                            <Smartphone size={12} />
+                                            Check your connectivity
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </motion.div>
+                        
+                        {!paymentError && (
+                            <p className="absolute bottom-12 text-[10px] font-black text-neutral-300 uppercase tracking-widest">
+                                Official Merchant Pipeline • Secured by Razorpay
+                            </p>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }

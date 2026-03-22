@@ -187,6 +187,15 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                         </div>
                                     </div>
 
+                                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-100 border-dashed">
+                                        <span className="text-[11px] font-black text-neutral-500 uppercase tracking-[0.2em]">Payment</span>
+                                        {qrScannedOrder.payment_status === 'paid' ? (
+                                            <span className="px-2 py-1 rounded text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
+                                        ) : (
+                                            <span className="px-2 py-1 rounded text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest shadow-sm">Cash on Pickup</span>
+                                        )}
+                                    </div>
+
                                     <div className="space-y-3">
                                         {qrScannedOrder.items.map((item: any, idx: number) => (
                                             <div key={idx} className="flex gap-3 items-start">

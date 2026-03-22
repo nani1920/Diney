@@ -116,13 +116,13 @@ function IdentityForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 selection:bg-red-500/30">
+    <div className="min-h-screen bg-[#FCFAF7] flex flex-col items-center justify-center p-6 selection:bg-emerald-500/30">
       <Toaster />
       
-      { }
+      {/* Dynamic Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-red-600/5 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-red-600/5 blur-[120px] rounded-full animate-pulse delay-700" />
+        <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-emerald-500/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-emerald-500/5 blur-[120px] rounded-full animate-pulse delay-700" />
       </div>
 
       <motion.div 
@@ -134,71 +134,70 @@ function IdentityForm() {
           <motion.div 
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-[2rem] shadow-2xl shadow-red-600/40 mb-8 relative"
+            className="inline-flex items-center justify-center mb-8"
           >
-            <ShieldCheck size={36} className="text-white" />
-            <motion.div 
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              className="absolute -inset-2 border border-red-600/20 rounded-[2.5rem] border-dashed"
-            />
+            <img src="/logo.png" alt="Diney" className="h-20 w-auto drop-shadow-sm" />
           </motion.div>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-3 uppercase italic">
-            Identity <span className="text-red-600">Calibration</span>
+          
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3 uppercase italic">
+            Secure <span className="text-[#025E43]">Registry</span>
           </h1>
-          <p className="text-neutral-500 font-bold uppercase tracking-[0.2em] text-[10px]">
-            Finalizing merchant registry credentials
+          <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px]">
+            Calibrating your merchant credentials
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-neutral-900/50 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/5 shadow-2xl space-y-8">
+        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl p-10 rounded-[3rem] border border-white/20 shadow-2xl shadow-emerald-900/5 space-y-8">
           <div className="space-y-4">
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-              <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-1 text-center">Authenticated As</p>
-              <p className="text-sm font-bold text-white text-center truncate">{user?.email || 'Authenticated User'}</p>
+            <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50">
+              <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1 text-center">Authenticated As</p>
+              <p className="text-sm font-bold text-gray-900 text-center truncate">{user?.email || 'Authenticated User'}</p>
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] ml-1">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
                 Business Contact Number
               </label>
               <div className="relative group">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-red-500 transition-colors">
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#025E43] transition-colors">
                   <Smartphone size={20} />
                 </div>
                 <input
                   type="tel"
                   placeholder="+91 XXXXX XXXXX"
                   required
-                  className="w-full h-16 bg-black/40 rounded-2xl pl-14 pr-8 text-white font-bold placeholder:text-neutral-700 border border-white/5 focus:border-red-600/50 outline-none transition-all"
+                  className="w-full h-16 bg-gray-50 rounded-2xl pl-14 pr-8 text-gray-900 font-bold placeholder:text-gray-300 border-2 border-transparent focus:border-[#025E43] focus:bg-white outline-none transition-all shadow-sm"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />
               </div>
-              <p className="text-[9px] text-neutral-600 font-bold leading-relaxed ml-1">
-                Used for platform authority communications and manual registry verification.
-              </p>
+              <div className="flex items-start gap-2 ml-1">
+                <ShieldCheck size={14} className="text-emerald-500 mt-0.5" />
+                <p className="text-[10px] text-gray-400 font-bold leading-relaxed">
+                  Required for automated payouts and platform security verification.
+                </p>
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-18 bg-red-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-red-500 transition-all active:scale-95 shadow-2xl shadow-red-600/20 disabled:opacity-50 disabled:scale-100 group"
+            className="w-full h-18 bg-[#025E43] text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#1A1A1A] transition-all active:scale-95 shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:scale-100 group"
           >
             {submitting ? (
               <Loader2 className="animate-spin w-5 h-5" />
             ) : (
               <>
-                Commit & Continue <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                Confirm Identity <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
         </form>
 
-        <p className="text-center text-[10px] text-neutral-600 font-bold uppercase tracking-widest mt-10 flex items-center justify-center gap-2">
-          <Sparkles size={12} className="text-red-600" />
-          End-to-End Encrypted Registry
+        <p className="text-center text-[10px] text-gray-400 font-black uppercase tracking-widest mt-10 flex items-center justify-center gap-2">
+          <Sparkles size={12} className="text-[#025E43]" />
+          Bank-Grade Encrypted Session
         </p>
       </motion.div>
     </div>

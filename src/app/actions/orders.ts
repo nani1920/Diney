@@ -7,6 +7,8 @@ import { OrderSchema } from '@/lib/validations';
 import { orderRateLimiter, viewOrderRateLimiter } from '@/lib/ratelimit';
 import { withErrorHandling } from '@/lib/server-utils';
 import { cookies } from 'next/headers';
+import { getRazorpay } from '@/lib/razorpay';
+import crypto from 'crypto';
 
 function generateShortId() {
   const chars = '0123456789';
@@ -22,7 +24,10 @@ export async function createOrder(
   customerName: string,
   customerMobile: string,
   items: CartItem[],
-  totalAmount: number
+  totalAmount: number,
+  razorpayPaymentId?: string,
+  razorpayOrderId?: string,
+  razorpaySignature?: string
 ) {
   return withErrorHandling(async () => {
      
@@ -88,6 +93,20 @@ export async function createOrder(
       throw new Error(`Store is currently ${tenant.status}. Orders are not being accepted.`);
     }
 
+    // [SECURITY FIX S4] Cryptographic verification of Razorpay signature
+    let paymentStatus = 'pending';
+    if (razorpayPaymentId && razorpayOrderId && razorpaySignature && process.env.RAZORPAY_KEY_SECRET) {
+        const generatedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+            .digest('hex');
+
+        if (generatedSignature !== razorpaySignature) {
+            throw new Error("Payment signature verification failed. Potential spoofing attempt.");
+        }
+        paymentStatus = 'paid';
+    }
+
     // Insert the order
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
@@ -97,13 +116,16 @@ export async function createOrder(
         customer_name: validatedData.customerName,
         customer_mobile: validatedData.customerMobile,
         total_amount: finalTotal, // Use verified total
-        status: 'received'
+        status: 'received',
+        payment_status: paymentStatus,
+        payment_id: razorpayPaymentId || null
       })
       .select()
       .single();
 
     if (orderError || !order) {
-      throw new Error(`Order creation failed`);
+      console.error("Supabase Insert Error:", orderError);
+      throw new Error(`Order creation failed: ${orderError?.message || 'Unknown database error'}`);
     }
 
     // [SECURITY FIX S2] Set a secure cookie to "authorize" this mobile for this browser session
@@ -158,6 +180,8 @@ export async function getTenantOrders(tenantId: string): Promise<ServerActionRes
       total_amount: Number(o.total_amount),
       order_status: o.status,
       order_time: o.created_at,
+      payment_status: o.payment_status,
+      payment_id: o.payment_id,
       items: (o.order_items || []).map((oi: any) => ({
         id: oi.id,
         name: oi.name,
@@ -251,6 +275,8 @@ export async function getCustomerOrders(tenantId: string, customerMobile: string
       total_amount: Number(o.total_amount),
       order_status: o.status as OrderStatus,
       order_time: o.created_at as string,
+      payment_status: o.payment_status,
+      payment_id: o.payment_id,
       items: (o.order_items || []).map((oi: any) => ({
         id: oi.id as string,
         name: oi.name as string,
@@ -386,4 +412,17 @@ export async function getTenantRatings(tenantId: string) {
     if (error) throw error;
     return data;
   }, "getTenantRatings");
+}
+
+export async function createRazorpayOrder(amount: number) {
+  return withErrorHandling(async () => {
+    const razorpay = getRazorpay();
+    const options = {
+      amount: Math.round(amount * 100), // convert INR to paise
+      currency: "INR",
+      receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+    };
+    const order = await razorpay.orders.create(options);
+    return order;
+  }, "createRazorpayOrder");
 }
