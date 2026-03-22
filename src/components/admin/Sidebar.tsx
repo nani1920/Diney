@@ -27,16 +27,31 @@ export default function AdminSidebar() {
     const pathname = usePathname();
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
-     
-    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost:3000';
-    const baseHost = baseDomain.split(':')[0];
-    const isSubdomain = typeof window !== 'undefined' && 
-                       (window.location.hostname.endsWith('.' + baseHost) || 
-                        (window.location.hostname !== baseHost && window.location.hostname.includes(baseHost)));
+    
+    // Dynamic Subdomain Detection
+    const isSubdomain = typeof window !== 'undefined' && (() => {
+        const hostname = window.location.hostname;
+        const baseDomainEnv = (process.env.NEXT_PUBLIC_BASE_DOMAIN || '').split(':')[0];
+        
+        // 1. Check if it's explicitly a subdomain of the base env
+        if (baseDomainEnv && hostname.endsWith('.' + baseDomainEnv)) return true;
+        
+        // 2. Fallback: If it's a multi-level domain (like mario.diney.tech)
+        // and doesn't exactly match the base domain, it's a subdomain
+        const parts = hostname.split('.');
+        if (parts.length >= 3) return true;
+        
+        return false;
+    })();
 
     const getLink = (path: string) => {
-        if (isSubdomain) return path;  
-        return `/${tenantSlug}${path}`;  
+        if (isSubdomain) return path; 
+        
+        // Fallback to tenant.slug from context if params.tenantSlug is missing
+        const activeSlug = tenantSlug || tenant?.slug;
+        if (activeSlug) return `/${activeSlug}${path}`;
+        
+        return path;
     };
 
     const menuSections = [

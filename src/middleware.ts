@@ -24,6 +24,9 @@ export default async function middleware(req: NextRequest) {
    
   if (hostname.endsWith(baseDomain) && hostname !== baseDomain && hostname !== `www.${baseDomain}`) {
     subdomain = hostname.replace(`.${baseDomain}`, '');
+  } else if (hostname.split('.').length >= 3 && !hostname.startsWith('www.')) {
+    // Dynamic Fallback: if hostname has 3+ parts and is not www, it's a tenant subdomain
+    subdomain = hostname.split('.')[0];
   }
 
    
