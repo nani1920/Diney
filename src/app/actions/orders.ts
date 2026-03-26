@@ -1,7 +1,7 @@
 'use server';
 
 import { supabaseAdmin } from '@/lib/supabase';
-import { Order, OrderItem, CartItem, OrderStatus, Customization, ServerActionResult } from '@/types';
+import { Order, OrderItem, CartItem, OrderStatus, Customization, ServerActionResult, Customer } from '@/types';
 import { ensureTenantOwner, isSuperAdmin } from '@/lib/auth-utils';
 import { OrderSchema } from '@/lib/validations';
 import { orderRateLimiter, viewOrderRateLimiter } from '@/lib/ratelimit';
@@ -223,13 +223,13 @@ export async function updateOrderStatusServer(orderId: string, status: string, t
   }, "updateOrderStatusServer");
 }
 
-export async function getTenantCustomers(tenantId: string) {
-  return withErrorHandling(async () => {
+export async function getTenantCustomers(tenantId: string): Promise<ServerActionResult<Customer[]>> {
+  return withErrorHandling<Customer[]>(async (): Promise<Customer[]> => {
     await ensureTenantOwner(tenantId);
     
     const cacheKey = getCacheKey(tenantId, 'customers');
     const cached = await redis.get(cacheKey);
-    if (cached) return cached;
+    if (cached) return cached as Customer[];
 
     const { data, error } = await supabaseAdmin
       .from('orders')
@@ -240,7 +240,7 @@ export async function getTenantCustomers(tenantId: string) {
 
     if (error) throw error;
 
-    const customerMap: Record<string, any> = {};
+    const customerMap: Record<string, Customer> = {};
     (data || []).forEach((o: any) => {
       if (!customerMap[o.customer_mobile]) {
         customerMap[o.customer_mobile] = {
@@ -253,7 +253,7 @@ export async function getTenantCustomers(tenantId: string) {
       customerMap[o.customer_mobile].totalOrders += 1;
     });
 
-    const result = Object.values(customerMap);
+    const result: Customer[] = Object.values(customerMap);
     // Cache for 10 mins
     await redis.set(cacheKey, result, { ex: 600 });
 

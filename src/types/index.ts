@@ -69,11 +69,10 @@ export type Order = {
 };
 
 export type Customer = {
-  customer_id: string;
   name: string;
   mobile: string;
-  total_spent: number;
-  last_order_date: string;
+  totalOrders: number;
+  lastOrder: string;
 };
 
 export type Category = {
