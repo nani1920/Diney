@@ -231,6 +231,8 @@ export default function AdminDashboard() {
                                             </div>
                                             {order.payment_status === 'paid' ? (
                                                 <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-green-50 text-green-600 border border-green-200 uppercase tracking-widest whitespace-nowrap">Paid Online</span>
+                                            ) : order.payment_id ? (
+                                                <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-widest whitespace-nowrap">Payment Pending</span>
                                             ) : (
                                                 <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest whitespace-nowrap">Cash on Pickup</span>
                                             )}

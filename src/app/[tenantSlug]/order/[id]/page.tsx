@@ -263,6 +263,8 @@ export default function OrderStatusPage() {
                             <span className="text-[14px] font-bold text-neutral-400">Payment Status</span>
                             {order.payment_status === 'paid' ? (
                                 <span className="px-3 py-1 rounded text-[11px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
+                            ) : order.payment_id ? (
+                                <span className="px-3 py-1 rounded text-[11px] font-black bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-widest shadow-sm">Payment Pending</span>
                             ) : (
                                 <span className="px-3 py-1 rounded text-[11px] font-black bg-neutral-50 text-neutral-600 border border-neutral-200 uppercase tracking-widest shadow-sm">Cash on Pickup</span>
                             )}

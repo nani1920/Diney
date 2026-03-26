@@ -220,6 +220,8 @@ export default function AllOrdersPage() {
                                     <div className="font-bold text-xl text-gray-900">₹{order.total_amount}</div>
                                     {order.payment_status === 'paid' ? (
                                         <div className="inline-block mt-1 text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-widest font-black">Paid Online</div>
+                                    ) : order.payment_id ? (
+                                        <div className="inline-block mt-1 text-[9px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200 uppercase tracking-widest font-black">Payment Pending</div>
                                     ) : (
                                         <div className="inline-block mt-1 text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest font-black">Cash on Pickup</div>
                                     )}
@@ -373,6 +375,8 @@ export default function AllOrdersPage() {
                                         <p className="text-[11px] text-neutral-500 font-black uppercase tracking-[0.2em]">Total Amount</p>
                                         {selectedOrder.payment_status === 'paid' ? (
                                             <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-widest font-black">Paid Online</span>
+                                        ) : selectedOrder.payment_id ? (
+                                            <span className="text-[9px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200 uppercase tracking-widest font-black">Payment Pending</span>
                                         ) : (
                                             <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest font-black">Cash on Pickup</span>
                                         )}

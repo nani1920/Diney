@@ -234,6 +234,8 @@ export default function MyOrdersPage() {
                                                             <h3 className="text-[16px] font-bold text-neutral-900 tracking-[-0.01em]">Order #{order.short_id}</h3>
                                                             {order.payment_status === 'paid' ? (
                                                                 <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
+                                                            ) : order.payment_id ? (
+                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-wider">Payment Pending</span>
                                                             ) : (
                                                                 <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wider">Cash on Pickup</span>
                                                             )}
@@ -302,6 +304,8 @@ export default function MyOrdersPage() {
                                                             <h3 className="text-[15px] font-bold text-neutral-500 tracking-[-0.01em]">Order #{order.short_id}</h3>
                                                             {order.payment_status === 'paid' ? (
                                                                 <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
+                                                            ) : order.payment_id ? (
+                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-wider">Payment Pending</span>
                                                             ) : (
                                                                 <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-neutral-100 text-neutral-500 border border-neutral-200 uppercase tracking-wider">Cash on Pickup</span>
                                                             )}
