@@ -388,6 +388,43 @@ export async function getAuthenticatedOrder(orderId: string, tenantId: string) {
   }, "getAuthenticatedOrder");
 }
 
+export async function getAdminOrderById(orderId: string, tenantId: string): Promise<ServerActionResult<Order>> {
+  return withErrorHandling(async () => {
+    await ensureTenantOwner(tenantId);
+    
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .select('*, order_items(*)')
+      .eq('id', orderId)
+      .eq('tenant_id', tenantId)
+      .single();
+
+    if (error) throw error;
+    if (!data) return undefined;
+
+    return {
+      order_id: data.id,
+      short_id: data.short_id || data.id.replace(/\D/g, '').slice(0, 6) || '000000',
+      customer_name: data.customer_name as string,
+      customer_mobile: data.customer_mobile as string,
+      order_note: data.order_note as string,
+      total_amount: Number(data.total_amount),
+      order_status: data.status as OrderStatus,
+      order_time: data.created_at as string,
+      payment_status: data.payment_status,
+      payment_id: data.payment_id,
+      items: (data.order_items || []).map((oi: any) => ({
+        id: oi.id as string,
+        name: oi.name as string,
+        price: Number(oi.price),
+        quantity: oi.quantity as number,
+        image_url: oi.image_url as string,
+        customizations: oi.customizations as Customization[]
+      }))
+    };
+  }, "getAdminOrderById");
+}
+
 export async function submitOrderRating(
   orderId: string,
   tenantId: string,

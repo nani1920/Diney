@@ -6,7 +6,7 @@ import {
     updateOrderStatusServer, 
     getTenantOrders, 
     getCustomerOrders, 
-    getOrderById, 
+    getAdminOrderById, 
     getAuthenticatedOrder 
 } from '@/app/actions/orders';
 import { toast } from 'react-hot-toast';
@@ -148,7 +148,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                     // Delay slightly to allow DB to propagate
                     setTimeout(async () => {
                         const res = isAdmin 
-                            ? await getOrderById(payload.new.id, tenantId)
+                            ? await getAdminOrderById(payload.new.id, tenantId)
                             : await getAuthenticatedOrder(payload.new.id, tenantId);
                         
                         if (res?.success && res.data) {
