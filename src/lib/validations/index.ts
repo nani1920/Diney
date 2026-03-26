@@ -25,7 +25,7 @@ export const MenuItemSchema = z.object({
   image_url: z.string().url().optional().or(z.literal('')),
   availability_status: z.boolean().default(true),
   prep_time_minutes: z.number().int().min(1).max(120).default(10),
-  master_product_id: z.string().uuid().optional().or(z.literal(''))
+  master_product_id: z.string().uuid().optional().nullable().or(z.literal(''))
 });
 
 export const TenantSchema = z.object({

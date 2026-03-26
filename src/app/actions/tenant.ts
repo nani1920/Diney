@@ -14,7 +14,7 @@ export async function getTenantData(slug: string) {
     const cacheKey = getCacheKey(slug, 'config');
     
      
-    const cached = await redis.get(cacheKey) as MenuItem[] | null;
+    const cached = await redis.get(cacheKey) as any | null;
     if (cached) {
       return cached;
     }
@@ -30,10 +30,19 @@ export async function getTenantData(slug: string) {
       throw new Error(`Tenant ${slug} not found`);
     }
 
-     
-    await redis.set(cacheKey, tenant, { ex: DEFAULT_TTL });
+    // [SECURITY FIX] Strip sensitive fields from config before sending to client
+    const safeConfig = { ...((tenant.config as any) || {}) };
+    delete safeConfig.razorpay_key_secret;
+    
+    const safeTenant = {
+      ...tenant,
+      config: safeConfig
+    };
 
-    return tenant;
+    // Cache the SAFE version
+    await redis.set(cacheKey, safeTenant, { ex: DEFAULT_TTL });
+
+    return safeTenant;
   }, "getTenantData");
 }
 
@@ -231,7 +240,7 @@ export async function deleteMenuItemServer(tenantId: string, slug: string, itemI
 export async function updateTenantConfig(tenantId: string, slug: string, config: Record<string, unknown>) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
-     
+    
     const { error } = await supabaseAdmin
       .from('tenants')
       .update({ config })
@@ -239,12 +248,55 @@ export async function updateTenantConfig(tenantId: string, slug: string, config:
 
     if (error) throw error;
 
-     
     const cacheKey = getCacheKey(slug, 'config');
     await redis.del(cacheKey);
 
     return true;
   }, "updateTenantConfig");
+}
+
+export async function updatePaymentSettings(
+  tenantId: string, 
+  slug: string, 
+  keyId: string, 
+  keySecret?: string
+) {
+  return withErrorHandling(async () => {
+    await ensureTenantOwner(tenantId);
+    
+    // 1. Fetch current config
+    const { data: tenant } = await supabaseAdmin
+      .from('tenants')
+      .select('config')
+      .eq('id', tenantId)
+      .single();
+
+    const oldConfig = (tenant?.config as any) || {};
+    const newConfig = { 
+      ...oldConfig, 
+      razorpay_key_id: keyId 
+    };
+
+    // [BUG FIX] Preserve old secret if not providing a new one
+    if (keySecret) {
+      (newConfig as any).razorpay_key_secret = keySecret;
+    } else if (oldConfig.razorpay_key_secret) {
+      (newConfig as any).razorpay_key_secret = oldConfig.razorpay_key_secret;
+    }
+
+    const { error } = await supabaseAdmin
+      .from('tenants')
+      .update({ config: newConfig })
+      .eq('id', tenantId);
+
+    if (error) throw error;
+
+    // Cache Invalidation
+    const cacheKey = getCacheKey(slug, 'config');
+    await redis.del(cacheKey);
+
+    return true;
+  }, "updatePaymentSettings");
 }
 
  

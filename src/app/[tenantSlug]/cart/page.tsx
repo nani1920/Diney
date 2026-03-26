@@ -4,13 +4,25 @@ import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Minus, Plus, Ticket, ArrowRight, Trash2, ShoppingCart, CreditCard, Loader2, Smartphone, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Ticket, ArrowRight, Trash2, ShoppingCart, CreditCard, Loader2, Smartphone, AlertCircle, Check, Image as ImageIcon } from 'lucide-react';
 import Script from 'next/script';
 import { useState } from 'react';
+import ResilientImage from "@/components/ResilientImage";
 import { createRazorpayOrder, createOrder } from '@/app/actions/orders';
 import { useStore } from '@/context/StoreContext';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+
+function getFoodEmoji(name: string) {
+    const emojis: Record<string, string> = {
+        'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'sandwich': '🥪', 'salad': '🥗', 'sushi': '🍣', 'taco': '🌮', 'cake': '🍰', 'coffee': '☕', 'juice': '🍹', 'beer': '🍺', 'chicken': '🍗', 'fries': '🍟', 'ice cream': '🍦', 'donut': '🍩', 'cookie': '🍪', 'wrap': '🌯', 'soup': '🥣', 'noodles': '🍜', 'rice': '🍚', 'curry': '🍛', 'momos': '🥟', 'paneer': '🧀', 'dessert': '🍮', 'shake': '🥤', 'tea': '🍵'
+    };
+    const lowerName = name.toLowerCase();
+    for (const [key, emoji] of Object.entries(emojis)) {
+        if (lowerName.includes(key)) return emoji;
+    }
+    return '🍱';
+}
 
 export default function CartPage() {
     const { cart, updateCartQuantity } = useCart();
@@ -18,24 +30,35 @@ export default function CartPage() {
     const tenantSlug = params.tenantSlug as string;
 
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const deliveryFee = 20;
+    const deliveryFee = 0;
     const finalTotal = totalAmount + deliveryFee;
 
     const { customer, tenant } = useStore();
     const router = useRouter();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
     const handlePayOnline = async () => {
+        if (!tenant) {
+            toast.error("Loading store information... Please try again and refresh if it takes too long.");
+            return;
+        }
+
         if (!customer) {
-            router.push(`/${tenantSlug}/checkout`);
+            router.push(`/${tenantSlug}/checkout?type=online`);
             return;
         }
         setIsProcessing(true);
         setPaymentError(null);
         try {
             // 1. Create order ID on our server
-            const rzpRes = await createRazorpayOrder(finalTotal);
+            const rzpRes = await createRazorpayOrder(
+                finalTotal, 
+                tenant?.id || '',
+                { name: customer.name, mobile: customer.mobile },
+                cart
+            );
             if (!rzpRes.success || !rzpRes.data) {
                 const errorMsg = rzpRes.error || "Could not initiate payment. Are your Razorpay test keys configured?";
                 setPaymentError(errorMsg);
@@ -47,17 +70,17 @@ export default function CartPage() {
 
             // 2. Open Razorpay Checkout Modal
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+                key: tenant?.config?.razorpay_key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
                 amount: orderOptions.amount, 
                 currency: orderOptions.currency,
-                name: "Diney SaaS",
-                description: `Payment for ${tenantSlug}`,
+                name: tenant?.name || "Diney",
+                description: `Payment for ${tenant?.name || tenantSlug}`,
                 order_id: orderOptions.id, 
                 handler: async function (response: any) {
                     toast.loading('Verifying secure payment...', { id: 'payment' });
                     // 3. Place actual Diney order with signature for server verification
                     const result = await createOrder(
-                        tenant?.id || '', // extract tenant ID securely
+                        tenant?.id || '', 
                         customer.name,
                         customer.mobile,
                         cart,
@@ -68,9 +91,15 @@ export default function CartPage() {
                     );
                     
                     if (result.success) {
-                        toast.success('Payment beautiful & Order placed!', { id: 'payment' });
-                        router.push(`/${tenantSlug}/my-orders`);
+                        toast.success('Order placed successfully!', { id: 'payment' });
+                        setIsProcessing(false);
+                        setPaymentSuccess(true);
+                        // Delay for 2 seconds to show the success animation (PhonePe style)
+                        setTimeout(() => {
+                            router.push(`/${tenantSlug}/my-orders`);
+                        }, 2200);
                     } else {
+                        setIsProcessing(false);
                         toast.error(result.error || 'Payment succeeded but order failed.', { id: 'payment' });
                     }
                 },
@@ -158,7 +187,14 @@ export default function CartPage() {
                                     { }
                                     <div className="w-[72px] h-[72px] bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0">
                                         {item.image_url ? (
-                                            <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
+                                            <ResilientImage 
+                                                src={item.image_url} 
+                                                width={72} 
+                                                height={72} 
+                                                className="w-full h-full object-cover" 
+                                                alt={item.name} 
+                                                fallbackEmoji={getFoodEmoji(item.name)}
+                                            />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-[36px]">
                                                 {getFoodEmoji(item.name)}
@@ -289,7 +325,6 @@ export default function CartPage() {
                         >
                             {!paymentError ? (
                                 <>
-                                    {/* Animated Rings - Loading State */}
                                     <div className="relative w-32 h-32 mb-10 mx-auto">
                                         <motion.div 
                                             animate={{ rotate: 360 }}
@@ -355,38 +390,64 @@ export default function CartPage() {
                                         >
                                             Return to Cart
                                         </button>
-                                        <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-4 flex items-center justify-center gap-2">
-                                            <Smartphone size={12} />
-                                            Check your connectivity
-                                        </p>
                                     </div>
                                 </motion.div>
                             )}
                         </motion.div>
+                    </motion.div>
+                )}
+
+                {paymentSuccess && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[110] bg-emerald-600 flex flex-col items-center justify-center p-6 text-center"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ 
+                                type: "spring",
+                                damping: 12,
+                                stiffness: 200
+                            }}
+                            className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-8 shadow-2xl"
+                        >
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.2, type: "spring" }}
+                            >
+                                <Check size={64} className="text-emerald-600 stroke-[4px]" />
+                            </motion.div>
+                        </motion.div>
                         
-                        {!paymentError && (
-                            <p className="absolute bottom-12 text-[10px] font-black text-neutral-300 uppercase tracking-widest">
-                                Official Merchant Pipeline • Secured by Razorpay
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="space-y-2"
+                        >
+                            <h2 className="text-white text-[28px] font-black tracking-tight leading-none">
+                                PAYMENT SUCCESSFUL
+                            </h2>
+                            <p className="text-emerald-100 text-[15px] font-bold tracking-widest uppercase opacity-80">
+                                Preparing your delicious meal
                             </p>
-                        )}
+                        </motion.div>
+
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.5 }}
+                            className="mt-12 bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10"
+                        >
+                            <span className="text-white font-black text-[20px]">₹{finalTotal}</span>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
         </main>
     );
-}
-
-function getFoodEmoji(name: string) {
-    const n = name.toLowerCase();
-    if (n.includes('samosa')) return '🥟';
-    if (n.includes('cutlet')) return '🍘';
-    if (n.includes('pakora') || n.includes('bread')) return '🥙';
-    if (n.includes('burger') || n.includes('wrap')) return '🍔';
-    if (n.includes('momos') || n.includes('pizza')) return '🥟';
-    if (n.includes('fries')) return '🍟';
-    if (n.includes('pav') || n.includes('dosa')) return '🌮';
-    if (n.includes('nuggets')) return '🍗';
-    if (n.includes('drink') || n.includes('soda')) return '🥤';
-    if (n.includes('chai') || n.includes('coffee')) return '☕';
-    return '🍱';
 }

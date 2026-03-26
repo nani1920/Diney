@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const CSP_HEADER = `
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://fastly.jsdelivr.net https://*.razorpay.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com https://*.razorpay.com https://*.gstatic.com https://*.googleusercontent.com https://*.wp.com;
+  connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co https://fastly.jsdelivr.net https://*.razorpay.com;
+  frame-src 'self' https://*.razorpay.com;
+  worker-src 'self' blob:;
+  media-src 'self' blob:;
+  frame-ancestors 'none';
+`.replace(/\s{2,}/g, ' ').trim();
+
 export const config = {
   matcher: [
      
@@ -66,20 +79,7 @@ export default async function middleware(req: NextRequest) {
     : NextResponse.rewrite(new URL(`/${subdomain}${url.pathname}`, req.url));
 
    
-   
-  const cspHeader = `
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://fastly.jsdelivr.net;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com;
-    connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co https://fastly.jsdelivr.net;
-    worker-src 'self' blob:;
-    media-src 'self' blob:;
-    frame-ancestors 'none';
-  `.replace(/\s{2,}/g, ' ').trim();
-
-  response.headers.set('Content-Security-Policy', cspHeader);
+  response.headers.set('Content-Security-Policy', CSP_HEADER);
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');

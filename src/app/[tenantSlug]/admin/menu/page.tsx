@@ -12,6 +12,19 @@ import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMasterProducts } from "@/app/actions/super-admin";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
+import ResilientImage from "@/components/ResilientImage";
+
+function getFoodEmoji(name: string) {
+    const emojis: Record<string, string> = {
+        'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'sandwich': '🥪', 'salad': '🥗', 'sushi': '🍣', 'taco': '🌮', 'cake': '🍰', 'coffee': '☕', 'juice': '🍹', 'beer': '🍺', 'chicken': '🍗', 'fries': '🍟', 'ice cream': '🍦', 'donut': '🍩', 'cookie': '🍪', 'wrap': '🌯', 'soup': '🥣', 'noodles': '🍜', 'rice': '🍚', 'curry': '🍛', 'momos': '🥟', 'paneer': '🧀', 'dessert': '🍮', 'shake': '🥤', 'tea': '🍵'
+    };
+    const lowerName = name.toLowerCase();
+    for (const [key, emoji] of Object.entries(emojis)) {
+        if (lowerName.includes(key)) return emoji;
+    }
+    return '🍱';
+}
 
  
 const generateUUID = () => {
@@ -39,6 +52,7 @@ export default function MenuManagementPage() {
   const [filterType, setFilterType] = useState<"all" | "veg" | "non-veg">("all");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [imageUrlPreview, setImageUrlPreview] = useState("");
 
    
   const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
@@ -259,10 +273,17 @@ export default function MenuManagementPage() {
               >
                 <div className="aspect-[4/3] relative rounded-[1.5rem] overflow-hidden mb-3 bg-neutral-50">
                   {item.image_url ? (
-                    <img src={item.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={item.name} />
+                    <ResilientImage 
+                      src={item.image_url} 
+                      fill
+                      sizes="(max-width: 768px) 50vw, 20vw"
+                      className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                      alt={item.name} 
+                      fallbackEmoji={getFoodEmoji(item.name)}
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-neutral-200">
-                      <ImageIcon className="w-6 h-6" />
+                      <span className="text-[32px]">{getFoodEmoji(item.name)}</span>
                     </div>
                   )}
 
@@ -343,50 +364,53 @@ export default function MenuManagementPage() {
               initial={{ scale: 0.95, y: 30 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 30 }}
-              className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl overflow-hidden relative"
+              className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[92vh]"
             >
-              <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center rounded-2xl bg-neutral-50 text-neutral-400 hover:text-neutral-900 transition-all z-10">
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="p-10 md:p-12">
-                <header className="mb-10">
-                  <h2 className="text-3xl font-black text-neutral-900 tracking-tighter">
+              {/* Fixed Header */}
+              <div className="px-8 pt-8 pb-6 border-b border-neutral-50 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-black text-neutral-900 tracking-tighter">
                     {isAdding ? "Craft Flavor" : "Refine Flavor"}
                   </h2>
-                  <p className="text-neutral-400 text-sm font-medium italic mt-1">Details define the difference.</p>
-                </header>
+                  <p className="text-neutral-400 text-[11px] font-bold uppercase tracking-wider mt-1 opacity-60">Details define the difference.</p>
+                </div>
+                <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-900 transition-all">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-                <form onSubmit={isAdding ? handleCreate : handleUpdate} className="space-y-6">
+              <form onSubmit={isAdding ? handleCreate : handleUpdate} className="flex flex-col flex-1 overflow-hidden">
+                {/* Scrollable Body */}
+                <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-neutral-100">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Product Identity</label>
+                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Product Identity</label>
                     <input
                       required
                       name="name"
                       defaultValue={editingItem?.name}
-                      className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
+                      className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
                       placeholder="e.g. Sizzling Paneer Burger"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Price (₹)</label>
+                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Price (₹)</label>
                       <input
                         required
                         type="number"
                         name="price"
                         defaultValue={editingItem?.price}
-                        className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
+                        className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
                         placeholder="0"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Category</label>
+                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Category</label>
                       <select
                         name="category_id"
                         defaultValue={(editingItem as any)?.category_id || (categories[0]?.id || '')}
-                        className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_1rem_center] bg-no-repeat"
+                        className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1rem_1rem] bg-[right_1rem_center] bg-no-repeat"
                       >
                         <option value="">Ungrouped</option>
                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -395,64 +419,78 @@ export default function MenuManagementPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Description</label>
+                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Description</label>
                     <textarea
                       required
                       name="description"
                       defaultValue={editingItem?.description}
-                      className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all h-24 resize-none font-medium italic"
+                      className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all h-24 resize-none font-medium italic"
                       placeholder="Describe the flavors..."
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Dietary Status</label>
-                      <select name="veg_or_nonveg" defaultValue={editingItem?.veg_or_nonveg || "veg"} className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_1rem_center] bg-no-repeat">
+                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Dietary Status</label>
+                      <select name="veg_or_nonveg" defaultValue={editingItem?.veg_or_nonveg || "veg"} className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1rem_1rem] bg-[right_1rem_center] bg-no-repeat">
                         <option value="veg">Veg</option>
                         <option value="non-veg">Non-Veg</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Wait Time (min)</label>
+                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Wait Time (min)</label>
                       <input
                         required
                         type="number"
                         name="prep_time_minutes"
                         defaultValue={editingItem?.prep_time_minutes || 10}
-                        className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
+                        className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest px-1">Image URL</label>
-                    <input
-                      name="image_url"
-                      defaultValue={editingItem?.image_url}
-                      className="w-full px-6 py-4 bg-neutral-50 border border-neutral-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
-                      placeholder="Paste link here..."
-                    />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Visual Identity (Image URL)</label>
+                    <div className="flex gap-4 items-start">
+                      <div className="w-20 h-20 bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0 border border-neutral-100 flex items-center justify-center">
+                        <ResilientImage 
+                          src={imageUrlPreview || (editingItem?.image_url || '')} 
+                          width={80} 
+                          height={80} 
+                          className="object-cover w-full h-full" 
+                          alt="Preview"
+                          useStandardImg={true} 
+                        />
+                      </div>
+                      <input
+                        name="image_url"
+                        defaultValue={editingItem?.image_url}
+                        onChange={(e) => setImageUrlPreview(e.target.value)}
+                        className="flex-1 px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900"
+                        placeholder="Paste link here..."
+                      />
+                    </div>
                   </div>
+                </div>
 
-                  <div className="pt-6 flex items-center gap-4">
-                    <button
-                      type="button"
-                      onClick={() => { setIsAdding(false); setEditingItem(null); }}
-                      className="flex-1 py-5 text-neutral-400 font-black uppercase tracking-widest hover:text-neutral-900 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isProcessing}
-                      className="flex-[2] py-5 bg-neutral-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-2xl shadow-neutral-200 transition-all active:scale-[0.98] disabled:opacity-50"
-                    >
-                      {isProcessing ? "Saving..." : editingItem?.id ? "Apply Fix" : "Confirm Entry"}
-                    </button>
-                  </div>
-                </form>
-              </div>
+                {/* Fixed Footer */}
+                <div className="p-8 border-t border-neutral-50 bg-neutral-50/10 flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => { setIsAdding(false); setEditingItem(null); }}
+                    className="flex-1 py-4 text-neutral-400 font-black uppercase tracking-[0.2em] text-[11px] hover:text-neutral-900 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessing}
+                    className="flex-[2] h-14 bg-neutral-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[12px] hover:bg-emerald-600 shadow-xl shadow-neutral-200 transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {isProcessing ? "Saving..." : editingItem?.id ? "Apply Fix" : "Confirm Entry"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

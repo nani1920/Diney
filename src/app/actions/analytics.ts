@@ -3,6 +3,7 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { ensureTenantOwner } from '@/lib/auth-utils';
 import { withErrorHandling } from '@/lib/server-utils';
+import { redis, getCacheKey } from '@/lib/redis';
 
 export async function getStoreAnalytics(
   tenantId: string, 
@@ -11,6 +12,17 @@ export async function getStoreAnalytics(
 ) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
+    
+    // 1. Cache Check
+    const cacheKey = getCacheKey(tenantId, `analytics:${timeframe}${specificDate ? `:${specificDate}` : ''}`);
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log(`[getStoreAnalytics] Cache Hit for ${tenantId}`);
+      return cached;
+    }
+
+    console.log(`[getStoreAnalytics] Cache Miss - Fetching from DB for ${tenantId}`);
+
     let query = supabaseAdmin
       .from('orders')
       .select('id, total_amount, status, created_at, customer_name, customer_mobile, order_items(id, name, price, quantity)')
@@ -40,13 +52,15 @@ export async function getStoreAnalytics(
     
      
     if (!orders || orders.length === 0) {
-      return {
+      const emptyResult = {
         totalRevenue: 0,
         totalOrders: 0,
         avgOrderValue: 0,
         topItems: [],
         chartData: []
       };
+      await redis.set(cacheKey, emptyResult, { ex: 60 });
+      return emptyResult;
     }
 
      
@@ -82,12 +96,17 @@ export async function getStoreAnalytics(
 
     const chartData = Object.entries(distribution).map(([label, value]) => ({ label, value }));
 
-    return {
+    const analyticsResult = {
       totalRevenue,
       totalOrders,
       avgOrderValue,
       topItems,
       chartData
     };
+
+    // Store in cache for 1 minute
+    await redis.set(cacheKey, analyticsResult, { ex: 60 });
+
+    return analyticsResult;
   }, "getStoreAnalytics");
 }

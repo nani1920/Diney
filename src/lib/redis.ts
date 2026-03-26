@@ -10,8 +10,8 @@ export const redis = new Redis({
 })
 
  
-export const getCacheKey = (tenantSlug: string, type: 'menu' | 'config') => {
-  return `tenant:${tenantSlug}:${type}`
+export const getCacheKey = (tenantIdOrSlug: string, type: 'menu' | 'config' | 'analytics' | string) => {
+  return `tenant:${tenantIdOrSlug}:${type}`
 }
 
  

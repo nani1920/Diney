@@ -10,6 +10,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package, Star } from 'lucide-react';
 import { RatingModal } from '@/components/customer/RatingModal';
 import { Order } from '@/types';
+import ResilientImage from "@/components/ResilientImage";
+
+function getFoodEmoji(name: string) {
+    const emojis: Record<string, string> = {
+        'pizza': '🍕', 'burger': '🍔', 'pasta': '🍝', 'sandwich': '🥪', 'salad': '🥗', 'sushi': '🍣', 'taco': '🌮', 'cake': '🍰', 'coffee': '☕', 'juice': '🍹', 'beer': '🍺', 'chicken': '🍗', 'fries': '🍟', 'ice cream': '🍦', 'donut': '🍩', 'cookie': '🍪', 'wrap': '🌯', 'soup': '🥣', 'noodles': '🍜', 'rice': '🍚', 'curry': '🍛', 'momos': '🥟', 'paneer': '🧀', 'dessert': '🍮', 'shake': '🥤', 'tea': '🍵'
+    };
+    const lowerName = name.toLowerCase();
+    for (const [key, emoji] of Object.entries(emojis)) {
+        if (lowerName.includes(key)) return emoji;
+    }
+    return '🍱';
+}
 
 export default function MyOrdersPage() {
     const { customer, tenant } = useStore();
@@ -239,7 +251,14 @@ export default function MyOrdersPage() {
                                                             {order.items.slice(0, 3).map((item: any, i: number) => (
                                                                 <div key={i} className="w-8 h-8 rounded-lg border-2 border-white bg-neutral-50 overflow-hidden shadow-sm">
                                                                     {item.image_url ? (
-                                                                        <img src={item.image_url} className="w-full h-full object-cover" />
+                                                                        <ResilientImage 
+                                                                            src={item.image_url} 
+                                                                            width={32} 
+                                                                            height={32} 
+                                                                            className="w-full h-full object-cover" 
+                                                                            alt={item.name} 
+                                                                            fallbackEmoji={getFoodEmoji(item.name)}
+                                                                        />
                                                                     ) : (
                                                                         <div className="w-full h-full flex items-center justify-center text-[14px]">
                                                                             {getFoodEmoji(item.name)}
@@ -363,18 +382,4 @@ export default function MyOrdersPage() {
             />
         </main>
     );
-}
-function getFoodEmoji(name: string) {
-    const n = name.toLowerCase();
-    if (n.includes('samosa')) return '🥟';
-    if (n.includes('cutlet')) return '🍘';
-    if (n.includes('pakora') || n.includes('bread')) return '🥙';
-    if (n.includes('burger') || n.includes('wrap')) return '🍔';
-    if (n.includes('momos') || n.includes('pizza')) return '🥟';
-    if (n.includes('fries')) return '🍟';
-    if (n.includes('pav') || n.includes('dosa')) return '🌮';
-    if (n.includes('nuggets')) return '🍗';
-    if (n.includes('drink') || n.includes('soda')) return '🥤';
-    if (n.includes('chai') || n.includes('coffee') || n.includes('tea')) return '☕';
-    return '🍱';
 }

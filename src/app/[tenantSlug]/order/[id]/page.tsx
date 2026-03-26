@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Clock, CheckCircle2, ShoppingBag, UtensilsCrossed, Receipt, ChevronRight, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { QRCode } from 'react-qrcode-logo';
+import ResilientImage from "@/components/ResilientImage";
 
 export default function OrderStatusPage() {
     const params = useParams();
@@ -231,7 +232,14 @@ export default function OrderStatusPage() {
                                 <div key={i} className="flex items-center gap-4">
                                     <div className="w-16 h-16 bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0 border border-neutral-100 shadow-sm flex items-center justify-center">
                                         {displayImage ? (
-                                            <img src={displayImage} className="w-full h-full object-cover" alt={item.name} />
+                                            <ResilientImage 
+                                                src={displayImage} 
+                                                width={64} 
+                                                height={64} 
+                                                className="w-full h-full object-cover" 
+                                                alt={item.name} 
+                                                fallbackEmoji={getFoodEmoji(item.name)}
+                                            />
                                         ) : (
                                             <span className="text-[28px]">{getFoodEmoji(item.name)}</span>
                                         )}

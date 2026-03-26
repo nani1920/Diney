@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import clsx from "clsx";
+import ResilientImage from "@/components/ResilientImage";
 
 export default function Home() {
   const { 
@@ -278,7 +279,14 @@ export default function Home() {
                       { }
                       <div className="relative flex-shrink-0 w-[94px] h-[94px] rounded-2xl bg-neutral-50 overflow-hidden">
                         {item.image_url ? (
-                            <Image src={item.image_url} fill sizes="94px" className="object-cover" alt={item.name} />
+                            <ResilientImage 
+                                src={item.image_url} 
+                                fill 
+                                sizes="94px" 
+                                className="object-cover" 
+                                alt={item.name} 
+                                fallbackEmoji={getFoodEmoji(item.name)}
+                            />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-neutral-300">
                                 <span className="text-[42px]">{getFoodEmoji(item.name)}</span>

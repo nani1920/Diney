@@ -19,6 +19,8 @@ function generateShortId() {
   return result;
 }
 
+import { redis, getCacheKey } from '@/lib/redis';
+
 export async function createOrder(
   tenantId: string,
   customerName: string,
@@ -65,28 +67,32 @@ export async function createOrder(
     let serverTotal = 0;
     validatedData.items.forEach((item: OrderItem) => {
       const livePrice = item.id ? priceMap[item.id] : item.price;
-      
-      // [SECURITY REVENUE LOCK] 
-      // Since customization prices are not currently stored in the master menu_items table,
-      // we treat them as "Free Special Instructions" on the server.
-      // This prevents a malicious actor from sending a negative price in the customizations JSON.
       const itemCustomizationsTotal = 0; 
-      
       serverTotal += ((Number(livePrice) || 0) + itemCustomizationsTotal) * item.quantity;
     });
+
+    // [REMOVED] Platform fee (set to 0 as requested by user)
+    const platformFee = 0;
+    serverTotal += platformFee;
 
     // Override with server-calculated total for database insertion
     const finalTotal = serverTotal || validatedData.totalAmount;
 
-    // Verify the tenant exists and is active
-    const { data: tenant, error: tenantError } = await supabaseAdmin
-      .from('tenants')
-      .select('status')
-      .eq('id', validatedData.tenantId)
-      .single();
+    // 1. Fetch Tenant (with Cache)
+    const configCacheKey = getCacheKey(validatedData.tenantId, 'config');
+    let tenant = await redis.get(configCacheKey) as any;
     
-    if (tenantError || !tenant) {
-      throw new Error(`Store not found`);
+    if (!tenant) {
+      const { data: dbTenant, error: tenantError } = await supabaseAdmin
+        .from('tenants')
+        .select('status, config')
+        .eq('id', validatedData.tenantId)
+        .single();
+      
+      if (tenantError || !dbTenant) throw new Error(`Store not found`);
+      tenant = dbTenant;
+      // Cache for 5 mins
+      await redis.set(configCacheKey, tenant, { ex: 300 });
     }
 
     if (tenant.status !== 'active') {
@@ -95,9 +101,12 @@ export async function createOrder(
 
     // [SECURITY FIX S4] Cryptographic verification of Razorpay signature
     let paymentStatus = 'pending';
-    if (razorpayPaymentId && razorpayOrderId && razorpaySignature && process.env.RAZORPAY_KEY_SECRET) {
+    const config = (tenant.config as any) || {};
+    const effectiveSecret = config.razorpay_key_secret || process.env.RAZORPAY_KEY_SECRET;
+
+    if (razorpayPaymentId && razorpayOrderId && razorpaySignature && effectiveSecret) {
         const generatedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .createHmac('sha256', effectiveSecret)
             .update(`${razorpayOrderId}|${razorpayPaymentId}`)
             .digest('hex');
 
@@ -128,8 +137,10 @@ export async function createOrder(
       throw new Error(`Order creation failed: ${orderError?.message || 'Unknown database error'}`);
     }
 
-    // [SECURITY FIX S2] Set a secure cookie to "authorize" this mobile for this browser session
-    // We set it on the base domain if available so it works across subdomains
+    // Invalidate analytics and customer cache on new order
+    await redis.del(getCacheKey(validatedData.tenantId, 'analytics:today'));
+    await redis.del(getCacheKey(validatedData.tenantId, 'customers'));
+
     const cookieStore = await cookies();
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN?.split(':')[0]; // Remove port if present
     const isLocalhost = baseDomain === 'localhost' || baseDomain === 'lvh.me' || !baseDomain;
@@ -204,6 +215,10 @@ export async function updateOrderStatusServer(orderId: string, status: string, t
       .eq('tenant_id', tenantId);
 
     if (error) throw error;
+    
+    // Invalidate analytics cache on status change
+    await redis.del(getCacheKey(tenantId, 'analytics:today'));
+    
     return true;
   }, "updateOrderStatusServer");
 }
@@ -211,11 +226,17 @@ export async function updateOrderStatusServer(orderId: string, status: string, t
 export async function getTenantCustomers(tenantId: string) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
+    
+    const cacheKey = getCacheKey(tenantId, 'customers');
+    const cached = await redis.get(cacheKey);
+    if (cached) return cached;
+
     const { data, error } = await supabaseAdmin
       .from('orders')
       .select('customer_name, customer_mobile, created_at')
       .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(2000); // 2. Hard limit for aggregation safety
 
     if (error) throw error;
 
@@ -232,7 +253,11 @@ export async function getTenantCustomers(tenantId: string) {
       customerMap[o.customer_mobile].totalOrders += 1;
     });
 
-    return Object.values(customerMap);
+    const result = Object.values(customerMap);
+    // Cache for 10 mins
+    await redis.set(cacheKey, result, { ex: 600 });
+
+    return result;
   }, "getTenantCustomers");
 }
 
@@ -414,15 +439,73 @@ export async function getTenantRatings(tenantId: string) {
   }, "getTenantRatings");
 }
 
-export async function createRazorpayOrder(amount: number) {
+export async function createRazorpayOrder(
+  amount: number, 
+  tenantId: string,
+  customerData?: { name: string; mobile: string },
+  items?: CartItem[]
+) {
   return withErrorHandling(async () => {
-    const razorpay = getRazorpay();
+    console.log('[createRazorpayOrder] Initiating order:', { tenantId, amount, customer: customerData?.mobile });
+
+    if (!tenantId) {
+      throw new Error("Missing store identifier. Please refresh the page.");
+    }
+
+    if (amount < 1) { // Min ₹1 for Razorpay
+      throw new Error(`Invalid amount: ₹${amount}. Minimum ₹1 required.`);
+    }
+
+    // 1. Fetch tenant-specific keys from config
+    const { data: tenant, error } = await supabaseAdmin
+      .from('tenants')
+      .select('config')
+      .eq('id', tenantId)
+      .single();
+
+    if (error || !tenant) {
+      console.error('[createRazorpayOrder] Store lookup failed:', error);
+      throw new Error("Could not load store payment settings.");
+    }
+
+    const config = (tenant?.config as any) || {};
+    const keyId = config.razorpay_key_id;
+    const keySecret = config.razorpay_key_secret;
+
+    const customKeys = (keyId && keySecret) 
+      ? { keyId, keySecret }
+      : undefined;
+
+    const razorpay = getRazorpay(customKeys);
+    
+    // Prepare minimal item data for notes to satisfy size limits
+    const minimalItems = (items || []).map(i => ({
+      id: i.id,
+      n: i.name,
+      p: i.price,
+      q: i.quantity
+    }));
+
     const options = {
-      amount: Math.round(amount * 100), // convert INR to paise
+      amount: Math.round(amount * 100), // Paise
       currency: "INR",
-      receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+      receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      notes: {
+        tenantId: tenantId,
+        customerName: customerData?.name || 'Guest',
+        customerMobile: customerData?.mobile || '',
+        items: JSON.stringify(minimalItems).slice(0, 1800), // Safety slice for Razorpay limit
+        source: 'diney_v1'
+      }
     };
-    const order = await razorpay.orders.create(options);
-    return order;
+
+    try {
+      const order = await razorpay.orders.create(options);
+      console.log('[createRazorpayOrder] SUCCESS:', order.id);
+      return order;
+    } catch (rzpError: any) {
+      console.error('[createRazorpayOrder] Razorpay API ERROR:', rzpError);
+      throw new Error(`Razorpay Error: ${rzpError.description || rzpError.message || "Failed to initiate transaction"}`);
+    }
   }, "createRazorpayOrder");
 }
