@@ -104,7 +104,16 @@ export async function createOrder(
     const config = (tenant.config as any) || {};
     const effectiveSecret = config.razorpay_key_secret || process.env.RAZORPAY_KEY_SECRET;
 
-    if (razorpayPaymentId && razorpayOrderId && razorpaySignature && effectiveSecret) {
+    // Strict Enforcement: If an order ID is provided, it MUST be a valid online payment
+    if (razorpayOrderId) {
+        if (!razorpayPaymentId || !razorpaySignature) {
+            throw new Error("Online payment verification failed: Missing payment ID or signature.");
+        }
+
+        if (!effectiveSecret) {
+            throw new Error("Store payment configuration missing. Cannot verify online payment.");
+        }
+
         const generatedSignature = crypto
             .createHmac('sha256', effectiveSecret)
             .update(`${razorpayOrderId}|${razorpayPaymentId}`)
