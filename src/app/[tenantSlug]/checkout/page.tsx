@@ -35,8 +35,7 @@ function CheckoutContent() {
     const totalAmount = cart.reduce((sum, item) => {
         const itemTotal = item.price * item.quantity;
         const customizationTotal = (item.customizations || [])
-            .filter(c => c.price)
-            .reduce((cSum, c) => cSum + (c.price || 0) * item.quantity, 0);
+            .reduce((cSum, c) => cSum + (Number(c.price) || 0) * item.quantity, 0);
         return sum + itemTotal + customizationTotal;
     }, 0);
 

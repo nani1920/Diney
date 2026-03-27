@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
     // We care about order.paid or payment.captured
     if (event === 'order.paid' || event === 'payment.captured') {
         const payment = payload.payload.payment.entity;
-        const razorpayOrderId = payment.order_id;
         const razorpayPaymentId = payment.id;
+        const razorpayOrderId = payment.order_id;
         const notes = payment.notes || {};
 
         if (notes.source !== 'diney_v1') {
@@ -76,11 +76,21 @@ export async function POST(req: NextRequest) {
 
         // 3. RECREATE ORDER (The Resilience Fix)
         // If we reach here, the customer paid but the browser never called our createOrder action
+        
+        // IMPORTANT: Only recreate if it's payment.captured to avoid multiple webhook events contesting
+        if (event !== 'payment.captured') {
+            return NextResponse.json({ received: true, status: 'ignored_recreate_on_paid' });
+        }
+
         console.log(`[Webhook] RECREATING ORDER for ${customerMobile} (${tenantId})`);
 
         const items = JSON.parse(itemsJson);
         let totalAmount = 0;
-        items.forEach((i: any) => { totalAmount += (i.p * i.q); });
+        items.forEach((i: any) => { 
+            const itemBaseTotal = i.p * i.q;
+            const customizationTotal = (i.c || []).reduce((sum: number, c: any) => sum + (Number(c.p) || 0) * i.q, 0);
+            totalAmount += itemBaseTotal + customizationTotal;
+        });
 
         // Insert Order
         const { data: newOrder, error: orderError } = await supabaseAdmin
@@ -105,10 +115,12 @@ export async function POST(req: NextRequest) {
             order_id: newOrder.id,
             name: i.n,
             price: i.p,
-            quantity: i.q
+            quantity: i.q,
+            customizations: i.c || []
         }));
 
-        await supabaseAdmin.from('order_items').insert(orderItems);
+        const { error: itemsError } = await supabaseAdmin.from('order_items').insert(orderItems);
+        if (itemsError) console.error('[Webhook] order_items insert error:', itemsError);
         
         console.log(`[Webhook] Order successfully recovered: ${newOrder.id}`);
     }

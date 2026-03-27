@@ -186,10 +186,28 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                         }
                     }
 
-                    set(state => ({
-                        lastCompletedOrderId: (!isAdmin && upOrder.status === 'completed') ? upOrder.id : state.lastCompletedOrderId,
-                        orders: state.orders.map(o => o.order_id === upOrder.id ? { ...o, order_status: upOrder.status } : o)
-                    }));
+                    set(state => {
+                        const currentOrder = state.orders.find(o => o.order_id === upOrder.id);
+                        const statusWeights: Record<string, number> = {
+                            'received': 0,
+                            'preparing': 1,
+                            'ready': 2,
+                            'completed': 3,
+                            'cancelled': -1
+                        };
+
+                        const shouldUpdateStatus = !currentOrder || 
+                            statusWeights[upOrder.status] > statusWeights[currentOrder.order_status] ||
+                            upOrder.status === 'cancelled';
+
+                        return {
+                            lastCompletedOrderId: (!isAdmin && upOrder.status === 'completed') ? upOrder.id : state.lastCompletedOrderId,
+                            orders: state.orders.map(o => o.order_id === upOrder.id ? { 
+                                ...o, 
+                                order_status: shouldUpdateStatus ? upOrder.status : o.order_status 
+                            } : o)
+                        };
+                    });
                     if (upOrder.status === 'completed' && get().qrScannedOrder?.order_id === upOrder.id) {
                         set({ isQRScannerOpen: false, qrScannedOrder: null });
                     }

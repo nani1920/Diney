@@ -65,9 +65,10 @@ export async function createOrder(
     });
 
     let serverTotal = 0;
-    validatedData.items.forEach((item: OrderItem) => {
+    validatedData.items.forEach((item: any) => {
       const livePrice = item.id ? priceMap[item.id] : item.price;
-      const itemCustomizationsTotal = 0; 
+      const itemCustomizationsTotal = (item.customizations || [])
+        .reduce((cSum: number, c: any) => cSum + (Number(c.price) || 0), 0);
       serverTotal += ((Number(livePrice) || 0) + itemCustomizationsTotal) * item.quantity;
     });
 
@@ -152,14 +153,14 @@ export async function createOrder(
     // Removed redundant recalculation to fix lint error
 
     // Insert the order
-    const { data: order, error: orderError } = await supabaseAdmin
+    let { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         tenant_id: validatedData.tenantId,
         short_id: generateShortId(),
         customer_name: validatedData.customerName,
         customer_mobile: validatedData.customerMobile,
-        total_amount: finalTotal, // Use verified total
+        total_amount: finalTotal,
         status: 'received',
         payment_status: paymentStatus,
         payment_id: razorpayPaymentId || null
@@ -167,9 +168,16 @@ export async function createOrder(
       .select()
       .single();
 
-    if (orderError || !order) {
-      console.error("Supabase Insert Error:", orderError);
-      throw new Error(`Order creation failed: ${orderError?.message || 'Unknown database error'}`);
+    if (orderError) {
+      if (orderError.code === '23505' && razorpayPaymentId) {
+        const { data: existing } = await supabaseAdmin
+          .from('orders')
+          .select('id, short_id')
+          .eq('payment_id', razorpayPaymentId)
+          .single();
+        if (existing) return { orderId: existing.id, shortId: existing.short_id };
+      }
+      throw new Error(`Order creation failed: ${orderError.message}`);
     }
 
     // Invalidate analytics and customer cache on new order
@@ -194,7 +202,8 @@ export async function createOrder(
       name: item.name,
       price: item.id ? priceMap[item.id] : item.price, // Use verified price
       quantity: item.quantity,
-      image_url: item.image_url
+      image_url: item.image_url,
+      customizations: item.customizations || []
     }));
 
     const { error: itemsError } = await supabaseAdmin
@@ -523,7 +532,8 @@ export async function createRazorpayOrder(
       id: i.id,
       n: i.name,
       p: i.price,
-      q: i.quantity
+      q: i.quantity,
+      c: (i.customizations || []).map(c => ({ n: c.name, p: c.price }))
     }));
 
     const options = {

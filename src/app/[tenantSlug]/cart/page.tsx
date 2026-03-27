@@ -29,7 +29,12 @@ export default function CartPage() {
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
 
-    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalAmount = cart.reduce((sum, item) => {
+        const itemTotal = item.price * item.quantity;
+        const customizationTotal = (item.customizations || [])
+            .reduce((cSum, c) => cSum + (Number(c.price) || 0) * item.quantity, 0);
+        return sum + itemTotal + customizationTotal;
+    }, 0);
     const deliveryFee = 0;
     const finalTotal = totalAmount + deliveryFee;
 
