@@ -101,7 +101,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     }, [store]);
 
     useEffect(() => {
-        const isCurrentlyAdmin = pathname.includes('/admin');
+        const isCurrentlyAdmin = pathname.includes('/admin') || pathname.includes('/staff');
         if (store.isAdmin !== isCurrentlyAdmin) {
             store.setIsAdmin(isCurrentlyAdmin);
         }

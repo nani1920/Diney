@@ -92,7 +92,7 @@ export default function PendingCalibrationPage() {
           </motion.div>
           
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
-            <div className="px-6 py-2 bg-gradient-to-r from-[#025E43] to-[#014230] text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl shadow-emerald-900/20 whitespace-nowrap">
+            <div className="px-6 py-2 bg-gradient-to-r from-[#025E43] to-[#014230] text-white text-[10px] font-bold uppercase tracking-[0.3em] rounded-full shadow-2xl shadow-emerald-900/20 whitespace-nowrap">
               Registry Transmitted
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function PendingCalibrationPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter italic uppercase leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 tracking-tighter italic uppercase leading-tight">
             Calibration <span className="text-gray-300">In</span> <br />
             <span className="text-[#025E43]">Progress</span>
           </h1>
@@ -139,11 +139,11 @@ export default function PendingCalibrationPage() {
           <div className="flex flex-col md:flex-row items-center justify-center gap-10 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
              <div className="flex items-center gap-2">
                 <Mail size={14} className="text-gray-400" />
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Verification Email Sent</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Verification Email Sent</span>
              </div>
              <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-[#025E43]" />
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ETA: ~24 Hours</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ETA: ~24 Hours</span>
              </div>
           </div>
         </div>
@@ -169,8 +169,8 @@ function StatusChip({ icon: Icon, label, status, active }: any) {
           <div className="w-2 h-2 bg-[#025E43] rounded-full animate-ping" />
         )}
       </div>
-      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
-      <p className={`text-sm font-black italic uppercase ${active ? "text-[#025E43]" : "text-gray-400"}`}>{status}</p>
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{label}</p>
+      <p className={`text-sm font-bold italic uppercase ${active ? "text-[#025E43]" : "text-gray-400"}`}>{status}</p>
     </div>
   );
 }

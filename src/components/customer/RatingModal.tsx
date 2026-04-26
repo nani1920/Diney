@@ -86,7 +86,7 @@ export function RatingModal({ isOpen, orderId, shortId, tenantId, onClose }: Rat
                 {/* Scrollable Content Area */}
                 <div className="flex-1 overflow-y-auto p-6 pt-6 custom-scrollbar">
                     <div className="text-center mb-6">
-                        <h2 className="text-xl font-black text-neutral-900 tracking-tight leading-tight">
+                        <h2 className="text-xl font-bold text-neutral-900 tracking-tight leading-tight">
                             {rating === 0 ? "How was your experience?" : rating >= 4 ? "Excellent! What did you like?" : "We're sorry! What went wrong?"}
                         </h2>
                         <p className="text-neutral-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">
@@ -123,7 +123,7 @@ export function RatingModal({ isOpen, orderId, shortId, tenantId, onClose }: Rat
                                 {/* Step 2: Adaptive Tags */}
                                 <div>
                                     <div className="flex items-center justify-between mb-3 px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                                             Select Feedback
                                         </h3>
                                         {rating >= 4 ? <ThumbsUp className="w-4 h-4 text-emerald-500" /> : <ThumbsDown className="w-4 h-4 text-rose-500" />}
@@ -161,7 +161,7 @@ export function RatingModal({ isOpen, orderId, shortId, tenantId, onClose }: Rat
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className="w-full h-14 bg-neutral-900 text-white rounded-[1.25rem] font-black text-[14px] shadow-2xl shadow-neutral-900/40 hover:bg-black active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                    className="w-full h-14 bg-neutral-900 text-white rounded-[1.25rem] font-bold text-[14px] shadow-2xl shadow-neutral-900/40 hover:bg-black active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                 >
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-4 border-white/20 border-t-white rounded-full animate-spin" />
@@ -180,7 +180,7 @@ export function RatingModal({ isOpen, orderId, shortId, tenantId, onClose }: Rat
                     {rating === 0 && (
                         <button 
                             onClick={onClose}
-                            className="w-full text-center text-neutral-400 text-[10px] font-black uppercase tracking-widest mt-4 hover:text-neutral-600 transition-colors"
+                            className="w-full text-center text-neutral-400 text-[10px] font-bold uppercase tracking-widest mt-4 hover:text-neutral-600 transition-colors"
                         >
                             Skip Feedback
                         </button>

@@ -42,9 +42,9 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     // 3. Memoized Bridge Actions
     const fetchAdminData = useCallback(async () => {
         if (tenant) {
-            await fetchAdminDataStore(tenant.id, tenant.slug);
+            await fetchAdminDataStore(tenant.id, tenant.slug, isAdmin);
         }
-    }, [tenant?.id, tenant?.slug, fetchAdminDataStore]);
+    }, [tenant?.id, tenant?.slug, fetchAdminDataStore, isAdmin]);
 
     const addMenuItem = useCallback(async (item: MenuItem) => {
         if (!tenant) return false;

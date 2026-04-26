@@ -32,7 +32,7 @@ const generateUUID = () => {
         return crypto.randomUUID();
     }
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 };
@@ -163,7 +163,7 @@ export default function MenuManagementPage() {
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-200">
               <Package className="w-4 h-4" />
             </div>
-            <h1 className="text-2xl font-black text-neutral-900 tracking-tight">Menu Management</h1>
+            <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Menu Management</h1>
           </div>
           <p className="text-neutral-400 text-sm font-medium italic px-1">Curate your store's culinary identity.</p>
         </div>
@@ -188,7 +188,7 @@ export default function MenuManagementPage() {
                   key={type}
                   onClick={() => setFilterType(type)}
                   className={clsx(
-                    "px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                    "px-4 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
                     filterType === type ? "bg-neutral-900 text-white" : "text-neutral-400 hover:text-neutral-600"
                   )}
                 >
@@ -201,7 +201,7 @@ export default function MenuManagementPage() {
           <div className="flex gap-2 h-12">
             <button
               onClick={() => setIsBrowsingCatalog(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 bg-white text-emerald-600 border border-emerald-100 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-50 transition-all active:scale-[0.98] shadow-sm"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 bg-white text-emerald-600 border border-emerald-100 rounded-xl font-bold text-[10px] uppercase tracking-wider hover:bg-emerald-50 transition-all active:scale-[0.98] shadow-sm"
             >
               <Globe className="w-4 h-4" />
               <span>Catalog</span>
@@ -222,7 +222,7 @@ export default function MenuManagementPage() {
         <button
           onClick={() => setActiveCategory("all")}
           className={clsx(
-            "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 flex items-center gap-2",
+            "px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all border shrink-0 flex items-center gap-2",
             activeCategory === "all"
               ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100"
               : "bg-white text-neutral-500 border-neutral-100 hover:border-emerald-200 hover:text-emerald-600"
@@ -242,7 +242,7 @@ export default function MenuManagementPage() {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={clsx(
-                "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 flex items-center gap-2",
+                "px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all border shrink-0 flex items-center gap-2",
                 activeCategory === cat.id
                   ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100"
                   : "bg-white text-neutral-500 border-neutral-100 hover:border-emerald-200 hover:text-emerald-600"
@@ -315,7 +315,7 @@ export default function MenuManagementPage() {
                 <div className="flex-1 px-1">
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <h3 className="font-bold text-[13px] text-neutral-900 tracking-tight leading-tight line-clamp-1">{item.name}</h3>
-                    <span className="text-[13px] font-black text-emerald-600 mt-0.5 whitespace-nowrap">₹{item.price}</span>
+                    <span className="text-[13px] font-bold text-emerald-600 mt-0.5 whitespace-nowrap">₹{item.price}</span>
                   </div>
                   <p className="text-[10px] text-neutral-400 font-medium line-clamp-2 leading-relaxed italic mb-3">
                     {item.description || "No description provided."}
@@ -323,11 +323,11 @@ export default function MenuManagementPage() {
                 </div>
 
                 <div className="pt-3 border-t border-neutral-50 flex items-center justify-between">
-                  <span className="text-[8px] font-black text-neutral-300 uppercase tracking-widest">{category?.name || "Ungrouped"}</span>
+                  <span className="text-[8px] font-bold text-neutral-300 uppercase tracking-wider">{category?.name || "Ungrouped"}</span>
                   <button
                     onClick={() => toggleAvailability(item)}
                     className={clsx(
-                      "px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
+                      "px-2 py-0.5 rounded-lg text-[8px] font-bold uppercase tracking-wider transition-all",
                       item.availability_status ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-orange-50 text-orange-600 border border-orange-100"
                     )}
                   >
@@ -345,7 +345,7 @@ export default function MenuManagementPage() {
           <div className="w-20 h-20 bg-neutral-50 rounded-[2rem] flex items-center justify-center mb-6">
             <Search className="w-8 h-8 text-neutral-200" />
           </div>
-          <h3 className="text-xl font-black text-neutral-300 tracking-tighter uppercase">No match found</h3>
+          <h3 className="text-xl font-bold text-neutral-300 tracking-tighter uppercase">No match found</h3>
           <p className="text-neutral-400 font-medium max-w-xs mt-2 italic">Try broadening your search or creating a new item.</p>
         </div>
       )}
@@ -369,7 +369,7 @@ export default function MenuManagementPage() {
               {/* Fixed Header */}
               <div className="px-8 pt-8 pb-6 border-b border-neutral-50 flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-black text-neutral-900 tracking-tighter">
+                  <h2 className="text-2xl font-bold text-neutral-900 tracking-tighter">
                     {isAdding ? "Craft Flavor" : "Refine Flavor"}
                   </h2>
                   <p className="text-neutral-400 text-[11px] font-bold uppercase tracking-wider mt-1 opacity-60">Details define the difference.</p>
@@ -383,7 +383,7 @@ export default function MenuManagementPage() {
                 {/* Scrollable Body */}
                 <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-neutral-100">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Product Identity</label>
+                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Product Identity</label>
                     <input
                       required
                       name="name"
@@ -395,7 +395,7 @@ export default function MenuManagementPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Price (₹)</label>
+                      <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Price (₹)</label>
                       <input
                         required
                         type="number"
@@ -406,7 +406,7 @@ export default function MenuManagementPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Category</label>
+                      <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Category</label>
                       <select
                         name="category_id"
                         defaultValue={(editingItem as any)?.category_id || (categories[0]?.id || '')}
@@ -419,7 +419,7 @@ export default function MenuManagementPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Description</label>
+                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Description</label>
                     <textarea
                       required
                       name="description"
@@ -431,14 +431,14 @@ export default function MenuManagementPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Dietary Status</label>
+                      <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Dietary Status</label>
                       <select name="veg_or_nonveg" defaultValue={editingItem?.veg_or_nonveg || "veg"} className="w-full px-5 py-3.5 bg-neutral-50 border border-neutral-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-neutral-900 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1rem_1rem] bg-[right_1rem_center] bg-no-repeat">
                         <option value="veg">Veg</option>
                         <option value="non-veg">Non-Veg</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Wait Time (min)</label>
+                      <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Wait Time (min)</label>
                       <input
                         required
                         type="number"
@@ -450,7 +450,7 @@ export default function MenuManagementPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">Visual Identity (Image URL)</label>
+                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-1">Visual Identity (Image URL)</label>
                     <div className="flex gap-4 items-start">
                       <div className="w-20 h-20 bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0 border border-neutral-100 flex items-center justify-center">
                         <ResilientImage 
@@ -478,14 +478,14 @@ export default function MenuManagementPage() {
                   <button
                     type="button"
                     onClick={() => { setIsAdding(false); setEditingItem(null); }}
-                    className="flex-1 py-4 text-neutral-400 font-black uppercase tracking-[0.2em] text-[11px] hover:text-neutral-900 transition-colors"
+                    className="flex-1 py-4 text-neutral-400 font-bold uppercase tracking-wider text-[11px] hover:text-neutral-900 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isProcessing}
-                    className="flex-[2] h-14 bg-neutral-900 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[12px] hover:bg-emerald-600 shadow-xl shadow-neutral-200 transition-all active:scale-[0.98] disabled:opacity-50"
+                    className="flex-[2] h-14 bg-neutral-900 text-white rounded-2xl font-bold uppercase tracking-wider text-[12px] hover:bg-emerald-600 shadow-xl shadow-neutral-200 transition-all active:scale-[0.98] disabled:opacity-50"
                   >
                     {isProcessing ? "Saving..." : editingItem?.id ? "Apply Fix" : "Confirm Entry"}
                   </button>
@@ -516,8 +516,8 @@ export default function MenuManagementPage() {
                       <Globe className="w-7 h-7 text-emerald-600" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black text-neutral-900 tracking-tighter">Master Catalog</h2>
-                      <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mt-1">Global Library</p>
+                      <h2 className="text-2xl font-bold text-neutral-900 tracking-tighter">Master Catalog</h2>
+                      <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-1">Global Library</p>
                     </div>
                   </div>
 
@@ -542,14 +542,14 @@ export default function MenuManagementPage() {
                 <div className="flex-1 flex overflow-hidden">
                   <aside className="w-72 border-r border-neutral-100 flex flex-col bg-neutral-50/20">
                     <div className="p-8">
-                      <h3 className="text-[10px] font-black text-neutral-300 uppercase tracking-[0.2em] mb-6 px-2">Types</h3>
+                      <h3 className="text-[10px] font-bold text-neutral-300 uppercase tracking-wider mb-6 px-2">Types</h3>
                       <div className="space-y-1.5">
                         {masterCategories.map(cat => (
                           <button
                             key={cat}
                             onClick={() => setCatalogActiveCategory(cat)}
                             className={clsx(
-                              "w-full px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-left transition-all flex items-center justify-between group",
+                              "w-full px-5 py-4 rounded-2xl text-xs font-bold uppercase tracking-wider text-left transition-all flex items-center justify-between group",
                               catalogActiveCategory === cat ? "bg-white text-emerald-600 shadow-sm border border-neutral-100" : "text-neutral-400 hover:text-neutral-900"
                             )}
                           >
@@ -573,12 +573,12 @@ export default function MenuManagementPage() {
                             <img src={product.default_image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={product.name} />
                           </div>
                           <div className="flex-1 px-1">
-                            <h4 className="text-sm font-black text-neutral-900 mb-1 tracking-tight">{product.name}</h4>
+                            <h4 className="text-sm font-bold text-neutral-900 mb-1 tracking-tight">{product.name}</h4>
                             <p className="text-[11px] font-medium text-neutral-400 line-clamp-2 leading-relaxed italic">{product.description}</p>
                           </div>
                           <button
                             onClick={() => importFromCatalog(product)}
-                            className="w-full mt-6 py-4 bg-neutral-900 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-600 active:scale-[0.98] transition-all shadow-xl shadow-neutral-100 hover:shadow-emerald-100"
+                            className="w-full mt-6 py-4 bg-neutral-900 text-white rounded-[1.5rem] text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-3 hover:bg-emerald-600 active:scale-[0.98] transition-all shadow-xl shadow-neutral-100 hover:shadow-emerald-100"
                           >
                             <Plus className="w-4 h-4" />
                             Import to Store
@@ -592,7 +592,7 @@ export default function MenuManagementPage() {
                         <div className="w-24 h-24 bg-neutral-50 rounded-[2.5rem] flex items-center justify-center border-2 border-dashed border-neutral-100 mb-8">
                           <Search className="w-10 h-10 text-neutral-200" />
                         </div>
-                        <h3 className="text-2xl font-black text-neutral-300 tracking-tighter uppercase">No match</h3>
+                        <h3 className="text-2xl font-bold text-neutral-300 tracking-tighter uppercase">No match</h3>
                         <p className="text-neutral-400 font-medium max-w-xs mt-3 italic">Try searching for a different flavor profile.</p>
                       </div>
                     )}

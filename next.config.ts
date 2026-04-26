@@ -50,6 +50,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  allowedDevOrigins: ['*.lvh.me', 'localhost'],
+  turbopack: {},
+  webpack: (config, { dev, isServer }) => {
+    // Fix for HMR on subdomains
+    if (dev && !isServer) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

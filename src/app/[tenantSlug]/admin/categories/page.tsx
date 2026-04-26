@@ -65,7 +65,7 @@ export default function CategoriesPage() {
       { }
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-neutral-900 tracking-tight flex items-center gap-3">
             <Layers className="w-8 h-8 text-emerald-600" />
             Menu Categories
           </h1>
@@ -105,7 +105,7 @@ export default function CategoriesPage() {
           <div className="bg-neutral-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-neutral-300">
             <Layers className="w-10 h-10" />
           </div>
-          <h3 className="text-xl font-black text-neutral-900">No categories yet</h3>
+          <h3 className="text-xl font-bold text-neutral-900">No categories yet</h3>
           <p className="text-neutral-500 mt-2">Start by creating your first menu section.</p>
         </div>
       ) : (
@@ -122,10 +122,10 @@ export default function CategoriesPage() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-black">
+                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-bold">
                       {index + 1}
                     </div>
-                    <h3 className="font-black text-lg text-neutral-900">{cat.name}</h3>
+                    <h3 className="font-bold text-lg text-neutral-900">{cat.name}</h3>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
@@ -177,7 +177,7 @@ export default function CategoriesPage() {
             >
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-black text-neutral-900">
+                  <h2 className="text-2xl font-bold text-neutral-900">
                     {editingItem ? "Edit Category" : "New Category"}
                   </h2>
                   <button 

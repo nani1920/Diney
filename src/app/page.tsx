@@ -91,12 +91,12 @@ export default function SovereignLanding() {
 
                <div className="hidden md:flex items-center gap-12">
                   {['Features', 'Market', 'Pricing'].map(item => (
-                     <a key={item} href={`#${item.toLowerCase()}`} className="relative group text-[11px] font-black uppercase tracking-[0.3em] text-black/50 hover:text-black transition-all">
+                     <a key={item} href={`#${item.toLowerCase()}`} className="relative group text-[11px] font-bold uppercase tracking-[0.3em] text-black/50 hover:text-black transition-all">
                         <span>{item}</span>
                         <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-[#025E43] group-hover:w-full transition-all duration-500" />
                      </a>
                   ))}
-                  <Link href="/admin/login" className="ml-4 px-8 py-3 bg-[#1A1A1A] text-white rounded-full text-[10px] font-black uppercase tracking-[0.25em] hover:bg-[#025E43] transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/10">
+                  <Link href="/admin/login" className="ml-4 px-8 py-3 bg-[#1A1A1A] text-white rounded-full text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#025E43] transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/10">
                      Join Sovereign
                   </Link>
                </div>
@@ -138,7 +138,7 @@ export default function SovereignLanding() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={mobileMenuOpen ? { opacity: 1, x: 0 } : {}}
                         transition={{ delay: idx * 0.1 }}
-                        className="text-2xl font-black uppercase tracking-tighter text-black/40 hover:text-[#025E43] transition-colors"
+                        className="text-2xl font-bold uppercase tracking-tighter text-black/40 hover:text-[#025E43] transition-colors"
                      >
                         {item}
                      </motion.a>
@@ -146,7 +146,7 @@ export default function SovereignLanding() {
                   <div className="h-[1px] bg-black/5 w-full" />
                   <Link 
                      href="/admin/login" 
-                     className="w-full py-5 bg-[#1A1A1A] text-white rounded-2xl flex items-center justify-center font-black uppercase tracking-[0.2em] text-sm"
+                     className="w-full py-5 bg-[#1A1A1A] text-white rounded-2xl flex items-center justify-center font-bold uppercase tracking-[0.2em] text-sm"
                      onClick={() => setMobileMenuOpen(false)}
                   >
                      Initialize Node
@@ -182,7 +182,7 @@ export default function SovereignLanding() {
                      }}
                      className="space-y-4 text-center"
                   >
-                     <h1 className="text-[3.5rem] md:text-[8.5rem] font-black leading-[0.9] md:leading-[0.85] tracking-[-0.08em] holographic-text will-change-transform">
+                     <h1 className="text-[3.5rem] md:text-[8.5rem] font-bold leading-[0.9] md:leading-[0.85] tracking-[-0.08em] holographic-text will-change-transform">
                         Boost Profits with <br />
                         <span className="font-serif-lux italic font-normal text-gradient-emerald">QR Ordering.</span>
                      </h1>
@@ -206,7 +206,7 @@ export default function SovereignLanding() {
                      }}
                      className="flex flex-col sm:flex-row gap-6 md:gap-8 justify-center pt-20 md:pt-12"
                   >
-                   <Link href="/admin/login" className="group relative flex items-center gap-6 px-14 py-6 bg-[#1A1A1A] text-white rounded-full font-black text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-[#025E43] hover:-translate-y-2 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] overflow-hidden border border-white/10">
+                   <Link href="/admin/login" className="group relative flex items-center gap-6 px-14 py-6 bg-[#1A1A1A] text-white rounded-full font-bold text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-[#025E43] hover:-translate-y-2 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] overflow-hidden border border-white/10">
                      <span className="relative z-20">Initialize Account</span>
                      <ArrowRight size={16} className="relative z-20 group-hover:translate-x-2 transition-transform duration-700 ease-[0.16, 1, 0.3, 1]" />
                      
@@ -218,7 +218,7 @@ export default function SovereignLanding() {
                      { }
                      <div className="absolute inset-0 bg-[#025E43] scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 ease-[0.16, 1, 0.3, 1]" />
                   </Link>
-                  <Link href="/legal/contact" className="px-14 py-6 border border-black/10 bg-white/5 backdrop-blur-md text-black rounded-full font-black text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-black/5 hover:-translate-y-2 hover:border-black/30 flex items-center justify-center">
+                  <Link href="/legal/contact" className="px-14 py-6 border border-black/10 bg-white/5 backdrop-blur-md text-black rounded-full font-bold text-[12px] uppercase tracking-[0.2em] transition-all hover:bg-black/5 hover:-translate-y-2 hover:border-black/30 flex items-center justify-center">
                      Request demo
                   </Link>
                   </motion.div>
@@ -250,7 +250,7 @@ export default function SovereignLanding() {
                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                        className="px-8 py-3 bg-black/40 backdrop-blur-3xl border border-white/20 rounded-full shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)]"
                     >
-                       <span className="text-[11px] font-black text-white uppercase tracking-[0.5em] drop-shadow-2xl">CORE VELOCITY HUB</span>
+                       <span className="text-[11px] font-bold text-white uppercase tracking-[0.5em] drop-shadow-2xl">CORE VELOCITY HUB</span>
                     </motion.div>
                  </div>
 
@@ -269,7 +269,7 @@ export default function SovereignLanding() {
                  <div className="space-y-6">
                     <div className="flex justify-between items-end">
                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#025E43] mb-1">Elite Performance</p>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#025E43] mb-1">Elite Performance</p>
                           <p className="text-3xl font-bold tracking-tighter text-[#1A1A1A]">+₹12.8L</p>
                        </div>
                        <div className="flex gap-1 h-12 items-end">
@@ -304,7 +304,7 @@ export default function SovereignLanding() {
                        <Zap className="text-white" size={24} />
                     </div>
                     <div>
-                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Instant Settle</p>
+                       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">Instant Settle</p>
                        <p className="text-xl font-bold text-white tracking-tight">Real-time Node</p>
                     </div>
                  </div>
@@ -319,7 +319,7 @@ export default function SovereignLanding() {
               >
                  <div className="p-8 bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/20 shadow-xl flex flex-col items-center gap-2">
                     <Smartphone size={24} className="text-[#025E43]/40" />
-                    <span className="text-2xl font-black text-black/10">MOBILE-FIRST</span>
+                    <span className="text-2xl font-bold text-black/10">MOBILE-FIRST</span>
                  </div>
               </motion.div>
 
@@ -342,7 +342,7 @@ export default function SovereignLanding() {
                      viewport={{ once: true }}
                      className="text-center mb-40"
                   >
-                     <h2 className="text-[4rem] md:text-[7.5rem] font-black tracking-[-0.08em] leading-[0.85] mb-12 holographic-text">
+                     <h2 className="text-[4rem] md:text-[7.5rem] font-bold tracking-[-0.08em] leading-[0.85] mb-12 holographic-text">
                         The Art of <br />
                         <span className="font-serif-lux italic font-normal text-gradient-emerald">Frictionless Flow.</span>
                      </h2>
@@ -392,7 +392,7 @@ export default function SovereignLanding() {
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 1.5 }}
-                        className="text-[4.5rem] md:text-[9.5rem] font-black text-white tracking-[-0.1em] leading-[0.8] holographic-text"
+                        className="text-[4.5rem] md:text-[9.5rem] font-bold text-white tracking-[-0.1em] leading-[0.8] holographic-text"
                      >
                         Ready to <br />
                         <span className="font-serif-lux italic font-normal text-white/90">Take Control?</span>
@@ -429,7 +429,7 @@ export default function SovereignLanding() {
                          <img src="/logo.png" alt="Diney" className="h-12 w-auto" />
                          <span className="text-4xl md:text-5xl font-serif-lux text-white tracking-tighter">Diney</span>
                          <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/10 backdrop-blur-md">
-                            <span className="text-[10px] font-black text-[#025E43] uppercase tracking-[0.3em]">Sovereign v2.4</span>
+                            <span className="text-[10px] font-bold text-[#025E43] uppercase tracking-[0.3em]">Sovereign v2.4</span>
                          </div>
                       </div>
                       <p className="text-lg md:text-xl text-white/30 font-medium max-w-sm mx-auto md:mx-0 leading-relaxed tracking-tight">
@@ -440,7 +440,7 @@ export default function SovereignLanding() {
                       <div className="pt-4">
                          <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto md:mx-0 backdrop-blur-xl">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse-slow shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
-                            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">All Systems Nominal</span>
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">All Systems Nominal</span>
                          </div>
                       </div>
                    </div>
@@ -477,16 +477,16 @@ export default function SovereignLanding() {
                       
                       { }
                       <div className="lg:col-span-4 space-y-8 md:space-y-10 border-t border-white/5 pt-12 lg:pt-0 lg:border-t-0">
-                         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#025E43]">Join Our Newsletter</p>
+                         <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#025E43]">Join Our Newsletter</p>
                          <div className="space-y-6">
                             <p className="text-xl font-bold text-white/40 leading-relaxed">Efficiency is on the Menu.</p>
                             <div className="space-y-4">
-                               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Executive Correspondence</p>
+                               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">Executive Correspondence</p>
                                <div className="relative group">
                                   <input 
                                      type="email" 
                                      placeholder="Enter your email" 
-                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-white/20 focus:outline-none focus:border-[#025E43] transition-all text-[11px] font-black uppercase tracking-widest"
+                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-white/20 focus:outline-none focus:border-[#025E43] transition-all text-[11px] font-bold uppercase tracking-widest"
                                   />
                                   <button className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#025E43] rounded-xl flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-[#025E43]/20">
                                      <ArrowRight size={18} className="text-white" />
@@ -498,7 +498,7 @@ export default function SovereignLanding() {
                    </div>
                 </div>
 
-                <div className="pt-8 border-t border-white/5 flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-8 text-[10px] md:text-[11px] font-black uppercase tracking-[0.5em] text-white/20">
+                <div className="pt-8 border-t border-white/5 flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-8 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.5em] text-white/20">
                    <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-16 text-center lg:text-left">
                       <p>© 2026 DINEY / MATKACAFE OPERATIONS</p>
                       <div className="flex gap-10">
@@ -583,8 +583,8 @@ function PricingSection() {
                viewport={{ once: true }}
                className="text-center mb-32"
             >
-               <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#025E43] mb-8">Financial Protocol</p>
-               <h2 className="text-[4rem] md:text-[7.5rem] font-black tracking-[-0.08em] leading-[0.85] holographic-text">
+               <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#025E43] mb-8">Financial Protocol</p>
+               <h2 className="text-[4rem] md:text-[7.5rem] font-bold tracking-[-0.08em] leading-[0.85] holographic-text">
                   Precision <br />
                   <span className="font-serif-lux italic font-normal text-gradient-emerald">Economics.</span>
                </h2>
@@ -606,12 +606,12 @@ function PricingSection() {
                      
                      <div className="space-y-10">
                         <div className="space-y-4">
-                           <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${tier.accent ? 'text-[#025E43]' : 'text-black/20'}`}>{tier.badge}</span>
+                           <span className={`text-[10px] font-bold uppercase tracking-[0.3em] ${tier.accent ? 'text-[#025E43]' : 'text-black/20'}`}>{tier.badge}</span>
                            <h3 className={`text-4xl font-bold tracking-tight ${tier.accent ? 'text-white' : 'text-black'}`}>{tier.name}</h3>
                         </div>
 
                         <div className="flex items-baseline gap-2">
-                           <span className={`text-5xl md:text-6xl font-black tracking-tighter ${tier.accent ? 'text-white' : 'text-black'}`}>{tier.price}</span>
+                           <span className={`text-5xl md:text-6xl font-bold tracking-tighter ${tier.accent ? 'text-white' : 'text-black'}`}>{tier.price}</span>
                            <span className={`text-lg font-medium ${tier.accent ? 'text-white/40' : 'text-black/30'}`}>{tier.period}</span>
                         </div>
 
@@ -626,7 +626,7 @@ function PricingSection() {
                            ))}
                         </ul>
 
-                        <Link href="/admin/login" className={`w-full py-6 rounded-3xl font-black text-[12px] uppercase tracking-[0.2em] transition-all duration-500 hover:scale-[1.03] active:scale-95 flex items-center justify-center ${tier.accent ? 'bg-[#025E43] text-white shadow-lg shadow-[#025E43]/30' : 'bg-black text-white hover:bg-[#025E43]'}`}>
+                        <Link href="/admin/login" className={`w-full py-6 rounded-3xl font-bold text-[12px] uppercase tracking-[0.2em] transition-all duration-500 hover:scale-[1.03] active:scale-95 flex items-center justify-center ${tier.accent ? 'bg-[#025E43] text-white shadow-lg shadow-[#025E43]/30' : 'bg-black text-white hover:bg-[#025E43]'}`}>
                            Initialize {tier.name}
                         </Link>
                      </div>
@@ -651,7 +651,7 @@ function PricingSection() {
                   {addOns.map((item, idx) => (
                      <div key={idx} className="p-8 bg-[#FCFAF7] border border-black/[0.03] rounded-[2.5rem] flex flex-col justify-between hover:border-[#025E43]/30 transition-all group">
                         <p className="text-sm font-bold text-black/60 group-hover:text-black transition-colors">{item.name}</p>
-                        <p className="text-2xl font-black text-[#025E43] mt-4">{item.price}</p>
+                        <p className="text-2xl font-bold text-[#025E43] mt-4">{item.price}</p>
                      </div>
                   ))}
                </div>
@@ -731,7 +731,7 @@ function ProtocolReveal() {
                   transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
                   viewport={{ once: true }}
                >
-                  <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#025E43] mb-8">The Procedure</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#025E43] mb-8">The Procedure</p>
                   <h2 className="text-[5rem] xl:text-[7rem] font-bold tracking-[-0.08em] leading-[0.85]">
                      How Excellence <br />
                      <span className="font-serif-lux italic font-normal text-gradient-emerald">Manifests.</span>
@@ -779,7 +779,7 @@ function RevealLayer({ step, index, scrollYProgress }: { step: any, index: numbe
             </div>
             <div className="space-y-6">
                <div className="flex items-center gap-4">
-                  <span className="text-[12px] font-black text-[#025E43] tracking-[0.4em] uppercase">Stage {step.number}</span>
+                  <span className="text-[12px] font-bold text-[#025E43] tracking-[0.4em] uppercase">Stage {step.number}</span>
                   <div className="h-[1px] w-12 bg-[#025E43]/20" />
                </div>
                <h4 className="text-[2.8rem] md:text-[5rem] font-bold tracking-[-0.05em] leading-[0.9]">{step.title}</h4>
@@ -790,7 +790,7 @@ function RevealLayer({ step, index, scrollYProgress }: { step: any, index: numbe
             <div className="pt-12">
                <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#025E43] animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#025E43]/40">System Synchronized</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#025E43]/40">System Synchronized</span>
                </div>
             </div>
          </div>
@@ -801,7 +801,7 @@ function RevealLayer({ step, index, scrollYProgress }: { step: any, index: numbe
 function FooterList({ title, items, links }: { title: string, items?: string[], links?: { label: string, href: string }[] }) {
    return (
       <div className="space-y-8">
-         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#025E43]">{title}</p>
+         <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#025E43]">{title}</p>
          <ul className="space-y-5">
             {items && items.map(item => (
                <li key={item}>

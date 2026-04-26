@@ -62,7 +62,7 @@ export default function TenantTierSelect({ tenantId, currentTier }: TenantTierSe
                         )}
                         
                         { }
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-neutral-950 border border-white/10 rounded-md text-[8px] font-black uppercase tracking-[0.2em] text-white opacity-0 group-hover/tier:opacity-100 scale-90 group-hover/tier:scale-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-2xl">
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-2 py-1 bg-neutral-950 border border-white/10 rounded-md text-[8px] font-bold uppercase tracking-[0.2em] text-white opacity-0 group-hover/tier:opacity-100 scale-90 group-hover/tier:scale-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-2xl">
                             {t.name}
                             { }
                             <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-4 border-transparent border-t-neutral-950" />

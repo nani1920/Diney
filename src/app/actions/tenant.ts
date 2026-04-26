@@ -4,8 +4,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { redis, getCacheKey, DEFAULT_TTL } from '@/lib/redis';
 import { MenuItem, ServerActionResult } from '@/types';
-import { ensureTenantOwner } from '@/lib/auth-utils';
-import { TenantSchema, MenuItemSchema } from '@/lib/validations';
+import { ensureTenantOwner, ensureAdminOrStaff } from '@/lib/auth-utils';
+import { TenantSchema, MenuItemSchema, CategorySchema } from '@/lib/validations';
 import { withErrorHandling } from '@/lib/server-utils';
 import { actionRateLimiter } from '@/lib/ratelimit';
 
@@ -219,6 +219,25 @@ export async function upsertMenuItem(tenantId: string, slug: string, item: Parti
   }, "upsertMenuItem");
 }
 
+export async function toggleMenuItemStock(tenantId: string, slug: string, itemId: string, isAvailable: boolean) {
+  return withErrorHandling(async () => {
+    await ensureAdminOrStaff(tenantId);
+    
+    const { error } = await supabaseAdmin
+      .from('menu_items')
+      .update({ is_available: isAvailable })
+      .eq('id', itemId)
+      .eq('tenant_id', tenantId);
+
+    if (error) throw error;
+
+    const cacheKey = getCacheKey(slug, 'menu');
+    await redis.del(cacheKey);
+    
+    return true;
+  }, "toggleMenuItemStock");
+}
+
 export async function deleteMenuItemServer(tenantId: string, slug: string, itemId: string) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
@@ -314,15 +333,26 @@ export async function getTenantCategories(tenantId: string) {
   }, "getTenantCategories");
 }
 
-export async function upsertCategory(tenantId: string, slug: string, category: Record<string, unknown>) {
+export async function upsertCategory(tenantId: string, slug: string, category: any) {
   return withErrorHandling(async () => {
     await ensureTenantOwner(tenantId);
+    
+    // 1. Validate Input
+    const validatedData = CategorySchema.parse(category);
+
+    // 2. Explicitly Map Fields (Avoid raw spread for security)
+    const payload = {
+        name: validatedData.name,
+        display_order: validatedData.display_order,
+        tenant_id: tenantId
+    };
+
     const { data, error } = await supabaseAdmin
       .from('menu_categories')
-      .upsert({
-        ...category,
-        tenant_id: tenantId
-      })
+      .upsert(
+        validatedData.id ? { id: validatedData.id, ...payload } : payload,
+        { onConflict: 'id' }
+      )
       .select()
       .single();
 

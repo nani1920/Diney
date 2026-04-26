@@ -73,9 +73,9 @@ export function RatingsView({ tenantId }: { tenantId: string }) {
                 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h2 className="text-neutral-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Customer Satisfaction</h2>
+                        <h2 className="text-neutral-400 text-[10px] font-bold uppercase tracking-[0.3em] mb-1">Customer Satisfaction</h2>
                         <div className="flex items-baseline gap-3">
-                            <span className="text-5xl font-black tracking-tighter">{averageRating}</span>
+                            <span className="text-5xl font-bold tracking-tighter">{averageRating}</span>
                             <div className="flex flex-col">
                                 <div className="flex gap-0.5 mb-1">
                                     {[1, 2, 3, 4, 5].map((s) => (
@@ -105,7 +105,7 @@ export function RatingsView({ tenantId }: { tenantId: string }) {
                             key={star}
                             onClick={() => setFilterStar(star)}
                             className={clsx(
-                                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
+                                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shrink-0",
                                 filterStar === star 
                                     ? "bg-white text-neutral-900 shadow-sm" 
                                     : "text-neutral-400 hover:text-neutral-600"
@@ -133,7 +133,7 @@ export function RatingsView({ tenantId }: { tenantId: string }) {
 
             {/* Content List */}
             <div className="space-y-4">
-                <h3 className="text-[11px] font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2 mb-3 px-1">
+                <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2 mb-3 px-1">
                     <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
                     Recent Feedback
                 </h3>
@@ -165,7 +165,7 @@ export function RatingsView({ tenantId }: { tenantId: string }) {
                                             />
                                         ))}
                                     </div>
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-neutral-400 uppercase tracking-widest">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
                                         <Calendar className="w-3 h-3" />
                                         {new Date(rating.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </div>
@@ -178,7 +178,7 @@ export function RatingsView({ tenantId }: { tenantId: string }) {
                                                 <User className="w-4 h-4 text-neutral-400" />
                                             </div>
                                             <div>
-                                                <span className="text-[13px] font-black text-neutral-900 leading-none block">
+                                                <span className="text-[13px] font-bold text-neutral-900 leading-none block">
                                                     {rating.orders?.customer_name || 'Anonymous'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-neutral-400 font-mono uppercase">
@@ -193,7 +193,7 @@ export function RatingsView({ tenantId }: { tenantId: string }) {
                                             {rating.tags.map((tag, i) => (
                                                 <span 
                                                     key={i} 
-                                                    className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100"
+                                                    className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-100"
                                                 >
                                                     {tag}
                                                 </span>

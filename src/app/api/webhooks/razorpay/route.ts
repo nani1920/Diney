@@ -85,20 +85,34 @@ export async function POST(req: NextRequest) {
         console.log(`[Webhook] RECREATING ORDER for ${customerMobile} (${tenantId})`);
 
         const items = JSON.parse(itemsJson);
+        const menuItemIds = items.map((i: any) => i.id).filter(Boolean);
+
+        // Fetch live prices to prevent price manipulation
+        const { data: liveItems } = await supabaseAdmin
+            .from('menu_items')
+            .select('id, price')
+            .in('id', menuItemIds);
+
+        const priceMap: Record<string, number> = {};
+        liveItems?.forEach((item: any) => {
+            priceMap[item.id] = Number(item.price);
+        });
+
         let totalAmount = 0;
         items.forEach((i: any) => { 
-            const itemBaseTotal = i.p * i.q;
+            const livePrice = i.id ? (priceMap[i.id] || 0) : Number(i.p);
+            const itemBaseTotal = livePrice * i.q;
             const customizationTotal = (i.c || []).reduce((sum: number, c: any) => sum + (Number(c.p) || 0) * i.q, 0);
             totalAmount += itemBaseTotal + customizationTotal;
         });
 
-        // Insert Order
+        // Insert Order (with Sanitization)
         const { data: newOrder, error: orderError } = await supabaseAdmin
             .from('orders')
             .insert({
                 tenant_id: tenantId,
-                customer_name: customerName,
-                customer_mobile: customerMobile,
+                customer_name: customerName.slice(0, 100),
+                customer_mobile: customerMobile.slice(0, 15),
                 total_amount: totalAmount,
                 status: 'received',
                 payment_status: 'paid',
@@ -114,7 +128,7 @@ export async function POST(req: NextRequest) {
         const orderItems = items.map((i: any) => ({
             order_id: newOrder.id,
             name: i.n,
-            price: i.p,
+            price: i.id ? (priceMap[i.id] || 0) : Number(i.p),
             quantity: i.q,
             customizations: i.c || []
         }));

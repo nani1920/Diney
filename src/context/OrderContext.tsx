@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 
 interface OrderContextType {
     orders: Order[];
-    placeOrder: (customerData: { name: string; mobile: string; note?: string }) => Promise<Order | null>;
+    placeOrder: (customerData: { name: string; mobile: string; note?: string }, explicitOrderType?: 'TAKEAWAY' | 'DINE_IN', explicitTableNumber?: string | null) => Promise<Order | null>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
     fetchCustomerOrders: (tenantId: string, mobile: string) => Promise<void>;
     refreshOrders: () => Promise<void>;
@@ -63,8 +63,8 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
         if (tenant) broadcastQRScanStore(tenant.id, isAdmin, order);
     }, [tenant?.id, isAdmin, broadcastQRScanStore]);
 
-    const placeOrder = useCallback(async (customerData: { name: string; mobile: string; note?: string }) => {
-        return await placeOrderStore(tenant, sessionId || '', customerData, cart, appliedPromo);
+    const placeOrder = useCallback(async (customerData: { name: string; mobile: string; note?: string }, explicitOrderType?: 'TAKEAWAY' | 'DINE_IN', explicitTableNumber?: string | null) => {
+        return await placeOrderStore(tenant, sessionId || '', customerData, cart, appliedPromo, explicitOrderType, explicitTableNumber);
     }, [tenant, sessionId, cart, appliedPromo, placeOrderStore]);
 
     // 4. Effects

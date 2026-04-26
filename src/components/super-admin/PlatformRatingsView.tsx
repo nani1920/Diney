@@ -90,7 +90,7 @@ export function PlatformRatingsView() {
                 <div className="p-2 bg-red-600 rounded-lg shadow-lg shadow-red-600/20">
                     <Star size={20} className="text-white fill-white" />
                 </div>
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">
+                <h2 className="text-3xl font-bold italic uppercase tracking-tighter text-white">
                     Platform Reviews
                 </h2>
             </div>
@@ -105,9 +105,9 @@ export function PlatformRatingsView() {
                 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h2 className="text-neutral-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Global Customer Satisfaction</h2>
+                        <h2 className="text-neutral-400 text-[10px] font-bold uppercase tracking-[0.3em] mb-1">Global Customer Satisfaction</h2>
                         <div className="flex items-baseline gap-3">
-                            <span className="text-5xl font-black tracking-tighter text-white">{averageRating}</span>
+                            <span className="text-5xl font-bold tracking-tighter text-white">{averageRating}</span>
                             <div className="flex flex-col">
                                 <div className="flex gap-0.5 mb-1">
                                     {[1, 2, 3, 4, 5].map((s) => (
@@ -138,7 +138,7 @@ export function PlatformRatingsView() {
                                 key={star}
                                 onClick={() => setFilterStar(star)}
                                 className={clsx(
-                                    "flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
+                                    "flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shrink-0",
                                     filterStar === star 
                                         ? "bg-white text-black shadow-sm" 
                                         : "text-neutral-500 hover:text-white"
@@ -205,7 +205,7 @@ export function PlatformRatingsView() {
                                             />
                                         ))}
                                     </div>
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-neutral-500 uppercase tracking-widest">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
                                         <Calendar className="w-3 h-3" />
                                         {new Date(rating.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </div>
@@ -218,7 +218,7 @@ export function PlatformRatingsView() {
                                                 <User className="w-5 h-5 text-neutral-400" />
                                             </div>
                                             <div>
-                                                <span className="text-[14px] font-black text-white leading-none block mb-1">
+                                                <span className="text-[14px] font-bold text-white leading-none block mb-1">
                                                     {rating.orders?.customer_name || 'Anonymous'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-neutral-500 font-mono uppercase">
@@ -230,7 +230,7 @@ export function PlatformRatingsView() {
                                         {rating.tenants && (
                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-red-600/10 text-red-500 rounded-lg border border-red-500/20 shrink-0">
                                                 <Store className="w-3 h-3" />
-                                                <span className="text-[9px] font-black uppercase tracking-wider">{rating.tenants.name}</span>
+                                                <span className="text-[9px] font-bold uppercase tracking-wider">{rating.tenants.name}</span>
                                             </div>
                                         )}
                                     </div>
@@ -240,7 +240,7 @@ export function PlatformRatingsView() {
                                             {rating.tags.map((tag, i) => (
                                                 <span 
                                                     key={i} 
-                                                    className="px-3 py-1 bg-white/5 text-neutral-400 text-[9px] font-black uppercase tracking-widest rounded-lg border border-white/5"
+                                                    className="px-3 py-1 bg-white/5 text-neutral-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-white/5"
                                                 >
                                                     {tag}
                                                 </span>
@@ -271,7 +271,7 @@ function CustomDropdown({ value, options, onChange }: { value: string, options: 
         <div className="relative z-50">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 bg-neutral-900/50 text-white border border-white/5 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-widest outline-none hover:border-white/20 hover:bg-neutral-900/80 transition-all cursor-pointer min-w-[200px] justify-between shadow-sm"
+                className="flex items-center gap-3 bg-neutral-900/50 text-white border border-white/5 rounded-2xl px-5 py-3 text-[11px] font-bold uppercase tracking-widest outline-none hover:border-white/20 hover:bg-neutral-900/80 transition-all cursor-pointer min-w-[200px] justify-between shadow-sm"
             >
                 <span className="truncate">{currentOption.label}</span>
                 <ChevronDown className={clsx("w-3.5 h-3.5 transition-transform duration-300 text-neutral-400", isOpen && "rotate-180")} />
@@ -298,7 +298,7 @@ function CustomDropdown({ value, options, onChange }: { value: string, options: 
                                             setIsOpen(false);
                                         }}
                                         className={clsx(
-                                            "w-full text-left px-5 py-3.5 text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-between",
+                                            "w-full text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-widest transition-colors flex items-center justify-between",
                                             value === option.value 
                                                 ? "bg-red-500/10 text-red-500" 
                                                 : "text-neutral-400 hover:bg-white/5 hover:text-white"

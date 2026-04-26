@@ -36,7 +36,7 @@ export default function QRGeneratorPage() {
             const pngUrl = canvas
                 .toDataURL("image/png")
                 .replace("image/png", "image/octet-stream");
-            let downloadLink = document.createElement("a");
+            const downloadLink = document.createElement("a");
             downloadLink.href = pngUrl;
             downloadLink.download = `${tenantSlug}-qr-code.png`;
             document.body.appendChild(downloadLink);
@@ -63,7 +63,7 @@ export default function QRGeneratorPage() {
             { }
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 print:hidden">
                 <div className="space-y-2">
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase italic">
                         QR <span className="text-green-500">Engine</span>
                     </h1>
                     <p className="text-neutral-500 font-medium">Customize your shop's bridge to the digital world.</p>
@@ -122,7 +122,7 @@ export default function QRGeneratorPage() {
                         </div>
 
                         <div className="mt-8 text-center print:hidden">
-                            <p className="text-xs font-black uppercase tracking-widest text-neutral-400 mb-1">Target URL</p>
+                            <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1">Target URL</p>
                             <code className="text-lg font-mono font-bold text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-100 italic">
                                 {tenantSlug}.{baseDomain}
                             </code>
@@ -134,7 +134,7 @@ export default function QRGeneratorPage() {
                 <div className="space-y-8 print:hidden">
                     {/* Style Selection */}
                     <section className="space-y-4">
-                        <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-neutral-500">
+                        <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-neutral-500">
                             <Palette className="w-4 h-4" /> Styling Pattern
                         </label>
                         <div className="grid grid-cols-2 gap-4">
@@ -167,7 +167,7 @@ export default function QRGeneratorPage() {
 
                     {/* Colors */}
                     <section className="space-y-4">
-                        <label className="text-sm font-black uppercase tracking-widest text-neutral-500">Color Palette</label>
+                        <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">Color Palette</label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <ColorInput label="Main Color" value={fgColor} onChange={setFgColor} />
                             <ColorInput label="Eye Color" value={eyeColor} onChange={setEyeColor} />
@@ -176,7 +176,7 @@ export default function QRGeneratorPage() {
 
                     {/* Logo */}
                     <section className="space-y-4">
-                        <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-neutral-500">
+                        <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-neutral-500">
                             <ImageIcon className="w-4 h-4" /> Brand Centering
                         </label>
                         <div className="flex gap-4">
@@ -200,7 +200,7 @@ export default function QRGeneratorPage() {
                     { }
                     <section className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <label className="text-sm font-black uppercase tracking-widest text-neutral-500">Corner Softness</label>
+                            <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">Corner Softness</label>
                             <span className="text-xs font-bold text-neutral-400">{eyeRadius}px</span>
                         </div>
                         <input 
@@ -216,7 +216,7 @@ export default function QRGeneratorPage() {
                     { }
                     <button 
                         onClick={resetDefaults}
-                        className="w-full py-4 text-sm font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-red-500 transition-colors"
+                        className="w-full py-4 text-sm font-bold uppercase tracking-wider text-neutral-400 hover:text-red-500 transition-colors"
                     >
                         Reset to default settings
                     </button>
@@ -225,7 +225,7 @@ export default function QRGeneratorPage() {
 
             { }
             <div className="hidden print:block text-center mt-10">
-                <h2 className="text-3xl font-black">{params.tenantSlug}</h2>
+                <h2 className="text-3xl font-bold">{params.tenantSlug}</h2>
                 <p className="text-neutral-500">Scan to view our digital menu</p>
                 <p className="font-mono text-sm mt-2">{shopUrl}</p>
             </div>
@@ -237,7 +237,7 @@ function ColorInput({ label, value, onChange }: { label: string, value: string, 
     return (
         <div className="bg-white border-2 border-neutral-200 rounded-2xl p-4 flex items-center justify-between hover:border-neutral-300 transition-all">
             <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{label}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{label}</p>
                 <p className="font-mono font-bold text-sm uppercase">{value}</p>
             </div>
             <div className="relative w-10 h-10 overflow-hidden rounded-xl border border-neutral-100 p-0">

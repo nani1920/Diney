@@ -28,7 +28,7 @@ export default function OrderStatusPage() {
         const foundOrder = orders.find(o => o.order_id === params.id);
         if (foundOrder) {
             setOrder(foundOrder);
-            
+
             // If order found but has no items, and we haven't tried syncing yet, try to fetch again
             if (foundOrder.items.length === 0 && !hasSynced && tenant) {
                 setHasSynced(true);
@@ -77,7 +77,7 @@ export default function OrderStatusPage() {
                     </Link>
                     <div className="text-center">
                         <h1 className="text-[14px] font-bold text-neutral-900 tracking-[-0.01em]">Order Status</h1>
-                        <p className="text-[14px] text-neutral-900 font-black uppercase tracking-[0.2em] mt-0.5">#{order.short_id}</p>
+                        <p className="text-[14px] text-neutral-900 font-bold uppercase tracking-[0.2em] mt-0.5">#{order.short_id}</p>
                     </div>
                     <div className="w-10" />
                 </div>
@@ -86,7 +86,7 @@ export default function OrderStatusPage() {
             <div className="flex-1 px-5 py-6 flex flex-col items-center overflow-y-auto pb-32">
                 {/* Status Icon */}
                 <div className="relative mb-10 mt-4">
-                    <motion.div 
+                    <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: "spring", damping: 15 }}
@@ -97,7 +97,7 @@ export default function OrderStatusPage() {
                             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-current via-transparent to-transparent" />
                         </div>
 
-                        <motion.div 
+                        <motion.div
                             key={order.order_status}
                             initial={{ y: 20, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -107,7 +107,7 @@ export default function OrderStatusPage() {
                             {order.order_status === 'completed' ? (
                                 <div className="relative">
                                     <CheckCircle2 className="w-16 h-16 text-emerald-500" strokeWidth={2.5} />
-                                    <motion.div 
+                                    <motion.div
                                         animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
                                         transition={{ duration: 1.5, repeat: Infinity }}
                                         className="absolute inset-0 bg-emerald-500 rounded-full -z-10"
@@ -115,20 +115,20 @@ export default function OrderStatusPage() {
                                 </div>
                             ) : visuals.icon}
                         </motion.div>
-                        
+
                         {order.order_status === 'completed' && (
                             <div className="absolute inset-0 pointer-events-none">
                                 {[...Array(6)].map((_, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, scale: 0 }}
-                                        animate={{ 
+                                        animate={{
                                             opacity: [0, 1, 0],
                                             scale: [0, 1, 0.5],
                                             x: [0, (i % 2 === 0 ? 1 : -1) * (20 + i * 10)],
                                             y: [0, -(40 + i * 15)]
                                         }}
-                                        transition={{ 
+                                        transition={{
                                             duration: 2,
                                             repeat: Infinity,
                                             delay: i * 0.3
@@ -140,36 +140,36 @@ export default function OrderStatusPage() {
                         )}
 
                         {order.order_status === 'preparing' && (
-                            <motion.div 
+                            <motion.div
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                                 className="absolute inset-2 border-[2px] border-dashed border-amber-500/20 rounded-[3rem]"
                             />
                         )}
                     </motion.div>
-                    
+
                     {/* Multi-layered Glow */}
                     <div className={`absolute inset-0 rounded-[3.5rem] ${order.order_status === 'completed' ? 'bg-emerald-500/10' : visuals.ringColor} blur-3xl opacity-30 scale-125 -z-10`} />
-                    <motion.div 
-                        animate={{ 
+                    <motion.div
+                        animate={{
                             scale: order.order_status === 'completed' ? [1, 1.1, 1] : [1, 1.15, 1],
-                            opacity: [0.2, 0.4, 0.2] 
+                            opacity: [0.2, 0.4, 0.2]
                         }}
                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className={`absolute inset-0 rounded-[3.5rem] ${order.order_status === 'completed' ? 'border-emerald-500/20' : visuals.ringColor + ' border-current'} border-2 opacity-20 -z-10`} 
+                        className={`absolute inset-0 rounded-[3.5rem] ${order.order_status === 'completed' ? 'border-emerald-500/20' : visuals.ringColor + ' border-current'} border-2 opacity-20 -z-10`}
                     />
                 </div>
 
                 <div className="text-center mb-8 max-w-xs">
-                    <motion.h2 
+                    <motion.h2
                         key={visuals.label}
                         initial={{ y: 10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
-                        className="text-[28px] font-black text-neutral-900 tracking-tight mb-2"
+                        className="text-[28px] font-bold text-neutral-900 tracking-tight mb-2"
                     >
                         {order.order_status === 'completed' ? "Order Picked Up!" : visuals.label}
                     </motion.h2>
-                    <motion.p 
+                    <motion.p
                         key={visuals.subLabel}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -182,9 +182,9 @@ export default function OrderStatusPage() {
 
                 {/* QR Code Validation */}
                 {['received', 'preparing', 'ready'].includes(order.order_status) && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }} 
-                        animate={{ opacity: 1, scale: 1 }} 
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
                         className="w-full bg-white p-6 rounded-[2.5rem] border border-neutral-100 shadow-xl shadow-black/[0.02] mb-6 flex flex-col items-center text-center"
                     >
@@ -192,12 +192,12 @@ export default function OrderStatusPage() {
                             {order.order_status === 'ready' ? "Scan at counter to collect" : "Your Pickup Code"}
                         </p>
                         <div className="p-4 bg-white rounded-3xl border-2 border-dashed border-emerald-100">
-                            <QRCode 
-                                value={order.order_id} 
-                                size={180} 
-                                qrStyle="dots" 
-                                eyeRadius={8} 
-                                fgColor="#059669" 
+                            <QRCode
+                                value={order.order_id}
+                                size={180}
+                                qrStyle="dots"
+                                eyeRadius={8}
+                                fgColor="#059669"
                             />
                         </div>
                         {order.order_status === 'ready' && (
@@ -209,7 +209,7 @@ export default function OrderStatusPage() {
                 )}
 
                 {/* Details Card */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
@@ -217,7 +217,7 @@ export default function OrderStatusPage() {
                 >
                     <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-50">
                         <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-[0.1em]">Item Details</h3>
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-neutral-500 bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-100/50">
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-500 bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-100/50">
                             <Clock className="w-3.5 h-3.5" />
                             {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -227,17 +227,17 @@ export default function OrderStatusPage() {
                         {order.items.map((item, i) => {
                             const menuItem = menuItems.find(m => m.name === item.name);
                             const displayImage = item.image_url || menuItem?.image_url;
-                            
+
                             return (
                                 <div key={i} className="flex items-center gap-4">
                                     <div className="w-16 h-16 bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0 border border-neutral-100 shadow-sm flex items-center justify-center">
                                         {displayImage ? (
-                                            <ResilientImage 
-                                                src={displayImage} 
-                                                width={64} 
-                                                height={64} 
-                                                className="w-full h-full object-cover" 
-                                                alt={item.name} 
+                                            <ResilientImage
+                                                src={displayImage}
+                                                width={64}
+                                                height={64}
+                                                className="w-full h-full object-cover"
+                                                alt={item.name}
                                                 fallbackEmoji={getFoodEmoji(item.name)}
                                             />
                                         ) : (
@@ -252,7 +252,7 @@ export default function OrderStatusPage() {
                                             <span className="text-[12px] text-neutral-400 font-medium">₹{item.price}</span>
                                         </div>
                                     </div>
-                                    <span className="text-[15px] font-black text-neutral-900 tracking-tight">₹{item.price * item.quantity}</span>
+                                    <span className="text-[15px] font-bold text-neutral-900 tracking-tight">₹{item.price * item.quantity}</span>
                                 </div>
                             );
                         })}
@@ -262,22 +262,24 @@ export default function OrderStatusPage() {
                         <div className="flex justify-between items-center px-1 border-b border-neutral-50 pb-4 mb-4">
                             <span className="text-[14px] font-bold text-neutral-400">Payment Status</span>
                             {order.payment_status === 'paid' ? (
-                                <span className="px-3 py-1 rounded text-[11px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
+                                <span className="px-3 py-1 rounded text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
                             ) : order.payment_id ? (
-                                <span className="px-3 py-1 rounded text-[11px] font-black bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-widest shadow-sm">Payment Pending</span>
+                                <span className="px-3 py-1 rounded text-[11px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-widest shadow-sm">Payment Pending</span>
                             ) : (
-                                <span className="px-3 py-1 rounded text-[11px] font-black bg-neutral-50 text-neutral-600 border border-neutral-200 uppercase tracking-widest shadow-sm">Cash on Pickup</span>
+                                <span className="px-3 py-1 rounded text-[11px] font-bold bg-neutral-50 text-neutral-600 border border-neutral-200 uppercase tracking-widest shadow-sm">
+                                    {order.order_type === 'DINE_IN' ? 'Pay at Counter' : 'Cash on Pickup'}
+                                </span>
                             )}
                         </div>
                         <div className="flex justify-between items-center px-1">
                             <span className="text-[14px] font-bold text-neutral-400">Total Amount</span>
-                            <span className="text-[24px] font-black text-neutral-900 tracking-tighter">₹{order.total_amount}</span>
+                            <span className="text-[24px] font-bold text-neutral-900 tracking-tighter">₹{order.total_amount}</span>
                         </div>
                     </div>
 
                     {order.order_status === 'ready' && (
                         <div className="mt-2">
-                            <div className="bg-emerald-600 text-white text-center py-4 rounded-2xl font-black text-[12px] uppercase tracking-[0.1em] shadow-lg shadow-emerald-600/20">
+                            <div className="bg-emerald-600 text-white text-center py-4 rounded-2xl font-bold text-[12px] uppercase tracking-[0.1em] shadow-lg shadow-emerald-600/20">
                                 Hot & Ready for Pickup
                             </div>
                         </div>
@@ -288,7 +290,7 @@ export default function OrderStatusPage() {
             {/* Sticky Action Footer */}
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[520px] z-50 px-5 pb-8 pt-4 bg-gradient-to-t from-[#FAFAF8] via-[#FAFAF8] to-transparent">
                 <div className="flex gap-3">
-                    <button 
+                    <button
                         onClick={handleReorder}
                         className="flex-[2] h-14 bg-emerald-600 text-white rounded-2xl font-bold text-[15px] shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0"
                     >

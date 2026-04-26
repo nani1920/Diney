@@ -25,7 +25,7 @@ export default function LoginAsMerchantButton({ tenantSlug }: LoginAsMerchantBut
         <button 
             onClick={handleLogin}
             disabled={isLoading}
-            className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-red-500 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest hover:text-red-500 transition-colors disabled:opacity-50"
             title="Login as Merchant"
         >
             <span className="hidden xs:inline">

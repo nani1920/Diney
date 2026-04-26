@@ -10,6 +10,8 @@ import { useState } from 'react';
 import ResilientImage from "@/components/ResilientImage";
 import { createRazorpayOrder, createOrder } from '@/app/actions/orders';
 import { useStore } from '@/context/StoreContext';
+import { useOrders } from '@/context/OrderContext';
+import { useOrderStore } from '@/store/useOrderStore';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
@@ -30,7 +32,7 @@ export default function CartPage() {
     const tenantSlug = params.tenantSlug as string;
 
     const totalAmount = cart.reduce((sum, item) => {
-        const itemTotal = item.price * item.quantity;
+        const itemTotal = Number(item.price) * item.quantity;
         const customizationTotal = (item.customizations || [])
             .reduce((cSum, c) => cSum + (Number(c.price) || 0) * item.quantity, 0);
         return sum + itemTotal + customizationTotal;
@@ -40,9 +42,38 @@ export default function CartPage() {
 
     const { customer, tenant } = useStore();
     const router = useRouter();
+    const { placeOrder } = useOrders();
+    const { orderType, tableNumber } = useOrderStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
+
+    const handleSendToKitchen = async () => {
+        if (!tenant) return;
+        
+        // Ensure customer identity before sending to kitchen
+        if (!customer) {
+            router.push(`/${tenantSlug}/checkout?type=kitchen`);
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            const result = await placeOrder({
+                name: customer.name,
+                mobile: customer.mobile,
+            });
+            
+            if (result) {
+                toast.success('Sent to Kitchen!', { icon: '🧑‍🍳', duration: 4000 });
+                router.push(`/${tenantSlug}/bill`);
+            }
+        } catch (error) {
+            toast.error('Failed to send order to kitchen');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     const handlePayOnline = async () => {
         if (!tenant) {
@@ -59,7 +90,7 @@ export default function CartPage() {
         try {
             // 1. Create order ID on our server
             const rzpRes = await createRazorpayOrder(
-                finalTotal, 
+                finalTotal,
                 tenant?.id || '',
                 { name: customer.name, mobile: customer.mobile },
                 cart
@@ -75,17 +106,17 @@ export default function CartPage() {
 
             // 2. Open Razorpay Checkout Modal
             const options = {
-                key: tenant?.config?.razorpay_key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-                amount: orderOptions.amount, 
+                key: tenant?.config?.razorpay_key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: orderOptions.amount,
                 currency: orderOptions.currency,
                 name: tenant?.name || "Diney",
                 description: `Payment for ${tenant?.name || tenantSlug}`,
-                order_id: orderOptions.id, 
+                order_id: orderOptions.id,
                 handler: async function (response: any) {
                     toast.loading('Verifying secure payment...', { id: 'payment' });
                     // 3. Place actual Diney order with signature for server verification
                     const result = await createOrder(
-                        tenant?.id || '', 
+                        tenant?.id || '',
                         customer.name,
                         customer.mobile,
                         cart,
@@ -94,7 +125,7 @@ export default function CartPage() {
                         response.razorpay_order_id,
                         response.razorpay_signature
                     );
-                    
+
                     if (result.success) {
                         toast.success('Order placed successfully!', { id: 'payment' });
                         setIsProcessing(false);
@@ -116,7 +147,7 @@ export default function CartPage() {
                     color: "#059669" // emerald-600
                 },
                 modal: {
-                    ondismiss: function() {
+                    ondismiss: function () {
                         setIsProcessing(false);
                         toast.error("Payment cancelled by you");
                     }
@@ -124,7 +155,7 @@ export default function CartPage() {
             };
 
             const rzp1 = new (window as any).Razorpay(options);
-            rzp1.on('payment.failed', function (response: any){
+            rzp1.on('payment.failed', function (response: any) {
                 toast.error(`Payment Failed: ${response.error.description}`);
                 setIsProcessing(false);
             });
@@ -141,7 +172,7 @@ export default function CartPage() {
             { }
             <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                 <div className="px-5 py-3.5 flex items-center justify-between">
-                    <Link href={`/${tenantSlug}`}>
+                    <Link href={tableNumber ? `/${tenantSlug}?table=${tableNumber}` : `/${tenantSlug}`}>
                         <div className="w-10 h-10 rounded-xl bg-white border border-neutral-200/50 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 transition-colors shadow-sm">
                             <ArrowLeft className="w-[18px] h-[18px]" />
                         </div>
@@ -168,7 +199,7 @@ export default function CartPage() {
                             <p className="text-[14px] text-neutral-400 font-medium mb-8 max-w-xs leading-relaxed">
                                 Explore the menu and add your favourite items
                             </p>
-                            <Link href={`/${tenantSlug}`}>
+                            <Link href={tableNumber ? `/${tenantSlug}?table=${tableNumber}` : `/${tenantSlug}`}>
                                 <motion.button
                                     whileTap={{ scale: 0.95 }}
                                     className="h-12 px-8 bg-emerald-600 text-white rounded-2xl font-bold text-[14px] shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition-colors"
@@ -192,12 +223,12 @@ export default function CartPage() {
                                     { }
                                     <div className="w-[72px] h-[72px] bg-neutral-50 rounded-2xl overflow-hidden flex-shrink-0">
                                         {item.image_url ? (
-                                            <ResilientImage 
-                                                src={item.image_url} 
-                                                width={72} 
-                                                height={72} 
-                                                className="w-full h-full object-cover" 
-                                                alt={item.name} 
+                                            <ResilientImage
+                                                src={item.image_url}
+                                                width={72}
+                                                height={72}
+                                                className="w-full h-full object-cover"
+                                                alt={item.name}
                                                 fallbackEmoji={getFoodEmoji(item.name)}
                                             />
                                         ) : (
@@ -237,7 +268,7 @@ export default function CartPage() {
                             ))}
 
                             { }
-                            <Link href={`/${tenantSlug}`} className="flex items-center gap-3 px-2 pt-3 text-emerald-600 hover:text-emerald-700 transition-colors">
+                            <Link href={tableNumber ? `/${tenantSlug}?table=${tableNumber}` : `/${tenantSlug}`} className="flex items-center gap-3 px-2 pt-3 text-emerald-600 hover:text-emerald-700 transition-colors">
                                 <div className="w-9 h-9 rounded-xl border border-dashed border-emerald-300 flex items-center justify-center">
                                     <Plus className="w-4 h-4" />
                                 </div>
@@ -286,29 +317,45 @@ export default function CartPage() {
                         </div>
 
                         <div className="flex flex-col gap-3 mt-4">
-                            <motion.button
-                                onClick={handlePayOnline}
-                                disabled={isProcessing}
-                                whileTap={{ scale: 0.97 }}
-                                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_8px_30px_-4px_rgba(22,163,74,0.35)] flex items-center justify-center gap-2.5 hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-70"
-                            >
-                                {isProcessing ? "Processing..." : "Pay Online"}
-                                {!isProcessing && <CreditCard className="w-4 h-4 ml-1" />}
-                            </motion.button>
-                            
-                            <Link href={`/${tenantSlug}/checkout`} className="block w-full">
+                            {(orderType === 'DINE_IN' && tableNumber) ? (
                                 <motion.button
+                                    onClick={handleSendToKitchen}
+                                    disabled={isProcessing}
                                     whileTap={{ scale: 0.97 }}
-                                    className="w-full bg-white text-emerald-600 border border-emerald-600/20 py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2.5 hover:bg-emerald-50 transition-colors"
+                                    className="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_8px_30px_-4px_rgba(234,88,12,0.35)] flex items-center justify-center gap-2.5 hover:bg-orange-700 transition-colors disabled:opacity-70"
                                 >
-                                    Cash on Pickup
-                                    <ArrowRight className="w-4 h-4 text-emerald-600" />
+                                    {isProcessing ? "Sending..." : `Send to Kitchen (Table ${tableNumber})`}
+                                    {!isProcessing && <ArrowRight className="w-5 h-5 ml-1" />}
                                 </motion.button>
-                            </Link>
+                            ) : (
+                                <>
+                                    <motion.button
+                                        onClick={handlePayOnline}
+                                        disabled={isProcessing}
+                                        whileTap={{ scale: 0.97 }}
+                                        className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_8px_30px_-4px_rgba(22,163,74,0.35)] flex items-center justify-center gap-2.5 hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-70"
+                                    >
+                                        {isProcessing ? "Processing..." : "Pay Online"}
+                                        {!isProcessing && <CreditCard className="w-4 h-4 ml-1" />}
+                                    </motion.button>
+
+                                    <Link href={`/${tenantSlug}/checkout`} className="block w-full">
+                                        <motion.button
+                                            whileTap={{ scale: 0.97 }}
+                                            className="w-full bg-white text-emerald-600 border border-emerald-600/20 py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2.5 hover:bg-emerald-50 transition-colors"
+                                        >
+                                            Cash on Pickup
+                                            <ArrowRight className="w-4 h-4 text-emerald-600" />
+                                        </motion.button>
+                                    </Link>
+                                </>
+                            )}
                         </div>
-                        <p className="text-center text-[11px] text-neutral-400 font-medium pb-4 max-w-[200px] mx-auto leading-relaxed">
-                            Secured by Razorpay. View your receipt instantly in My Orders.
-                        </p>
+                        {!(orderType === 'DINE_IN' && tableNumber) && (
+                            <p className="text-center text-[11px] text-neutral-400 font-medium pb-4 max-w-[200px] mx-auto leading-relaxed">
+                                Secured by Razorpay. View your receipt instantly in My Orders.
+                            </p>
+                        )}
                     </div>
                 )}
             </div>
@@ -316,7 +363,7 @@ export default function CartPage() {
             {/* High-Fidelity Payment Loading & Error Overlay */}
             <AnimatePresence>
                 {isProcessing && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -331,12 +378,12 @@ export default function CartPage() {
                             {!paymentError ? (
                                 <>
                                     <div className="relative w-32 h-32 mb-10 mx-auto">
-                                        <motion.div 
+                                        <motion.div
                                             animate={{ rotate: 360 }}
                                             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                                             className="absolute inset-0 border-4 border-emerald-100 rounded-[2.5rem]"
                                         />
-                                        <motion.div 
+                                        <motion.div
                                             animate={{ rotate: -360 }}
                                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                                             className="absolute inset-0 border-t-4 border-emerald-600 rounded-[2.5rem]"
@@ -349,7 +396,7 @@ export default function CartPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <h2 className="text-[22px] font-black text-neutral-900 tracking-tight uppercase italic">
+                                        <h2 className="text-[22px] font-bold text-neutral-900 tracking-tight uppercase italic">
                                             Securing <span className="text-emerald-600">Transaction</span>
                                         </h2>
                                         <p className="text-[13px] text-neutral-400 font-bold uppercase tracking-[0.2em] max-w-[240px] mx-auto leading-relaxed">
@@ -358,7 +405,7 @@ export default function CartPage() {
                                     </div>
 
                                     <div className="mt-12 w-48 h-1.5 bg-neutral-100 rounded-full mx-auto overflow-hidden">
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ x: "-100%" }}
                                             animate={{ x: "100%" }}
                                             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
@@ -367,7 +414,7 @@ export default function CartPage() {
                                     </div>
                                 </>
                             ) : (
-                                <motion.div 
+                                <motion.div
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     className="space-y-6"
@@ -375,9 +422,9 @@ export default function CartPage() {
                                     <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                                         <AlertCircle className="w-10 h-10 text-red-500" />
                                     </div>
-                                    
+
                                     <div className="space-y-2">
-                                        <h2 className="text-[20px] font-black text-neutral-900 tracking-tight uppercase italic">
+                                        <h2 className="text-[20px] font-bold text-neutral-900 tracking-tight uppercase italic">
                                             Payment <span className="text-red-500">Failed</span>
                                         </h2>
                                         <p className="text-[13px] text-neutral-500 font-bold leading-relaxed px-4">
@@ -386,12 +433,12 @@ export default function CartPage() {
                                     </div>
 
                                     <div className="pt-6">
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 setIsProcessing(false);
                                                 setPaymentError(null);
                                             }}
-                                            className="w-full h-14 bg-neutral-900 text-white rounded-2xl font-black uppercase tracking-widest text-[13px] shadow-xl shadow-neutral-900/10 active:scale-95 transition-all"
+                                            className="w-full h-14 bg-neutral-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[13px] shadow-xl shadow-neutral-900/10 active:scale-95 transition-all"
                                         >
                                             Return to Cart
                                         </button>
@@ -403,7 +450,7 @@ export default function CartPage() {
                 )}
 
                 {paymentSuccess && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -412,7 +459,7 @@ export default function CartPage() {
                         <motion.div
                             initial={{ scale: 0.5, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ 
+                            transition={{
                                 type: "spring",
                                 damping: 12,
                                 stiffness: 200
@@ -427,14 +474,14 @@ export default function CartPage() {
                                 <Check size={64} className="text-emerald-600 stroke-[4px]" />
                             </motion.div>
                         </motion.div>
-                        
+
                         <motion.div
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.3 }}
                             className="space-y-2"
                         >
-                            <h2 className="text-white text-[28px] font-black tracking-tight leading-none">
+                            <h2 className="text-white text-[28px] font-bold tracking-tight leading-none">
                                 PAYMENT SUCCESSFUL
                             </h2>
                             <p className="text-emerald-100 text-[15px] font-bold tracking-widest uppercase opacity-80">
@@ -442,13 +489,13 @@ export default function CartPage() {
                             </p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ delay: 0.5 }}
                             className="mt-12 bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10"
                         >
-                            <span className="text-white font-black text-[20px]">₹{finalTotal}</span>
+                            <span className="text-white font-bold text-[20px]">₹{finalTotal}</span>
                         </motion.div>
                     </motion.div>
                 )}

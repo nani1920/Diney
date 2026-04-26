@@ -63,7 +63,7 @@ export default function AnnouncementsPage() {
                     <div className="p-3 bg-red-500 text-black rounded-2xl ring-8 ring-red-500/10">
                         <Megaphone className="w-6 h-6" />
                     </div>
-                    <h1 className="text-3xl sm:text-4xl font-black tracking-tighter italic uppercase underline decoration-red-500 decoration-4 underline-offset-4">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter italic uppercase underline decoration-red-500 decoration-4 underline-offset-4">
                         Broadcaster
                     </h1>
                 </div>
@@ -78,7 +78,7 @@ export default function AnnouncementsPage() {
                     </h2>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Alert Title</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Alert Title</label>
                             <input 
                                 required
                                 value={formData.title}
@@ -88,7 +88,7 @@ export default function AnnouncementsPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Alert Type</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Alert Type</label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {['info', 'warning', 'success', 'error'].map((type) => (
                                     <button
@@ -96,7 +96,7 @@ export default function AnnouncementsPage() {
                                         type="button"
                                         onClick={() => setFormData({ ...formData, type })}
                                         className={clsx(
-                                            "px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all",
+                                            "px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all",
                                             formData.type === type 
                                                 ? "bg-white text-black border-white" 
                                                 : "bg-white/5 text-neutral-500 border-white/5 hover:border-white/20"
@@ -108,7 +108,7 @@ export default function AnnouncementsPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Message Content</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Message Content</label>
                             <textarea 
                                 required
                                 rows={4}
@@ -120,7 +120,7 @@ export default function AnnouncementsPage() {
                         </div>
                         <button 
                             disabled={isSubmitting}
-                            className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-black py-4 rounded-2xl font-black uppercase tracking-[0.2em] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-red-500/20"
+                            className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-black py-4 rounded-2xl font-bold uppercase tracking-[0.2em] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-red-500/20"
                         >
                             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Megaphone className="w-5 h-5" />}
                             Broadcast Message
@@ -149,7 +149,7 @@ export default function AnnouncementsPage() {
                                             <div>
                                                 <h3 className="font-bold text-lg">{ann.title}</h3>
                                                 <p className="text-neutral-500 text-sm mt-1 leading-relaxed">{ann.message}</p>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mt-4 italic">
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 mt-4 italic">
                                                     Sent {new Date(ann.created_at).toLocaleString()}
                                                 </p>
                                             </div>

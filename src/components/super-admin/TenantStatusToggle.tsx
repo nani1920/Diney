@@ -66,7 +66,7 @@ export default function TenantStatusToggle({
             onClick={handleToggle}
             disabled={isLoading || status === 'pending' || status === 'rejected'}
             className={clsx(
-                "relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                "relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300",
                 isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
                 getStatusStyles()
             )}

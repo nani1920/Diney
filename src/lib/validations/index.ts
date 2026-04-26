@@ -40,3 +40,28 @@ export const ProfileSchema = z.object({
     full_name: z.string().min(2).max(100).optional(),
     phone_number: z.string().regex(/^[0-9+]{10,15}$/, "Invalid phone number")
 });
+
+export const CategorySchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2).max(50),
+  display_order: z.number().int().default(0),
+  tenant_id: z.string().uuid().optional()
+});
+
+export const MasterProductSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2).max(200),
+  description: z.string().max(1000).optional(),
+  price: z.number().nonnegative(),
+  category: z.string().optional(),
+  image_url: z.string().url().optional().or(z.literal(''))
+});
+
+export const StaffSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2).max(100),
+  waiter_id: z.string().min(1).max(20),
+  role: z.enum(['admin', 'manager', 'waiter', 'chef']),
+  status: z.enum(['active', 'inactive']).default('active'),
+  assigned_tables: z.array(z.string()).optional()
+});

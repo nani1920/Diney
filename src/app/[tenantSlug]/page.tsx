@@ -6,8 +6,10 @@ import { useCart } from "@/context/CartContext";
 import { useOrders } from "@/context/OrderContext";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { useOrderStore } from "@/store/useOrderStore";
 import {
   ShoppingCart,
   Search,
@@ -20,38 +22,58 @@ import {
   ChevronDown,
   MapPin,
   Image as ImageIcon,
+  Receipt,
+  AlertTriangle
 } from "lucide-react";
 import clsx from "clsx";
 import ResilientImage from "@/components/ResilientImage";
+import { MenuItem } from "@/types";
+import { validateTable, callWaiter } from "@/app/actions/orders";
+import { toast } from "react-hot-toast";
 
 export default function Home() {
-  const { 
-    tenant, isStoreOpen, openingTime, closingTime, 
-    isLoading: isStoreLoading, customer 
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">Loading...</div>}>
+      <StoreContent />
+    </Suspense>
+  );
+}
+
+function StoreContent() {
+  const {
+    tenant, isStoreOpen, openingTime, closingTime,
+    isLoading: isStoreLoading, customer
   } = useStore();
   const { menuItems, categories, isLoading: isAdminLoading } = useAdmin();
   const { cart, addToCart, updateCartQuantity } = useCart();
   const { orders } = useOrders();
-  
+  const { setOrderType, setTableNumber, orderType, tableNumber } = useOrderStore();
+
+  const searchParams = useSearchParams();
+  const tableQuery = searchParams.get('table');
+
   const [activeCategoryId, setActiveCategoryId] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCalling, setIsCalling] = useState(false);
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  
-  const activeOrdersCount = orders.filter(o => {
+  const totalItems = cart.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const cartTotal = cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+
+  const activeOrdersCount = orders ? orders.filter(o => {
     const isMyOrder = customer ? o.customer_mobile === customer.mobile : false;
     const isActiveStatus = o.order_status === "received" || o.order_status === "preparing" || o.order_status === "ready";
     return isMyOrder && isActiveStatus;
-  }).length;
+  }).length : 0;
 
   const filteredItems = useMemo(() => {
-    const baseItems = menuItems.filter(item => {
-        const matchesCategory = activeCategoryId === "all" || (item as any).category_id === activeCategoryId;
-        const matchesSearch = searchQuery.trim() === "" || 
-            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.description.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
+    if (!menuItems) return [];
+    
+    const baseItems = menuItems.filter((item: any) => {
+      const matchesCategory = activeCategoryId === "all" || item.category_id === activeCategoryId;
+      const matchesSearch = searchQuery.trim() === "" ||
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
     });
 
     return [...baseItems].sort((a, b) => {
@@ -63,13 +85,52 @@ export default function Home() {
 
   const getItemInCart = (itemId: string) => cart.find(c => c.uniqueId === `${itemId}-[]`);
 
-  const activeCategoryLabel = activeCategoryId === "all" 
-    ? "All Items" 
-    : categories.find(c => c.id === activeCategoryId)?.name || "Items";
+  const activeCategoryLabel = activeCategoryId === "all"
+    ? "All Items"
+    : categories?.find((c: any) => c.id === activeCategoryId)?.name || "Items";
+
+  const [isValidatingTable, setIsValidatingTable] = useState(false);
+  const [tableOccupiedError, setTableOccupiedError] = useState(false);
+  const [tableNotFoundError, setTableNotFoundError] = useState(false);
+
+  useEffect(() => {
+    const checkTable = async () => {
+        if (tableQuery && tenant) {
+            setIsValidatingTable(true);
+            try {
+                const res = await validateTable(tenant.id, tableQuery, customer?.mobile);
+                if (res?.success && res.data) {
+                    if (res.data.isOccupiedByOther) {
+                        setTableOccupiedError(true);
+                        setTableNotFoundError(false);
+                    } else {
+                        setOrderType('DINE_IN');
+                        setTableNumber(tableQuery);
+                        setTableNotFoundError(false);
+                        setTableOccupiedError(false);
+                    }
+                } else {
+                    setTableNotFoundError(true);
+                    setTableOccupiedError(false);
+                    setOrderType('TAKEAWAY');
+                    setTableNumber(null);
+                }
+            } catch (error) {
+                console.error("Table validation error:", error);
+            } finally {
+                setIsValidatingTable(false);
+            }
+        } else if (!tableQuery) {
+            // Strictly enforce TAKEAWAY mode if no table query is present in the URL
+            setOrderType('TAKEAWAY');
+            setTableNumber(null);
+        }
+    };
+    checkTable();
+  }, [tableQuery, tenant, customer?.mobile, setOrderType, setTableNumber]);
 
   return (
     <main className="min-h-screen bg-[#FAFAF8] relative max-w-[520px] mx-auto overflow-x-hidden">
-      { }
       {tenant?.is_active === false && !isStoreLoading && (
         <div className="fixed inset-0 z-[60] bg-neutral-900 flex flex-col items-center justify-center p-8 text-center text-white">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -83,7 +144,73 @@ export default function Home() {
         </div>
       )}
 
-      { }
+      {tableOccupiedError && !isValidatingTable && (
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center p-8 text-center">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                className="max-w-xs w-full space-y-8"
+            >
+                <div className="w-24 h-24 bg-orange-50 rounded-[2.5rem] flex items-center justify-center text-orange-500 mx-auto shadow-sm">
+                    <Clock size={48} />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-[24px] font-bold text-neutral-900 tracking-tight leading-tight uppercase italic">
+                        Table <span className="text-orange-500">Occupied</span>
+                    </h2>
+                    <p className="text-[14px] text-neutral-400 font-medium leading-relaxed">
+                        This table is already <span className="font-bold text-neutral-900">occupied or booked</span> at this time.
+                    </p>
+                    <p className="text-[12px] text-neutral-400">
+                        Please try scanning another table or continue as a <span className="font-bold">takeaway</span> order.
+                    </p>
+                </div>
+                <Link href={`/${tenant?.slug}`}>
+                    <button 
+                        onClick={() => {
+                            setTableOccupiedError(false);
+                            setOrderType('TAKEAWAY');
+                            setTableNumber(null);
+                        }}
+                        className="w-full h-14 bg-neutral-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[12px] shadow-xl shadow-neutral-900/10 active:scale-[0.98] transition-all mt-4"
+                    >
+                        Order Takeaway
+                    </button>
+                </Link>
+            </motion.div>
+        </div>
+      )}
+
+      {tableNotFoundError && !isValidatingTable && (
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center p-8 text-center">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                className="max-w-xs w-full space-y-8"
+            >
+                <div className="w-24 h-24 bg-red-50 rounded-[2.5rem] flex items-center justify-center text-red-500 mx-auto shadow-sm">
+                    <AlertTriangle size={48} />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-[24px] font-bold text-neutral-900 tracking-tight leading-tight uppercase italic">
+                        Table <span className="text-red-500">Not Found</span>
+                    </h2>
+                    <p className="text-[14px] text-neutral-400 font-medium leading-relaxed">
+                        The table <span className="font-bold text-neutral-900">"{tableQuery}"</span> does not exist in our system. Please check the QR code or ask our staff for assistance.
+                    </p>
+                </div>
+                <Link href={`/${tenant?.slug}`}>
+                    <button 
+                        onClick={() => setTableNotFoundError(false)}
+                        className="w-full h-14 bg-neutral-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[12px] shadow-xl shadow-neutral-900/10 active:scale-[0.98] transition-all mt-4"
+                    >
+                        Return to Menu
+                    </button>
+                </Link>
+            </motion.div>
+        </div>
+      )}
+
       {!isStoreOpen && tenant?.is_active !== false && (
         <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center p-8 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm w-full space-y-8">
@@ -119,7 +246,6 @@ export default function Home() {
 
       {isStoreOpen && (
         <>
-          { }
           <div className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
             <div className="px-5 py-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -129,9 +255,46 @@ export default function Home() {
                     <h1 className="text-[16px] font-bold text-neutral-900 leading-none tracking-[-0.01em]">{tenant?.name || "Store"}</h1>
                     <ChevronDown className="w-3.5 h-3.5 text-neutral-300 translate-y-[1px]" />
                   </div>
-                  <p className="text-[12px] text-neutral-400 font-medium">
-                    {customer ? `Hi, ${customer.name} 👋` : "Order delicious food"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    {orderType === 'DINE_IN' && tableNumber ? (
+                      <>
+                        <span className="text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded-md">Dining at Table {tableNumber}</span>
+                        <button 
+                          onClick={async () => {
+                            if (!tenant) return;
+                            
+                            // Check for local cooldown
+                            if (isCalling) {
+                              toast("Our waiter is on the way! 🏃‍♂️ If not, please try again in a moment.", { 
+                                icon: "⏳",
+                                style: { borderRadius: '10px', background: '#333', color: '#fff' }
+                              });
+                              return;
+                            }
+
+                            setIsCalling(true);
+                            try {
+                              const res = await callWaiter(tenant.id, tableNumber);
+                              if (res?.success) {
+                                toast.success("Waiter notified!", { icon: "🔔" });
+                              } else {
+                                toast.error(res?.error || "Error calling waiter");
+                              }
+                            } finally {
+                              setTimeout(() => setIsCalling(false), 60000); // 60s cooldown
+                            }
+                          }}
+                          className={clsx(
+                            "p-1 rounded-md transition-all active:scale-95",
+                            isCalling ? "bg-orange-400" : "bg-orange-600 hover:bg-orange-700"
+                          )}
+                          title="Call Waiter"
+                        >
+                          <Bell className={clsx("w-3.5 h-3.5 text-white", isCalling && "animate-pulse")} />
+                        </button>
+                      </>
+                    ) : (customer ? `Hi, ${customer.name} 👋` : "Order delicious food")}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -145,12 +308,20 @@ export default function Home() {
                     )}
                   </div>
                 </Link>
+                {orderType === 'DINE_IN' && tableNumber && customer && (
+                  <Link href={`/${tenant?.slug}/bill`}>
+                    <div className="relative h-10 px-3 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 border border-orange-100/50 hover:bg-orange-100 transition-colors gap-1.5">
+                      <Receipt className="w-4 h-4" />
+                      <span className="text-xs font-bold">Live Bill</span>
+                    </div>
+                  </Link>
+                )}
                 <Link href={`/${tenant?.slug}/cart`}>
                   <div className="relative w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-100/50">
                     <ShoppingCart className="w-5 h-5" />
                     {cart.length > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-[#FAFAF8] shadow-sm leading-none pl-[0.5px] pt-[0.5px]">
-                        {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                        {cart.reduce((acc: number, item: any) => acc + item.quantity, 0)}
                       </span>
                     )}
                   </div>
@@ -158,7 +329,6 @@ export default function Home() {
               </div>
             </div>
 
-            { }
             <div className="px-5 pb-3">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-300" />
@@ -178,7 +348,6 @@ export default function Home() {
               </div>
             </div>
 
-            { }
             <div className="px-5 pb-3.5 flex gap-2 overflow-x-auto scrollbar-hide">
               <button
                 onClick={() => setActiveCategoryId("all")}
@@ -191,7 +360,7 @@ export default function Home() {
               >
                 All
               </button>
-              {categories.map(cat => (
+              {categories && categories.map((cat: any) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategoryId(cat.id)}
@@ -208,7 +377,6 @@ export default function Home() {
             </div>
           </div>
 
-          { }
           <div className="px-5 pt-4">
             <div className="relative h-44 rounded-3xl overflow-hidden shadow-sm">
               <Image src="/hero-bg.png" alt="" fill className="object-cover" priority />
@@ -222,15 +390,13 @@ export default function Home() {
             </div>
           </div>
 
-          { }
           <div className="px-5 pt-6 pb-4 flex items-center justify-between">
             <h3 className="text-[20px] font-bold text-neutral-900 tracking-[-0.02em]">
-                {activeCategoryLabel}
+              {activeCategoryLabel}
             </h3>
             <span className="text-[13px] text-neutral-400 font-medium">{filteredItems.length} items</span>
           </div>
 
-          { }
           <div className="px-5 pb-32">
             <motion.div
               key={activeCategoryId}
@@ -240,7 +406,6 @@ export default function Home() {
               className="flex flex-col gap-3"
             >
               {isAdminLoading ? (
-                /* MENU SKELETONS */
                 <div className="flex flex-col gap-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="bg-white p-4 rounded-2xl border border-neutral-200/30 flex items-center gap-4 animate-pulse">
@@ -261,7 +426,7 @@ export default function Home() {
                   <p className="text-neutral-400 text-sm font-medium">No items found in this section</p>
                 </div>
               ) : (
-                filteredItems.map((item, index) => {
+                filteredItems.map((item: any, index: number) => {
                   const cartItem = getItemInCart(item.id);
                   return (
                     <motion.div
@@ -271,58 +436,55 @@ export default function Home() {
                       transition={{ delay: index * 0.04, duration: 0.3 }}
                       className={clsx(
                         "flex gap-4 p-4 rounded-2xl border transition-all duration-200",
-                        !item.availability_status 
-                          ? "bg-neutral-50/50 border-neutral-100 opacity-50" 
+                        !item.availability_status
+                          ? "bg-neutral-50/50 border-neutral-100 opacity-50"
                           : "bg-white border-neutral-200/30 hover:border-emerald-200 hover:shadow-md shadow-sm shadow-neutral-100/40"
                       )}
                     >
-                      { }
                       <div className="relative flex-shrink-0 w-[94px] h-[94px] rounded-2xl bg-neutral-50 overflow-hidden">
                         {item.image_url ? (
-                            <ResilientImage 
-                                src={item.image_url} 
-                                fill 
-                                sizes="94px" 
-                                className="object-cover" 
-                                alt={item.name} 
-                                fallbackEmoji={getFoodEmoji(item.name)}
-                            />
+                          <ResilientImage
+                            src={item.image_url}
+                            fill
+                            sizes="94px"
+                            className="object-cover"
+                            alt={item.name}
+                            fallbackEmoji={getFoodEmoji(item.name)}
+                          />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-neutral-300">
-                                <span className="text-[42px]">{getFoodEmoji(item.name)}</span>
-                            </div>
+                          <div className="w-full h-full flex items-center justify-center text-neutral-300">
+                            <span className="text-[42px]">{getFoodEmoji(item.name)}</span>
+                          </div>
                         )}
                         {!item.availability_status && (
                           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                            <span className="text-[10px] font-black tracking-tighter text-neutral-500 bg-white px-2 py-1 rounded shadow-sm">SOLD OUT</span>
+                            <span className="text-[10px] font-bold tracking-tighter text-neutral-500 bg-white px-2 py-1 rounded shadow-sm">SOLD OUT</span>
                           </div>
                         )}
                       </div>
 
-                      { }
                       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                         <div className="space-y-1">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className="text-[16px] font-bold text-neutral-900 leading-tight line-clamp-2 tracking-tight">
                               {item.name}
                             </h4>
-                            { }
                             <div className={clsx(
-                                "w-[14px] h-[14px] rounded-[3px] flex-shrink-0 border flex items-center justify-center mt-1",
-                                item.veg_or_nonveg === "veg" ? "border-green-600" : "border-red-500"
+                              "w-[14px] h-[14px] rounded-[3px] flex-shrink-0 border flex items-center justify-center mt-1",
+                              item.veg_or_nonveg === "veg" ? "border-green-600" : "border-red-500"
                             )}>
-                                <div className={clsx(
-                                    "w-[6px] h-[6px] rounded-full",
-                                    item.veg_or_nonveg === "veg" ? "bg-green-600" : "bg-red-500"
-                                )} />
+                              <div className={clsx(
+                                "w-[6px] h-[6px] rounded-full",
+                                item.veg_or_nonveg === "veg" ? "bg-green-600" : "bg-red-500"
+                              )} />
                             </div>
                           </div>
                           <p className="text-[12px] text-neutral-400 font-medium line-clamp-2 leading-relaxed">{item.description}</p>
                         </div>
 
                         <div className="flex items-center justify-between mt-3">
-                          <span className="text-[17px] font-black text-neutral-900 tracking-tight">₹{item.price}</span>
-                          
+                          <span className="text-[17px] font-bold text-neutral-900 tracking-tight">₹{item.price}</span>
+
                           {item.availability_status && (
                             cartItem ? (
                               <div className="flex items-center bg-emerald-600 h-9 rounded-xl overflow-hidden shadow-lg shadow-emerald-600/10">
@@ -330,7 +492,7 @@ export default function Home() {
                                   className="w-9 h-9 flex items-center justify-center text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors">
                                   <Minus className="w-3.5 h-3.5" strokeWidth={3} />
                                 </button>
-                                <span className="text-white text-[14px] font-black w-6 text-center">{cartItem.quantity}</span>
+                                <span className="text-white text-[14px] font-bold w-6 text-center">{cartItem.quantity}</span>
                                 <button onClick={() => addToCart(item)}
                                   className="w-9 h-9 flex items-center justify-center text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors">
                                   <Plus className="w-3.5 h-3.5" strokeWidth={3} />
@@ -340,7 +502,7 @@ export default function Home() {
                               <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => addToCart(item)}
-                                className="h-9 px-5 bg-white text-emerald-600 border border-emerald-100 rounded-xl text-[13px] font-black hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                className="h-9 px-5 bg-white text-emerald-600 border border-emerald-100 rounded-xl text-[13px] font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
                               >
                                 ADD
                               </motion.button>
@@ -353,14 +515,13 @@ export default function Home() {
                 })
               )}
             </motion.div>
-            
+
             <div className="mt-20 pb-12 flex flex-col items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Powered By</span>
-               <Image src="/logo.png" alt="Diney" width={100} height={32} className="h-8 w-auto object-contain" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-400">Powered By</span>
+              <Image src="/logo.png" alt="Diney" width={100} height={32} className="h-8 w-auto object-contain" />
             </div>
           </div>
 
-          { }
           <AnimatePresence>
             {totalItems > 0 && (
               <motion.div
@@ -377,15 +538,15 @@ export default function Home() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="bg-white/20 w-11 h-11 rounded-2xl flex items-center justify-center">
-                          <span className="text-white text-lg font-black">{totalItems}</span>
+                          <span className="text-white text-lg font-bold">{totalItems}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-white/60 text-[10px] font-black uppercase tracking-widest leading-none mb-1">{totalItems === 1 ? "Dish added" : "Dishes added"}</span>
-                          <span className="text-white text-[20px] font-black tracking-tight leading-none">₹{cartTotal}</span>
+                          <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest leading-none mb-1">{totalItems === 1 ? "Dish added" : "Dishes added"}</span>
+                          <span className="text-white text-[20px] font-bold tracking-tight leading-none">₹{cartTotal}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-white text-sm font-black uppercase tracking-wider">Checkout</span>
+                        <span className="text-white text-sm font-bold uppercase tracking-wider">Checkout</span>
                         <div className="bg-white w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transform group-hover:translate-x-1 transition-transform">
                           <ArrowRight className="w-5 h-5 text-emerald-600" />
                         </div>

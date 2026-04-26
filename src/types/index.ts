@@ -15,6 +15,7 @@ export type MenuItem = {
   prep_time_minutes: number;
   image_url?: string;
   category_id?: string;
+  category?: Category;
   master_product_id?: string;
 };
 
@@ -42,6 +43,19 @@ export type PromoCode = {
 
 export type OrderStatus = 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled';
 
+export type StaffRole = 'admin' | 'manager' | 'waiter' | 'chef';
+
+export type StaffMember = {
+    id: string;
+    tenant_id: string;
+    name: string;
+    waiter_id: string;
+    role: StaffRole;
+    assigned_tables?: string[];
+    status: 'active' | 'inactive';
+    created_at: string;
+};
+
 export type OrderItem = {
   id?: string;
   name: string;
@@ -57,6 +71,9 @@ export type Order = {
   customer_name: string;
   customer_mobile: string;
   order_note?: string;
+  order_type?: 'TAKEAWAY' | 'DINE_IN';
+  table_number?: string | null;
+  session_id?: string | null;
   items: OrderItem[];
   total_amount: number;
   discount_amount?: number;  
@@ -87,4 +104,22 @@ export type TenantConfig = {
   openingTime?: string;
   closingTime?: string;
   [key: string]: any;
+};
+export type TableOccupancyStatus = 'available' | 'occupied' | 'dirty';
+export type TableAlertStatus = 'none' | 'service' | 'bill';
+
+export type Table = {
+    id: string;
+    tenant_id: string;
+    table_number: string;
+    occupancy_status: TableOccupancyStatus;
+    alert_status: TableAlertStatus;
+    active_session_id?: string | null;
+    assigned_staff_id?: string | null;
+    handled_by_staff_id?: string | null;
+    last_alert_at?: string | null;
+    ready_orders_count?: number;
+    capacity?: number;
+    zone_name?: string;
+    customer_name?: string | null;
 };

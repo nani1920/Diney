@@ -17,15 +17,18 @@ import {
     ChevronRight,
     Zap,
     Eye,
-    EyeOff
+    EyeOff,
+    Bell
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { callWaiter, notifyWaiterForReadyFood } from '@/app/actions/orders';
+import { toast } from 'react-hot-toast';
 
 const QRScannerModal = dynamic(
-  () => import('@/components/admin/QRScannerModal').then((mod) => mod.QRScannerModal),
-  { ssr: false, loading: () => <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent flex items-center justify-center rounded-full animate-spin"></div></div> }
+    () => import('@/components/admin/QRScannerModal').then((mod) => mod.QRScannerModal),
+    { ssr: false, loading: () => <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent flex items-center justify-center rounded-full animate-spin"></div></div> }
 );
 
 type TabStatus = 'received' | 'preparing' | 'ready';
@@ -54,7 +57,7 @@ export default function AdminOrdersPage() {
         return () => clearInterval(timer);
     }, []);
 
-     
+
     const getTimeElapsed = (startTime: string) => {
         const start = new Date(startTime).getTime();
         const now = currentTime.getTime();
@@ -66,7 +69,7 @@ export default function AdminOrdersPage() {
     };
 
     const activeOrders = orders.filter(o => ['received', 'preparing', 'ready'].includes(o.order_status));
-    
+
     const filteredOrders = activeOrders.filter(o => {
         const query = searchQuery.toLowerCase();
         return (
@@ -91,16 +94,16 @@ export default function AdminOrdersPage() {
 
                 <div className="relative w-full md:w-80 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
-                    <input 
+                    <input
                         ref={searchRef}
-                        type="text" 
+                        type="text"
                         placeholder="Search ID or name (Press /)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all shadow-sm"
                     />
                     {searchQuery && (
-                        <button 
+                        <button
                             onClick={() => setSearchQuery('')}
                             className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
                         >
@@ -113,8 +116,8 @@ export default function AdminOrdersPage() {
                     onClick={() => setShowMobile(!showMobile)}
                     className={clsx(
                         "h-[50px] px-5 rounded-2xl border transition-all flex items-center gap-2.5 shadow-sm active:scale-95",
-                        showMobile 
-                            ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100" 
+                        showMobile
+                            ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
                             : "bg-white border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300"
                     )}
                     title={showMobile ? "Mask customer mobile numbers" : "Show full customer mobile numbers"}
@@ -125,14 +128,14 @@ export default function AdminOrdersPage() {
                     </span>
                 </button>
 
-                <button 
+                <button
                     onClick={() => {
                         setQrScannedOrder(null); // Reset for manual start
                         setIsQRScannerOpen(true);
                     }}
                     className="h-[50px] px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 shrink-0 w-full md:w-auto justify-center"
                 >
-                    <span className="text-lg">📸</span> 
+                    <span className="text-lg">📸</span>
                     Scan & Verify QR
                 </button>
             </header>
@@ -226,6 +229,7 @@ export default function AdminOrdersPage() {
                                 nextStatus="completed"
                                 timeElapsed={getTimeElapsed(order.order_time)}
                                 accentColor="green"
+                                isDineInReady={order.order_type === 'DINE_IN'}
                             />
                         ))}
                     </KanbanColumn>
@@ -233,9 +237,9 @@ export default function AdminOrdersPage() {
 
             </div>
 
-            <QRScannerModal 
-                isOpen={isQRScannerOpen} 
-                onClose={() => setIsQRScannerOpen(false)} 
+            <QRScannerModal
+                isOpen={isQRScannerOpen}
+                onClose={() => setIsQRScannerOpen(false)}
             />
         </div>
     );
@@ -271,8 +275,9 @@ function KanbanColumn({ title, count, children, color, icon: Icon }: any) {
     )
 }
 
-function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: any) {
+function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile, isDineInReady }: any) {
     const { updateOrderStatus } = useOrders();
+    const { tenant } = useStore();
 
     const colors = "border-neutral-100 hover:border-neutral-200";
 
@@ -282,12 +287,18 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: 
         return diffInMinutes > 15;
     })();
 
-     
+
     let buttonText = `Move to ${nextStatus}`;
     let buttonClass = 'bg-black text-white hover:bg-neutral-800';
+    
     if (nextStatus === 'completed') {
-        buttonText = 'Mark Completed';
-        buttonClass = 'bg-green-600 text-white hover:bg-green-700';
+        if (isDineInReady) {
+            buttonText = 'Awaiting Pickup';
+            buttonClass = 'bg-neutral-100 text-neutral-400 cursor-not-allowed';
+        } else {
+            buttonText = 'Mark Completed';
+            buttonClass = 'bg-green-600 text-white hover:bg-green-700';
+        }
     }
 
     return (
@@ -300,7 +311,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: 
         >
             { }
             <div className="flex justify-between items-center text-[10px] font-bold tracking-tight">
-                <span className="text-neutral-300 font-black uppercase tracking-[0.2em]">#{order.short_id}</span>
+                <span className="text-neutral-300 font-bold uppercase tracking-wider">#{order.short_id}</span>
                 <div className="flex items-center gap-1.5 text-neutral-400 bg-neutral-50/50 px-2 py-0.5 rounded-full border border-neutral-100/50">
                     <Clock className="w-3 h-3" />
                     {timeElapsed}
@@ -313,25 +324,37 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: 
                     <User className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                    <h4 className="text-[16px] font-extrabold text-neutral-900 tracking-tight leading-tight">{order.customer_name}</h4>
+                    <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-[16px] font-bold text-neutral-900 tracking-tight leading-tight">{order.customer_name}</h4>
+                        <div className={clsx(
+                            "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
+                            order.order_type === 'DINE_IN' 
+                                ? "bg-orange-50 text-orange-600 border-orange-100" 
+                                : "bg-blue-50 text-blue-600 border-blue-100"
+                        )}>
+                            {order.order_type === 'DINE_IN' ? 'Dine In' : 'Takeaway'}
+                        </div>
+                    </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                        <p className="flex items-center gap-1.5 text-[10px] font-black text-neutral-300 uppercase tracking-widest">
-                            Dine-in
+                        <p className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
+                            {order.order_type === 'DINE_IN' ? `Table ${order.table_number || '?'}` : 'Express Pickup'}
                         </p>
                         <span className="text-neutral-200">|</span>
                         <p className="text-[10px] font-bold text-neutral-400">
-                            {order.customer_mobile 
+                            {order.customer_mobile
                                 ? (showMobile ? order.customer_mobile : order.customer_mobile.replace(/.(?=.{4})/g, '*'))
                                 : 'No Mobile'}
                         </p>
                     </div>
                     <div className="mt-1">
                         {order.payment_status === 'paid' ? (
-                            <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-widest font-black">Paid Online</span>
+                            <span className="text-[9px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 uppercase tracking-wider font-bold">Paid Online</span>
                         ) : order.payment_id ? (
-                            <span className="text-[9px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200 uppercase tracking-widest font-black">Payment Pending</span>
+                            <span className="text-[9px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200 uppercase tracking-wider font-bold">Payment Pending</span>
                         ) : (
-                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest font-black">Cash on Pickup</span>
+                            <span className="text-[9px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-wider font-bold">
+                                {order.order_type === 'DINE_IN' ? 'Pay at Counter' : 'Cash on pickup'}
+                            </span>
                         )}
                     </div>
                 </div>
@@ -349,12 +372,12 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: 
                     <div key={i} className="flex flex-col gap-1.5">
                         <div className="flex justify-between items-start gap-4">
                             <div className="flex items-start gap-2.5">
-                                <div className="w-5 h-5 rounded-md bg-neutral-50 border border-neutral-100 flex items-center justify-center text-[10px] font-black text-neutral-900 flex-shrink-0">
+                                <div className="w-5 h-5 rounded-md bg-neutral-50 border border-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-900 flex-shrink-0">
                                     {item.quantity}
                                 </div>
                                 <span className="text-[14px] font-bold text-neutral-700 leading-snug">{item.name}</span>
                             </div>
-                            <span className="text-[14px] font-black text-neutral-900">₹{item.price * item.quantity}</span>
+                            <span className="text-[14px] font-bold text-neutral-900">₹{item.price * item.quantity}</span>
                         </div>
                         { }
                         {item.customizations && item.customizations.length > 0 && (
@@ -373,7 +396,7 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: 
             { }
             {order.order_note && (
                 <div className="bg-neutral-50 p-3 rounded-2xl border border-neutral-100/50">
-                    <p className="text-[10px] text-neutral-300 font-bold uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                    <p className="text-[10px] text-neutral-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <ArrowRight className="w-2.5 h-2.5" /> Note
                     </p>
                     <p className="text-[12px] text-neutral-600 font-medium italic leading-relaxed">
@@ -385,34 +408,60 @@ function OrderCard({ order, nextStatus, timeElapsed, accentColor, showMobile }: 
             { }
             <div className="mt-2 space-y-3">
                 <div className="flex justify-between items-center px-1">
-                    <span className="text-[10px] font-black text-neutral-200 uppercase tracking-widest">Total</span>
-                    <span className="text-[17px] font-black text-neutral-900 tracking-tighter">₹{order.total_amount}</span>
+                    <span className="text-[10px] font-bold text-neutral-200 uppercase tracking-wider">Total</span>
+                    <span className="text-[17px] font-bold text-neutral-900 tracking-tighter">₹{order.total_amount}</span>
                 </div>
-                
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => updateOrderStatus(order.order_id, nextStatus)}
-                        className={clsx(
-                            "flex-1 h-11 rounded-2xl font-bold text-[13px] tracking-tight transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/5 active:scale-95",
-                            nextStatus === 'completed' 
-                                ? "bg-emerald-500 text-white hover:bg-emerald-600" 
-                                : "bg-neutral-900 text-white hover:bg-neutral-800"
-                        )}
-                    >
-                        {buttonText}
-                        {nextStatus !== 'completed' && <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
 
-                    {order.order_status === 'received' && (
+                <div className="flex flex-col gap-2">
+                    {isDineInReady && nextStatus === 'completed' && (
                         <button
-                            onClick={() => {
-                                if (confirm('Cancel this order?')) updateOrderStatus(order.order_id, 'cancelled');
+                            onClick={async () => {
+                                if (!tenant?.id) return;
+                                try {
+                                    await notifyWaiterForReadyFood(tenant.id, order.table_number);
+                                    toast.success(`Staff notified: Ready to serve!`, { icon: '🧑‍🍳' });
+                                } catch (err: any) {
+                                    toast.error(err.message || "Could not notify waiter");
+                                }
                             }}
-                            className="w-11 h-11 rounded-2xl flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 border border-neutral-100 transition-all active:scale-95"
+                            className="w-full h-11 bg-amber-100 text-amber-700 rounded-2xl font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-amber-200 transition-all border border-amber-200"
                         >
-                            <X className="w-5 h-5" />
+                            <Bell className="w-4 h-4" />
+                            Notify Waiter
                         </button>
                     )}
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => {
+                                if (isDineInReady && nextStatus === 'completed') {
+                                    toast.error("Waiters must serve dine-in orders from their dashboard.");
+                                    return;
+                                }
+                                updateOrderStatus(order.order_id, nextStatus);
+                            }}
+                            disabled={isDineInReady && nextStatus === 'completed'}
+                            className={clsx(
+                                "flex-1 h-11 rounded-2xl font-bold text-[13px] tracking-tight transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/5 active:scale-95",
+                                nextStatus === 'completed'
+                                    ? (isDineInReady ? "bg-neutral-100 text-neutral-400" : "bg-emerald-500 text-white hover:bg-emerald-600")
+                                    : "bg-neutral-900 text-white hover:bg-neutral-800"
+                            )}
+                        >
+                            {buttonText}
+                            {nextStatus !== 'completed' && <ChevronRight className="w-3.5 h-3.5" />}
+                        </button>
+
+                        {order.order_status === 'received' && (
+                            <button
+                                onClick={() => {
+                                    if (confirm('Cancel this order?')) updateOrderStatus(order.order_id, 'cancelled');
+                                }}
+                                className="w-11 h-11 rounded-2xl flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 border border-neutral-100 transition-all active:scale-95"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </motion.div>

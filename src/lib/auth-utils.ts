@@ -91,6 +91,28 @@ export async function ensureSuperAdmin() {
 }
 
  
+import { getAuthenticatedStaff } from '@/app/actions/staff-auth';
+
+export async function verifyStaffAccess(tenantId: string) {
+    const staff = await getAuthenticatedStaff();
+    if (!staff) return false;
+    
+    // Ensure the staff member belongs to this tenant
+    return staff.tenant_id === tenantId;
+}
+
+export async function ensureAdminOrStaff(tenantId: string) {
+    // 1. Try owner check
+    const isOwner = await verifyTenantOwnership(tenantId);
+    if (isOwner) return true;
+
+    // 2. Try staff check
+    const isStaff = await verifyStaffAccess(tenantId);
+    if (isStaff) return true;
+
+    throw new Error('Unauthorized: Admin or Staff access required');
+}
+
 export async function ensureTenantOwner(tenantId: string) {
     const isOwner = await verifyTenantOwnership(tenantId);
     if (!isOwner) {

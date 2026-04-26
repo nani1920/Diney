@@ -7,6 +7,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ensureSuperAdmin } from '@/lib/auth-utils';
 import { withErrorHandling } from '@/lib/server-utils';
+import { MasterProductSchema } from '@/lib/validations';
 
 interface RawStatsOrder {
     total_amount: number;
@@ -269,13 +270,23 @@ export async function getMasterProducts() {
 export async function upsertMasterProduct(product: any) {
     return withErrorHandling(async () => {
         await ensureSuperAdmin();
-        if (!product.name?.trim()) {
-            throw new Error('Product name is required');
-        }
+        
+        const validatedData = MasterProductSchema.parse(product);
+
+        const payload = {
+            name: validatedData.name,
+            description: validatedData.description,
+            price: validatedData.price,
+            category: validatedData.category,
+            image_url: validatedData.image_url
+        };
 
         const { data, error } = await supabaseAdmin
             .from('master_products')
-            .upsert(product)
+            .upsert(
+                validatedData.id ? { id: validatedData.id, ...payload } : payload,
+                { onConflict: 'id' }
+            )
             .select()
             .single();
 

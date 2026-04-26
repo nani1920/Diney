@@ -38,7 +38,7 @@ export default function SuperAdminClientLayout({
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1">
-                    <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Main Navigation</p>
+                    <p className="px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 mb-4">Main Navigation</p>
                     {menuItems.map((item) => {
                         const isActive = pathname === item.href;
                         const Icon = item.icon;
@@ -77,7 +77,7 @@ export default function SuperAdminClientLayout({
 
                 <div className="p-6 border-t border-white/[0.03]">
                     <div className="bg-neutral-900/40 p-4 rounded-2xl border border-white/[0.02] mb-4">
-                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-1">Signed in as</p>
+                        <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Signed in as</p>
                         <p className="text-xs font-bold text-white truncate">Platform Admin</p>
                     </div>
                     

@@ -18,7 +18,7 @@ interface AdminState {
     isLoading: boolean;
 
     // Actions
-    fetchAdminData: (tenantId: string, tenantSlug: string) => Promise<void>;
+    fetchAdminData: (tenantId: string, tenantSlug: string, includeCustomers?: boolean) => Promise<void>;
     addMenuItem: (tenantId: string, tenantSlug: string, item: MenuItem) => Promise<boolean>;
     updateMenuItem: (tenantId: string, tenantSlug: string, item: MenuItem) => Promise<boolean>;
     deleteMenuItem: (tenantId: string, tenantSlug: string, itemId: string) => Promise<boolean>;
@@ -32,7 +32,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     customers: [],
     isLoading: false,
 
-    fetchAdminData: async (tenantId, tenantSlug) => {
+    fetchAdminData: async (tenantId, tenantSlug, includeCustomers = false) => {
         set({ isLoading: true });
         try {
             const [menuRes, categoriesRes] = await Promise.all([
@@ -43,10 +43,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             if (menuRes.success) set({ menuItems: menuRes.data || [] });
             if (categoriesRes.success) set({ categories: categoriesRes.data || [] });
 
-            // Background fetch for customers
-            getTenantCustomers(tenantId).then(res => {
-                if (res.success) set({ customers: res.data || [] });
-            });
+            // Background fetch for customers - only if authorized
+            if (includeCustomers) {
+                getTenantCustomers(tenantId).then(res => {
+                    if (res.success) set({ customers: res.data || [] });
+                });
+            }
         } finally {
             set({ isLoading: false });
         }

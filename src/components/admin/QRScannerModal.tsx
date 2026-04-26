@@ -114,7 +114,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                     // SCANNER VIEW
                     <div className="flex flex-col h-full">
                         <div className="p-6 pb-4 text-center">
-                            <h2 className="text-2xl font-black tracking-tight text-neutral-900 mb-1">Scan Target</h2>
+                            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 mb-1">Scan Target</h2>
                             <p className="text-sm font-medium text-neutral-500">Position the customer&apos;s QR code in the frame</p>
                         </div>
                         
@@ -152,7 +152,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                     <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-50 shadow-lg shadow-emerald-500/20">
                                         <CheckCircle2 className="w-10 h-10 text-emerald-600" strokeWidth={3} />
                                     </div>
-                                    <h2 className="text-2xl font-black text-neutral-900 tracking-tight">Order Verified</h2>
+                                    <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">Order Verified</h2>
                                     <p className="text-sm font-medium text-neutral-500 mt-1">Ready for Handover</p>
                                 </>
                             ) : (
@@ -160,7 +160,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                     <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-50 shadow-lg shadow-red-500/20">
                                         <AlertCircle className="w-10 h-10 text-red-600" strokeWidth={3} />
                                     </div>
-                                    <h2 className="text-2xl font-black text-neutral-900 tracking-tight">Attention Needed</h2>
+                                    <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">Attention Needed</h2>
                                 </>
                             )}
                         </div>
@@ -178,21 +178,25 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                 <div className="bg-white rounded-3xl p-5 border border-neutral-100/80 shadow-sm">
                                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-100 border-dashed">
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Customer</p>
-                                            <h3 className="text-lg font-black tracking-tight text-neutral-900 leading-none">{qrScannedOrder.customer_name}</h3>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Customer</p>
+                                            <h3 className="text-lg font-bold tracking-tight text-neutral-900 leading-none">{qrScannedOrder.customer_name}</h3>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Order #</p>
-                                            <span className="text-lg font-black tracking-widest text-emerald-600 leading-none">{qrScannedOrder.short_id}</span>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Order #</p>
+                                            <span className="text-lg font-bold tracking-widest text-emerald-600 leading-none">{qrScannedOrder.short_id}</span>
                                         </div>
                                     </div>
 
                                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-100 border-dashed">
-                                        <span className="text-[11px] font-black text-neutral-500 uppercase tracking-[0.2em]">Payment</span>
+                                        <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-[0.2em]">Payment</span>
                                         {qrScannedOrder.payment_status === 'paid' ? (
-                                            <span className="px-2 py-1 rounded text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
+                                            <span className="px-2 py-1 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-widest shadow-sm">Paid Online</span>
+                                        ) : qrScannedOrder.payment_id ? (
+                                            <span className="px-2 py-1 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200 uppercase tracking-widest shadow-sm">Paid via Razorpay</span>
                                         ) : (
-                                            <span className="px-2 py-1 rounded text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest shadow-sm">Cash on Pickup</span>
+                                            <span className="px-2 py-1 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest shadow-sm">
+                                                {qrScannedOrder.order_type === 'DINE_IN' ? 'Pay at Counter' : 'Cash on Pickup'}
+                                            </span>
                                         )}
                                     </div>
 
@@ -200,7 +204,7 @@ export function QRScannerModal({ isOpen, onClose }: QRScannerModalProps) {
                                         {qrScannedOrder.items.map((item: any, idx: number) => (
                                             <div key={idx} className="flex gap-3 items-start">
                                                 <div className="w-7 h-7 bg-neutral-50 rounded-lg border border-neutral-100 flex items-center justify-center flex-shrink-0">
-                                                    <span className="text-[12px] font-black text-neutral-700">{item.quantity}</span>
+                                                    <span className="text-[12px] font-bold text-neutral-700">{item.quantity}</span>
                                                 </div>
                                                 <div className="pt-0.5">
                                                     <p className="text-[14px] font-bold text-neutral-800 leading-tight">{item.name}</p>

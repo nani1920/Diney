@@ -106,7 +106,7 @@ export default function OnboardingPage() {
       <div className="absolute top-8 left-8 z-20">
         <Link 
           href="/admin/dashboard" 
-          className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-500 hover:text-[#025E43] transition-all border border-gray-100 shadow-sm active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-xl text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-[#025E43] transition-all border border-gray-100 shadow-sm active:scale-95"
         >
           <ChevronLeft size={14} />
           Command Center
@@ -126,14 +126,14 @@ export default function OnboardingPage() {
           >
             <img src="/logo.png" alt="Diney" className="h-20 w-auto drop-shadow-sm" />
           </motion.div>
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-2 uppercase italic">Launch <span className="text-[#025E43]">Infrastructure</span></h1>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-2 uppercase italic">Launch <span className="text-[#025E43]">Infrastructure</span></h1>
           <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">The sub-second portal to your digital storefront.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl p-10 rounded-[3rem] shadow-2xl shadow-emerald-900/5 space-y-8 border border-white/20">
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Shop Name</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Shop Name</label>
               <div className="relative">
                 <input
                   type="text"
@@ -146,7 +146,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Your Subdomain</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Your Subdomain</label>
               <div className="relative flex items-center group">
                 <div className="absolute left-6 text-gray-300 group-focus-within:text-[#025E43] transition-colors">
                   <Globe size={18} />
@@ -154,7 +154,7 @@ export default function OnboardingPage() {
                 <input
                   type="text"
                   placeholder="mamas"
-                  className="w-full h-16 bg-gray-50/50 rounded-2xl pl-14 pr-32 border-2 border-transparent focus:border-[#025E43] focus:bg-white outline-none transition-all font-black text-gray-900 lowercase placeholder:text-gray-300"
+                  className="w-full h-16 bg-gray-50/50 rounded-2xl pl-14 pr-32 border-2 border-transparent focus:border-[#025E43] focus:bg-white outline-none transition-all font-bold text-gray-900 lowercase placeholder:text-gray-300"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value.replace(/[^a-zA-Z0-9-]/g, '') })}
                 />
@@ -170,7 +170,7 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={submitting || loading}
-            className="w-full h-16 bg-gradient-to-r from-[#025E43] to-[#014230] text-white rounded-2xl font-black uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-3 hover:from-[#014230] hover:to-[#025E43] transition-all duration-500 active:scale-[0.98] shadow-2xl shadow-emerald-900/40 disabled:opacity-50 disabled:scale-100 group overflow-hidden relative"
+            className="w-full h-16 bg-gradient-to-r from-[#025E43] to-[#014230] text-white rounded-2xl font-bold uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-3 hover:from-[#014230] hover:to-[#025E43] transition-all duration-500 active:scale-[0.98] shadow-2xl shadow-emerald-900/40 disabled:opacity-50 disabled:scale-100 group overflow-hidden relative"
           >
             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             {submitting ? (
@@ -191,7 +191,7 @@ export default function OnboardingPage() {
         >
           <Link 
             href="/admin/dashboard"
-            className="text-[10px] font-black uppercase tracking-widest text-[#025E43] hover:opacity-70 transition-opacity flex items-center justify-center gap-2"
+            className="text-[10px] font-bold uppercase tracking-widest text-[#025E43] hover:opacity-70 transition-opacity flex items-center justify-center gap-2"
           >
             Go to Command Center
           </Link>

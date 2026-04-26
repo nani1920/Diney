@@ -2,17 +2,20 @@
 
 import { useOrders } from '@/context/OrderContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    ChefHat, 
-    Layers, 
-    Clock, 
-    ArrowRight, 
+import {
+    ChefHat,
+    Layers,
+    Clock,
+    ArrowRight,
     PackageOpen,
     Search,
     X,
     ClipboardList
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
+import { updateOrderStatusServer } from '@/app/actions/orders';
+import { toast } from 'react-hot-toast';
+import { playNotificationChime } from '@/lib/sounds';
 import clsx from 'clsx';
 
 export default function PrepQueuePage() {
@@ -20,9 +23,9 @@ export default function PrepQueuePage() {
     const [searchQuery, setSearchQuery] = useState('');
 
     // Filter for active items only (Received or Preparing)
-    const activeOrders = useMemo(() => 
+    const activeOrders = useMemo(() =>
         orders.filter(o => ['received', 'preparing'].includes(o.order_status)),
-    [orders]);
+        [orders]);
 
     // Aggregate items across all active orders
     const prepItems = useMemo(() => {
@@ -54,7 +57,25 @@ export default function PrepQueuePage() {
         return Object.values(aggregation).sort((a, b) => b.totalQuantity - a.totalQuantity);
     }, [activeOrders]);
 
-    const filteredItems = prepItems.filter(item => 
+    const [isUpdating, setIsUpdating] = useState<string | null>(null);
+
+    const handleBatchUpdate = async (itemKey: string, ordersToUpdate: any[], newStatus: string) => {
+        setIsUpdating(itemKey);
+        try {
+            const promises = ordersToUpdate.map(o => 
+                updateOrderStatusServer(o.orderId, newStatus)
+            );
+            await Promise.all(promises);
+            toast.success(`${newStatus.toUpperCase()} - Items updated`);
+            if (newStatus === 'ready') playNotificationChime();
+        } catch (err) {
+            toast.error("Update failed");
+        } finally {
+            setIsUpdating(null);
+        }
+    };
+
+    const filteredItems = prepItems.filter(item =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -62,7 +83,7 @@ export default function PrepQueuePage() {
         <div className="p-4 md:p-8 h-full flex flex-col bg-[#FAFAF8] min-h-screen">
             <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-neutral-900 tracking-[-0.03em] flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-neutral-900 tracking-tight flex items-center gap-3">
                         <div className="p-2 bg-emerald-500 rounded-xl shadow-lg shadow-emerald-500/20">
                             <Layers className="w-6 h-6 text-white" />
                         </div>
@@ -73,15 +94,15 @@ export default function PrepQueuePage() {
 
                 <div className="relative w-full md:w-96 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300 group-focus-within:text-emerald-500 transition-colors" />
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Search items to prepare..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-11 pr-10 py-4 bg-white border border-neutral-200/50 rounded-2xl outline-none focus:border-emerald-500/20 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm"
                     />
                     {searchQuery && (
-                        <button 
+                        <button
                             onClick={() => setSearchQuery('')}
                             className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-50 rounded-full transition-colors"
                         >
@@ -93,27 +114,27 @@ export default function PrepQueuePage() {
 
             {/* Statistics Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <StatCard 
-                    label="Total Items to Prep" 
-                    value={prepItems.reduce((acc, item) => acc + item.totalQuantity, 0)} 
+                <StatCard
+                    label="Total Items to Prep"
+                    value={prepItems.reduce((acc, item) => acc + item.totalQuantity, 0)}
                     icon={ChefHat}
                     color="emerald"
                 />
-                <StatCard 
-                    label="Unique Items" 
-                    value={prepItems.length} 
+                <StatCard
+                    label="Unique Items"
+                    value={prepItems.length}
                     icon={Layers}
                     color="blue"
                 />
-                <StatCard 
-                    label="Active Orders" 
-                    value={activeOrders.length} 
+                <StatCard
+                    label="Active Orders"
+                    value={activeOrders.length}
                     icon={ClipboardList}
                     color="orange"
                 />
-                <StatCard 
-                    label="Pending Received" 
-                    value={activeOrders.filter(o => o.order_status === 'received').length} 
+                <StatCard
+                    label="Pending Received"
+                    value={activeOrders.filter(o => o.order_status === 'received').length}
                     icon={Clock}
                     color="amber"
                 />
@@ -145,15 +166,15 @@ export default function PrepQueuePage() {
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="text-[17px] font-black text-neutral-900 tracking-tight leading-tight truncate">
+                                                <h3 className="text-[17px] font-bold text-neutral-900 tracking-tight leading-tight truncate">
                                                     {item.name}
                                                 </h3>
                                                 {item.customizations?.length > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-1.5">
                                                         {item.customizations.map((c: any, i: number) => (
-                                                            <span key={i} className="text-[9px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100/50">
+                                                            <span key={i} className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100/50">
                                                                 {c.name}
                                                             </span>
                                                         ))}
@@ -164,26 +185,44 @@ export default function PrepQueuePage() {
 
                                         {/* Refined Quantity Badge */}
                                         <div className="flex flex-col items-center justify-center p-2 bg-neutral-900 text-white rounded-2xl min-w-[56px] shadow-lg shadow-black/10">
-                                            <span className="text-[18px] font-black leading-none">{item.totalQuantity}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-tighter mt-0.5 opacity-60">QTY</span>
+                                            <span className="text-[18px] font-bold leading-none">{item.totalQuantity}</span>
+                                            <span className="text-[8px] font-bold uppercase tracking-tight mt-0.5 opacity-60">QTY</span>
                                         </div>
                                     </div>
 
                                     {/* Order IDs Row - More Compact */}
-                                    <div className="pt-3 border-t border-neutral-50 flex items-center justify-between">
+                                    <div className="pt-3 border-t border-neutral-50 flex flex-col gap-4">
                                         <div className="flex flex-wrap gap-1.5 items-center">
                                             <div className="flex items-center gap-1.5 mr-1">
                                                 <PackageOpen className="w-3.5 h-3.5 text-neutral-400" />
-                                                <span className="text-[10px] font-black text-neutral-400 uppercase tracking-wider">Waiting Orders:</span>
+                                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Waiting Orders:</span>
                                             </div>
                                             {item.orders.slice(0, 5).map((o: any, i: number) => (
-                                                <span key={i} className="text-[10px] font-bold text-neutral-400 bg-neutral-50 px-2 py-0.5 rounded-lg border border-neutral-100/50">
+                                                <span key={i} className={clsx(
+                                                    "text-[10px] font-bold px-2 py-0.5 rounded-lg border",
+                                                    o.status === 'preparing' ? "bg-orange-50 text-orange-600 border-orange-100" : "bg-neutral-50 text-neutral-400 border-neutral-100"
+                                                )}>
                                                     #{o.shortId}
                                                 </span>
                                             ))}
-                                            {item.orders.length > 5 && (
-                                                <span className="text-[9px] font-bold text-neutral-300">+{item.orders.length - 5} more</span>
-                                            )}
+                                        </div>
+
+                                        {/* KDS Action Buttons */}
+                                        <div className="flex gap-2">
+                                            <button 
+                                                disabled={!!isUpdating}
+                                                onClick={() => handleBatchUpdate(`${item.name}-${idx}`, item.orders.filter((o:any) => o.status === 'received'), 'preparing')}
+                                                className="flex-1 h-10 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-50"
+                                            >
+                                                Start Prep
+                                            </button>
+                                            <button 
+                                                disabled={!!isUpdating}
+                                                onClick={() => handleBatchUpdate(`${item.name}-${idx}`, item.orders, 'ready')}
+                                                className="flex-1 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                                            >
+                                                {isUpdating === `${item.name}-${idx}` ? '...' : 'Mark Ready'}
+                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -192,15 +231,15 @@ export default function PrepQueuePage() {
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center py-20">
-                        <motion.div 
-                            initial={{ opacity: 0, y: 10 }} 
-                            animate={{ opacity: 1, y: 0 }} 
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             className="flex flex-col items-center text-center"
                         >
                             <div className="w-24 h-24 bg-white rounded-[2.5rem] shadow-xl shadow-neutral-200/50 flex items-center justify-center mb-8">
                                 <PackageOpen className="w-10 h-10 text-neutral-200" />
                             </div>
-                            <h2 className="text-2xl font-black text-neutral-900 tracking-tight mb-2">Queue is Clear!</h2>
+                            <h2 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Queue is Clear!</h2>
                             <p className="text-neutral-400 max-w-sm font-medium leading-relaxed">
                                 No items require preparation at the moment. High five to the kitchen team! 👋
                             </p>
@@ -226,8 +265,8 @@ function StatCard({ label, value, icon: Icon, color }: any) {
                 <Icon className="w-6 h-6" />
             </div>
             <div>
-                <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1">{label}</p>
-                <p className="text-2xl font-black text-neutral-900 tracking-tight">{value}</p>
+                <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-wider leading-none mb-1">{label}</p>
+                <p className="text-2xl font-bold text-neutral-900 tracking-tight">{value}</p>
             </div>
         </div>
     );

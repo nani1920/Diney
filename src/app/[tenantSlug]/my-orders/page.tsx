@@ -11,6 +11,7 @@ import { ArrowLeft, Phone, Clock, ChevronRight, RotateCcw, Package, Star } from 
 import { RatingModal } from '@/components/customer/RatingModal';
 import { Order } from '@/types';
 import ResilientImage from "@/components/ResilientImage";
+import { useOrderStore } from '@/store/useOrderStore';
 
 function getFoodEmoji(name: string) {
     const emojis: Record<string, string> = {
@@ -30,6 +31,7 @@ export default function MyOrdersPage() {
     const [localOrders, setLocalOrders] = useState<any[]>([]);
     const [mobileFilter, setMobileFilter] = useState(customer?.mobile || '');
     const [isLoading, setIsLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
     
     // Rating State
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -143,12 +145,14 @@ export default function MyOrdersPage() {
         }
     };
 
+    const { tableNumber } = useOrderStore();
+
     return (
         <main className="min-h-screen bg-[#FAFAF8] max-w-[520px] mx-auto">
             { }
             <header className="sticky top-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-lg border-b border-neutral-100/60">
                 <div className="px-5 py-3.5 flex items-center gap-4">
-                    <Link href={`/${tenantSlug}`}>
+                    <Link href={`/${tenantSlug}${tableNumber ? `?table=${tableNumber}` : ''}`}>
                         <div className="w-10 h-10 rounded-xl bg-white border border-neutral-200/50 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 transition-colors shadow-sm">
                             <ArrowLeft className="w-[18px] h-[18px]" />
                         </div>
@@ -213,8 +217,27 @@ export default function MyOrdersPage() {
                         </motion.div>
                     ) : mobileFilter.length >= 10 && (
                         <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                            
+                            {/* Tabs */}
+                            {(activeOrders.length > 0 || completedOrders.length > 0) && (
+                                <div className="flex bg-neutral-100 p-1 rounded-xl">
+                                    <button 
+                                        onClick={() => setActiveTab('active')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'active' ? 'bg-white text-emerald-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+                                    >
+                                        Active ({activeOrders.length})
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveTab('past')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'past' ? 'bg-white text-emerald-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+                                    >
+                                        Past ({completedOrders.length})
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Active Orders */}
-                            {activeOrders.length > 0 && (
+                            {activeTab === 'active' && activeOrders.length > 0 && (
                                 <section>
                                     <h2 className="text-[12px] font-semibold text-emerald-600 uppercase tracking-wider mb-3 ml-1 flex items-center gap-2">
                                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -232,13 +255,25 @@ export default function MyOrdersPage() {
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
                                                             <h3 className="text-[16px] font-bold text-neutral-900 tracking-[-0.01em]">Order #{order.short_id}</h3>
-                                                            {order.payment_status === 'paid' ? (
-                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
-                                                            ) : order.payment_id ? (
-                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-wider">Payment Pending</span>
-                                                            ) : (
-                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wider">Cash on Pickup</span>
-                                                            )}
+                                                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                                                                    order.order_type === 'DINE_IN' 
+                                                                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100' 
+                                                                        : 'bg-slate-50 text-slate-600 border-slate-100'
+                                                                }`}>
+                                                                    {order.order_type === 'DINE_IN' ? 'Dine-in' : 'Takeaway'}
+                                                                </span>
+
+                                                                {order.payment_status === 'paid' ? (
+                                                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
+                                                                ) : order.payment_id ? (
+                                                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-wider">Payment Pending</span>
+                                                                ) : (
+                                                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wider">
+                                                                        {order.order_type === 'DINE_IN' ? 'Pay at Counter' : 'Cash on Pickup'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <div className="flex items-center gap-1.5 text-[12px] text-neutral-400 font-medium mt-1">
                                                                 <Clock className="w-3 h-3" />
                                                                 {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -287,28 +322,39 @@ export default function MyOrdersPage() {
                             )}
 
                             {/* Past Orders */}
-                            {completedOrders.length > 0 && (
+                            {activeTab === 'past' && completedOrders.length > 0 && (
                                 <section>
-                                    <h2 className="text-[12px] font-semibold text-neutral-400 uppercase tracking-wider mb-3 ml-1">Past Orders</h2>
                                     <div className="space-y-3">
                                         {completedOrders.map((order) => (
                                             <motion.div
                                                 key={order.order_id}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                className="bg-white p-5 rounded-2xl border border-neutral-200/30 shadow-sm"
+                                                className="bg-white p-5 rounded-2xl border border-neutral-200/30 shadow-sm transition-all"
                                             >
                                                 <Link href={`/${tenantSlug}/order/${order.order_id}`}>
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
-                                                            <h3 className="text-[15px] font-bold text-neutral-500 tracking-[-0.01em]">Order #{order.short_id}</h3>
-                                                            {order.payment_status === 'paid' ? (
-                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
-                                                            ) : order.payment_id ? (
-                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-wider">Payment Pending</span>
-                                                            ) : (
-                                                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-neutral-100 text-neutral-500 border border-neutral-200 uppercase tracking-wider">Cash on Pickup</span>
-                                                            )}
+                                                            <h3 className="text-[16px] font-bold text-neutral-900 tracking-[-0.01em]">Order #{order.short_id}</h3>
+                                                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                                                                    order.order_type === 'DINE_IN' 
+                                                                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100' 
+                                                                        : 'bg-neutral-100 text-neutral-600 border-neutral-200'
+                                                                }`}>
+                                                                    {order.order_type === 'DINE_IN' ? 'Dine-in' : 'Takeaway'}
+                                                                </span>
+
+                                                                {order.payment_status === 'paid' ? (
+                                                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 uppercase tracking-wider">Paid Online</span>
+                                                                ) : order.payment_id ? (
+                                                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-wider">Payment Pending</span>
+                                                                ) : (
+                                                                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-neutral-50 text-neutral-500 border border-neutral-100 uppercase tracking-wider">
+                                                                        {order.order_type === 'DINE_IN' ? 'Pay at Counter' : 'Cash on Pickup'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <p className="text-[12px] text-neutral-400 font-medium mt-1">
                                                                 {new Date(order.order_time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, {new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
@@ -318,8 +364,8 @@ export default function MyOrdersPage() {
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between items-center pt-3 border-t border-neutral-100">
-                                                        <span className="text-[13px] text-neutral-400 font-medium">{order.items.length} items</span>
-                                                        <span className="text-[16px] font-extrabold text-neutral-400 tracking-tight">₹{order.total_amount}</span>
+                                                        <span className="text-[13px] text-neutral-500 font-medium">{order.items.length} items</span>
+                                                        <span className="text-[16px] font-extrabold text-neutral-900 tracking-tight">₹{order.total_amount}</span>
                                                     </div>
                                                 </Link>
                                                 <button
@@ -335,7 +381,14 @@ export default function MyOrdersPage() {
                                 </section>
                             )}
 
-                            {/* Empty State */}
+                            {/* Empty State Route Tabs */}
+                            {activeTab === 'active' && activeOrders.length === 0 && completedOrders.length > 0 && (
+                                <div className="text-center py-10 text-neutral-400 text-sm font-medium">No active orders</div>
+                            )}
+                            {activeTab === 'past' && completedOrders.length === 0 && activeOrders.length > 0 && (
+                                <div className="text-center py-10 text-neutral-400 text-sm font-medium">No past orders</div>
+                            )}
+
                             {activeOrders.length === 0 && completedOrders.length === 0 && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 text-center">
                                     <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mb-5">

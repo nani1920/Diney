@@ -6,7 +6,7 @@ const CSP_HEADER = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com https://*.razorpay.com https://*.gstatic.com https://*.googleusercontent.com https://*.wp.com;
-  connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co https://fastly.jsdelivr.net https://*.razorpay.com;
+  connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co https://fastly.jsdelivr.net https://*.razorpay.com ws: wss:;
   frame-src 'self' https://*.razorpay.com;
   worker-src 'self' blob:;
   media-src 'self' blob:;
@@ -58,9 +58,18 @@ export default async function middleware(req: NextRequest) {
       
       if (potentialSlug && !reservedPaths.includes(potentialSlug)) {
         // Force redirect from path-based to subdomain-based for tenants
-        const remainingPath = '/' + pathParts.slice(2).join('/');
-        const targetUrl = new URL(remainingPath, `${protocol}://${potentialSlug}.${baseDomain}`);
-        return NextResponse.redirect(targetUrl);
+        try {
+          const remainingPath = '/' + pathParts.slice(2).join('/');
+          const searchParams = url.search;
+          const host = `${potentialSlug}.${baseDomain.replace(/\/$/, '')}`;
+          const targetUrl = new URL(`${remainingPath}${searchParams}`, `${protocol}://${host}`);
+          
+          return NextResponse.redirect(targetUrl);
+        } catch (e) {
+          console.error('[Middleware] Failed to construct redirect URL:', e);
+          // Fallback to next if URL construction fails
+          return NextResponse.next();
+        }
       }
     }
     return NextResponse.next();
@@ -74,9 +83,31 @@ export default async function middleware(req: NextRequest) {
   }
 
   // 6. Rewrite Store Traffic to internal [tenantSlug] structure
-  const response = (url.pathname.startsWith(`/${subdomain}/`) || url.pathname === `/${subdomain}`)
-    ? NextResponse.next()
-    : NextResponse.rewrite(new URL(`/${subdomain}${url.pathname}`, req.url));
+  // If the path already contains the slug, we redirect to the clean version first
+  if (url.pathname.startsWith(`/${subdomain}/`) || url.pathname === `/${subdomain}`) {
+    const remainingPath = url.pathname.replace(`/${subdomain}`, '') || '/';
+    return NextResponse.redirect(new URL(`${remainingPath}${url.search}`, req.url));
+  }
+
+  // 7. Staff Base Redirect
+  if (url.pathname === '/staff' || url.pathname === '/staff/') {
+    return NextResponse.redirect(new URL('/staff/dashboard', req.url));
+  }
+
+  // ---- STAFF AUTH GUARD (runs before React) ----
+  // If accessing any staff route that is NOT the login page, check for session cookie.
+  const isStaffProtectedRoute = url.pathname.startsWith('/staff/') && !url.pathname.startsWith('/staff/login');
+  if (isStaffProtectedRoute) {
+    const staffSession = req.cookies.get('staff_session');
+    if (!staffSession?.value) {
+      // Redirect to login, preserving the subdomain (tenant) context
+      const loginUrl = new URL('/staff/login', req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+  // ------------------------------------------------
+
+  const response = NextResponse.rewrite(new URL(`/${subdomain}${url.pathname}${url.search}`, req.url));
 
    
   response.headers.set('Content-Security-Policy', CSP_HEADER);

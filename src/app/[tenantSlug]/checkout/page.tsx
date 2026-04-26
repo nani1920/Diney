@@ -11,16 +11,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, User, Phone, StickyNote, CreditCard, ChevronRight, MapPin, Smartphone, AlertCircle, Check } from 'lucide-react';
 import Script from 'next/script';
 import { createRazorpayOrder, createOrder } from '@/app/actions/orders';
+import { useOrderStore } from '@/store/useOrderStore';
 
 function CheckoutContent() {
     const { customer, tenant, updateCustomer } = useStore();
     const { cart, clearCart } = useCart();
     const { placeOrder } = useOrders();
+    const { orderType, tableNumber } = useOrderStore();
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
     const tenantSlug = params.tenantSlug as string;
     const isOnlineMode = searchParams.get('type') === 'online';
+    const isKitchenMode = searchParams.get('type') === 'kitchen';
 
     const [formData, setFormData] = useState({
         name: customer?.name || '',
@@ -59,11 +62,15 @@ function CheckoutContent() {
 
     const handleCashOrder = async () => {
         try {
-            const newOrder = await placeOrder(formData);
+            const newOrder = await placeOrder(formData, orderType, tableNumber);
             if (newOrder) { 
                 toast.success('Order placed successfully!');
-                router.push(`/${tenantSlug}/order/${newOrder.order_id}`);
-                setTimeout(() => clearCart(), 500);
+                await clearCart();
+                if (orderType === 'DINE_IN') {
+                    router.push(`/${tenantSlug}/bill`);
+                } else {
+                    router.push(`/${tenantSlug}/order/${newOrder.order_id}`);
+                }
             }
         } catch (error) {
             console.error('Order placement error:', error);
@@ -104,7 +111,9 @@ function CheckoutContent() {
                         totalAmount,
                         response.razorpay_payment_id,
                         response.razorpay_order_id,
-                        response.razorpay_signature
+                        response.razorpay_signature,
+                        orderType,
+                        tableNumber || undefined
                     );
                     
                     if (result.success) {
@@ -112,9 +121,13 @@ function CheckoutContent() {
                         setIsPlacing(false);
                         setPaymentSuccess(true);
                         // PhonePe style success screen delay
-                        setTimeout(() => {
-                            router.push(`/${tenantSlug}/my-orders`);
-                            setTimeout(() => clearCart(), 100);
+                        setTimeout(async () => {
+                            await clearCart();
+                            if (orderType === 'DINE_IN') {
+                                router.push(`/${tenantSlug}/bill`);
+                            } else {
+                                router.push(`/${tenantSlug}/my-orders`);
+                            }
                         }, 2200);
                     } else {
                         setIsPlacing(false);
@@ -171,11 +184,11 @@ function CheckoutContent() {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-[15px] font-bold text-neutral-900 tracking-[-0.01em] flex items-center gap-2">
-                                    {isOnlineMode ? "Secure Online Payment" : "Counter Pickup"}
+                                    {isOnlineMode ? "Secure Online Payment" : (orderType === 'DINE_IN' ? "Table Ordering" : "Counter Pickup")}
                                     {isOnlineMode && <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full">Secure</span>}
                                 </h3>
                                 <p className="text-[12px] text-neutral-400 font-medium mt-0.5">
-                                    {isOnlineMode ? "Enter details to continue to Razorpay" : "Visit our counter when order is ready"}
+                                    {isOnlineMode ? "Enter details to continue to Razorpay" : (orderType === 'DINE_IN' ? `Ordering for Table ${tableNumber}` : "Visit our counter when order is ready")}
                                 </p>
                             </div>
                         </div>
@@ -213,7 +226,7 @@ function CheckoutContent() {
                                 <span className="text-[14px] text-neutral-500 font-medium">Order Total</span>
                                 <div className="flex items-center gap-2 text-[12px] font-medium text-neutral-400 bg-neutral-50 px-3 py-1.5 rounded-lg">
                                     <CreditCard className="w-3.5 h-3.5" />
-                                    {isOnlineMode ? "Razorpay" : "Cash on Pickup"}
+                                    {isOnlineMode ? "Razorpay" : (orderType === 'DINE_IN' ? "Pay at Counter" : "Cash on Pickup")}
                                 </div>
                             </div>
                             <span className="text-[28px] font-extrabold text-neutral-900 tracking-tight block">₹{totalAmount}</span>
@@ -232,7 +245,7 @@ function CheckoutContent() {
                                     : 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 active:bg-emerald-800'
                                 }`}
                         >
-                            {isPlacing ? "Processing..." : (isOnlineMode ? "Pay Online" : "Place Order")}
+                            {isPlacing ? "Processing..." : (isOnlineMode ? "Pay Online" : (isKitchenMode ? "Confirm & Send to Kitchen" : "Place Order"))}
                             <ChevronRight className="w-4 h-4 ml-1" />
                         </motion.button>
                     </form>
@@ -249,16 +262,16 @@ function CheckoutContent() {
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <Smartphone className="w-8 h-8 text-emerald-600 animate-pulse" />
                                 </div>
-                                <h2 className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-64 text-[18px] font-black text-neutral-900 tracking-tight uppercase italic whitespace-nowrap">
+                                <h2 className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-64 text-[18px] font-bold text-neutral-900 tracking-tight uppercase italic whitespace-nowrap">
                                     Securing <span className="text-emerald-600">Transaction</span>
                                 </h2>
                             </div>
                         ) : (
                             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="space-y-6">
                                 <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mx-auto shadow-sm"><AlertCircle className="w-10 h-10 text-red-500" /></div>
-                                <h2 className="text-[20px] font-black text-neutral-900 italic uppercase">Payment <span className="text-red-500">Failed</span></h2>
+                                <h2 className="text-[20px] font-bold text-neutral-900 italic uppercase">Payment <span className="text-red-500">Failed</span></h2>
                                 <p className="text-[13px] text-neutral-500 font-bold max-w-xs mx-auto">{paymentError}</p>
-                                <button onClick={() => { setIsPlacing(false); setPaymentError(null); }} className="px-10 h-14 bg-neutral-900 text-white rounded-2xl font-black uppercase tracking-widest text-[12px]">Back to Checkout</button>
+                                <button onClick={() => { setIsPlacing(false); setPaymentError(null); }} className="px-10 h-14 bg-neutral-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[12px]">Back to Checkout</button>
                             </motion.div>
                         )}
                     </motion.div>
@@ -283,12 +296,12 @@ function CheckoutContent() {
                         </motion.div>
                         
                         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="space-y-2">
-                            <h2 className="text-white text-[28px] font-black tracking-tight leading-none uppercase">PAYMENT SUCCESSFUL</h2>
+                            <h2 className="text-white text-[28px] font-bold tracking-tight leading-none uppercase">PAYMENT SUCCESSFUL</h2>
                             <p className="text-emerald-100 text-[15px] font-bold tracking-widest uppercase opacity-80">Order sent to kitchen instantly</p>
                         </motion.div>
 
                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }} className="mt-12 bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10">
-                            <span className="text-white font-black text-[24px]">₹{totalAmount}</span>
+                            <span className="text-white font-bold text-[24px]">₹{totalAmount}</span>
                         </motion.div>
                     </motion.div>
                 )}

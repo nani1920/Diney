@@ -4,7 +4,7 @@ export default function PlatformSettingsPage() {
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-10">
             <header>
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tighter italic uppercase underline decoration-red-500 decoration-4 underline-offset-4">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter italic uppercase underline decoration-red-500 decoration-4 underline-offset-4">
                     Platform Control
                 </h1>
                 <p className="text-neutral-500 mt-4 font-medium text-lg">Configure global settings and platform-wide parameters.</p>
@@ -74,7 +74,7 @@ function SettingItem({ icon: Icon, label, value, description }: any) {
                 <Icon className="w-5 h-5 text-neutral-500 group-hover:text-white transition-colors" />
                 <div>
                     <p className="text-sm font-bold text-white">{label}</p>
-                    <p className="text-[10px] text-neutral-500 font-black uppercase tracking-widest leading-none mt-1">{description}</p>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest leading-none mt-1">{description}</p>
                 </div>
             </div>
             <div className="text-sm font-mono text-red-400 bg-red-400/5 px-3 py-1 rounded-full border border-red-400/10 italic">

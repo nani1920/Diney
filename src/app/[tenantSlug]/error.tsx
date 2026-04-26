@@ -23,7 +23,7 @@ export default function Error({
       </div>
 
       <div className="space-y-3 mb-10">
-        <h1 className="text-[24px] font-black text-neutral-900 tracking-tight uppercase italic">
+        <h1 className="text-[24px] font-bold text-neutral-900 tracking-tight uppercase italic">
           Oops! Something <span className="text-red-500">Went Wrong</span>
         </h1>
         <p className="text-[14px] text-neutral-500 font-medium max-w-[280px] mx-auto leading-relaxed">

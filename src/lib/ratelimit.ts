@@ -32,3 +32,11 @@ export const viewOrderRateLimiter = new Ratelimit({
   analytics: true,
   prefix: "@upstash/ratelimit/vieworder",
 });
+
+// Staff Login: Strict 5 attempts per 5 minutes to prevent PIN brute-forcing
+export const staffLoginRateLimiter = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(5, "5 m"),
+  analytics: true,
+  prefix: "@upstash/ratelimit/staff-login",
+});

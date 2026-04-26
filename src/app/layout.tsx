@@ -6,6 +6,7 @@ import { AdminProvider } from '@/context/AdminContext';
 import { OrderProvider } from '@/context/OrderContext';
 import { CartProvider } from '@/context/CartContext';
 import DomainGuard from '@/components/auth/DomainGuard';
+import { Toaster } from 'react-hot-toast';
 
 const outfit = Outfit({ 
   subsets: ['latin'],
@@ -38,6 +39,25 @@ export default function RootLayout({
               <OrderProvider>
                 <DomainGuard />
                 {children}
+                <Toaster 
+                    position="bottom-center"
+                    toastOptions={{
+                        style: {
+                            background: '#171717',
+                            color: '#fff',
+                            borderRadius: '16px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            padding: '12px 16px',
+                        },
+                        success: {
+                            iconTheme: {
+                                primary: '#fb923c',
+                                secondary: '#fff',
+                            },
+                        },
+                    }}
+                />
               </OrderProvider>
             </CartProvider>
           </AdminProvider>

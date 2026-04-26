@@ -79,17 +79,17 @@ export default async function AdminLayout({
                     ⏳
                 </div>
                 <div className="space-y-4 max-w-md">
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">
+                    <h1 className="text-4xl font-bold uppercase italic tracking-tighter">
                         Registry <span className="text-amber-500">Calibration</span>
                     </h1>
                     <p className="text-neutral-400 font-medium leading-relaxed text-lg">
                         Your merchant infrastructure for <span className="text-white">"{tenant?.name}"</span> has been transmitted. Platform authorities are currently auditing your credentials.
                     </p>
                 </div>
-                <div className="mt-12 p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
+                <div className="mt-12 p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider text-amber-500">
                     System Audit in Progress
                 </div>
-                <p className="mt-8 text-[10px] font-black uppercase tracking-[0.3em] text-neutral-600">
+                <p className="mt-8 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
                     Estimated Time: ~24 Hours
                 </p>
             </div>
@@ -104,17 +104,17 @@ export default async function AdminLayout({
                     🚫
                 </div>
                 <div className="space-y-4 max-w-md">
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">
+                    <h1 className="text-4xl font-bold uppercase italic tracking-tighter">
                         Infrastructure <span className="text-red-600">Restricted</span>
                     </h1>
                     <p className="text-neutral-400 font-medium leading-relaxed text-lg">
                         Access to <span className="text-white">"{tenant?.name}"</span> has been disabled by platform administration due to {status === 'rejected' ? 'registry rejection' : 'policy violations'}.
                     </p>
                 </div>
-                <div className="mt-12 p-3 bg-red-600/10 rounded-2xl border border-red-600/20 text-xs font-black uppercase tracking-[0.2em] text-red-500">
+                <div className="mt-12 p-3 bg-red-600/10 rounded-2xl border border-red-600/20 text-xs font-bold uppercase tracking-wider text-red-500">
                     Authority Enforcement Gate
                 </div>
-                <a href="mailto:support@qrsaas.com" className="mt-8 text-[10px] font-black uppercase tracking-[0.3em] text-neutral-600 hover:text-white transition-colors border-b border-neutral-800 hover:border-white pb-1">
+                <a href="mailto:support@qrsaas.com" className="mt-8 text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-white transition-colors border-b border-neutral-800 hover:border-white pb-1">
                     Contact Registry Support
                 </a>
             </div>
@@ -130,14 +130,14 @@ export default async function AdminLayout({
                         <div className="flex items-center gap-3">
                             <ShieldAlert className="w-5 h-5 animate-pulse" />
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Super Admin Access</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Super Admin Access</span>
                                 <span className="text-sm font-bold tracking-tight">Impersonating <span className="italic">"{tenant?.name}"</span></span>
                             </div>
                         </div>
                         <form action={exitImpersonation}>
                             <button 
                                 type="submit"
-                                className="flex items-center gap-2 px-4 py-1.5 bg-black/20 hover:bg-black/40 rounded-lg text-xs font-black uppercase tracking-widest transition-all border border-white/10 group"
+                                className="flex items-center gap-2 px-4 py-1.5 bg-black/20 hover:bg-black/40 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border border-white/10 group"
                             >
                                 <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                                 Exit Session

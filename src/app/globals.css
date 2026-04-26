@@ -61,7 +61,7 @@ body {
 
  
 .button-aether-primary {
-  @apply px-14 py-5 bg-[#1A1A1A] text-white rounded-full font-black text-[12px] uppercase tracking-[0.1em] transition-all duration-500 shadow-xl;
+  @apply px-14 py-5 bg-[#1A1A1A] text-white rounded-full font-bold text-[12px] uppercase tracking-[0.1em] transition-all duration-500 shadow-xl;
 }
 
 .button-aether-primary:hover {
@@ -69,7 +69,7 @@ body {
 }
 
 .button-aether-secondary {
-  @apply px-14 py-5 border border-black/10 bg-transparent text-black rounded-full font-black text-[12px] uppercase tracking-[0.1em] transition-all duration-500;
+  @apply px-14 py-5 border border-black/10 bg-transparent text-black rounded-full font-bold text-[12px] uppercase tracking-[0.1em] transition-all duration-500;
 }
 
 .button-aether-secondary:hover {
@@ -114,6 +114,21 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.scrollbar-transparent:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.05);
 }
 
  
@@ -180,4 +195,22 @@ body {
 
 .animate-slow-fade-in {
   animation: slow-fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes border-pulse-rose {
+  0%, 100% { border-color: #f43f5e; }
+  50% { border-color: #fecdd3; }
+}
+
+@keyframes border-pulse-amber {
+  0%, 100% { border-color: #f59e0b; }
+  50% { border-color: #fef3c7; }
+}
+
+.animate-border-pulse-rose {
+  animation: border-pulse-rose 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-border-pulse-amber {
+  animation: border-pulse-amber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

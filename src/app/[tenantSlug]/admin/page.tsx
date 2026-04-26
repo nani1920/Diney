@@ -21,13 +21,30 @@ import {
     Calendar
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
+import { getStoreAnalytics } from '@/app/actions/orders';
+import { useEffect } from 'react';
 
 export default function AdminDashboard() {
     const { tenant } = useStore();
     const { orders } = useOrders();
+    const [analytics, setAnalytics] = useState<any>(null);
     const params = useParams();
     const tenantSlug = params.tenantSlug as string;
     const [timeframe, setTimeframe] = useState('all');
+
+    useEffect(() => {
+        if (tenant?.id) {
+            console.log("AdminDashboard: Fetching analytics for", tenant.id);
+            getStoreAnalytics(tenant.id).then(res => {
+                if (res.success) {
+                    console.log("AdminDashboard: Analytics loaded", res.data);
+                    setAnalytics(res.data);
+                } else {
+                    console.error("AdminDashboard: Analytics failed", res.error);
+                }
+            });
+        }
+    }, [tenant?.id, orders.length]); 
 
     const tierConfig = {
         free: { name: 'Free Plan', color: 'text-neutral-400 bg-white/5 border-white/5', icon: Zap },
@@ -126,7 +143,7 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                             <h1 className="text-3xl font-bold text-gray-900">{getTimeGreeting()}, Chef!</h1>
                             <span className={clsx(
-                                "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md border",
+                                "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border",
                                 tierConfig[currentTier].color
                             )}>
                                 {tierConfig[currentTier].name}
@@ -159,7 +176,7 @@ export default function AdminDashboard() {
                         </button>
                     ))}
                 </div>
-                <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                     <Calendar size={14} className="text-gray-300" />
                     {timeframe === 'all' ? 'Showing complete records' : `Showing records for: ${timeframe}`}
                 </div>
@@ -169,30 +186,30 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatCard
                     title="Total Revenue"
-                    value={`₹${totalRevenue.toLocaleString()}`}
+                    value={analytics ? `₹${analytics.totalRevenue.toLocaleString()}` : '...'}
                     icon={IndianRupee}
-                    trend="+12% from yesterday"
+                    trend={analytics ? "+12% from yesterday" : "Loading..."}
                     color="green"
                 />
                 <StatCard
                     title="Total Orders"
-                    value={filteredOrders.length.toString()}
+                    value={analytics ? analytics.totalOrders.toString() : '...'}
                     icon={ShoppingBag}
-                    trend={`${completedCount} completed`}
+                    trend={analytics ? `${analytics.completedCount} completed` : "Loading..."}
                     color="blue"
                 />
                 <StatCard
                     title="In Kitchen"
-                    value={preparingCount.toString()}
+                    value={analytics ? analytics.preparingCount.toString() : '...'}
                     icon={ChefHat}
-                    trend="Requires attention"
+                    trend={analytics ? "Requires attention" : "Loading..."}
                     color="orange"
                 />
                 <StatCard
                     title="Avg. Order Value"
-                    value={`₹${averageOrderValue}`}
+                    value={analytics && analytics.completedCount > 0 ? `₹${Math.round(analytics.totalRevenue / analytics.completedCount)}` : '...'}
                     icon={TrendingUp}
-                    trend="Per customer"
+                    trend={analytics ? "Per customer" : "Loading..."}
                     color="purple"
                 />
             </div>
@@ -220,10 +237,16 @@ export default function AdminDashboard() {
                             <tbody className="divide-y divide-gray-100">
                                 {sortedOrders.slice(0, 10).map(order => (
                                     <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 font-black text-sm text-neutral-900 tracking-[0.2em]">#{order.short_id}</td>
+                                        <td className="px-6 py-4 font-bold text-sm text-neutral-900 tracking-wider">#{order.short_id}</td>
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-gray-900">{order.customer_name}</div>
-                                            <div className="text-xs text-gray-400">{order.items.length} items</div>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <span className="text-[10px] font-bold text-gray-400 capitalize">
+                                                    {order.order_type === 'DINE_IN' ? `Table ${order.table_number}` : 'Takeaway'}
+                                                </span>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="text-xs text-gray-400">{order.items.length} items</span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 font-medium text-gray-900">
                                             <div className="flex items-center gap-1.5">
@@ -234,7 +257,9 @@ export default function AdminDashboard() {
                                             ) : order.payment_id ? (
                                                 <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-50 text-orange-600 border border-orange-200 uppercase tracking-widest whitespace-nowrap">Payment Pending</span>
                                             ) : (
-                                                <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest whitespace-nowrap">Cash on Pickup</span>
+                                                <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-widest whitespace-nowrap">
+                                                    {order.order_type === 'DINE_IN' ? 'Pay at Counter' : 'Cash on Pickup'}
+                                                </span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">

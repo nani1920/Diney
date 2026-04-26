@@ -139,7 +139,7 @@ function IdentityForm() {
             <img src="/logo.png" alt="Diney" className="h-20 w-auto drop-shadow-sm" />
           </motion.div>
           
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3 uppercase italic">
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-3 uppercase italic">
             Secure <span className="text-[#025E43]">Registry</span>
           </h1>
           <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px]">
@@ -150,12 +150,12 @@ function IdentityForm() {
         <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl p-10 rounded-[3rem] border border-white/20 shadow-2xl shadow-emerald-900/5 space-y-8">
           <div className="space-y-4">
             <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50">
-              <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1 text-center">Authenticated As</p>
+              <p className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest mb-1 text-center">Authenticated As</p>
               <p className="text-sm font-bold text-gray-900 text-center truncate">{user?.email || 'Authenticated User'}</p>
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">
                 Business Contact Number
               </label>
               <div className="relative group">
@@ -183,7 +183,7 @@ function IdentityForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-16 bg-gradient-to-r from-[#025E43] to-[#014230] text-white rounded-2xl font-black uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-3 hover:from-[#014230] hover:to-[#025E43] transition-all duration-500 active:scale-[0.98] shadow-2xl shadow-emerald-900/40 disabled:opacity-50 disabled:scale-100 group overflow-hidden relative"
+            className="w-full h-16 bg-gradient-to-r from-[#025E43] to-[#014230] text-white rounded-2xl font-bold uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-3 hover:from-[#014230] hover:to-[#025E43] transition-all duration-500 active:scale-[0.98] shadow-2xl shadow-emerald-900/40 disabled:opacity-50 disabled:scale-100 group overflow-hidden relative"
           >
             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             {submitting ? (
@@ -196,7 +196,7 @@ function IdentityForm() {
           </button>
         </form>
 
-        <p className="text-center text-[10px] text-gray-400 font-black uppercase tracking-widest mt-10 flex items-center justify-center gap-2">
+        <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-10 flex items-center justify-center gap-2">
           <Sparkles size={12} className="text-[#025E43]" />
           Bank-Grade Encrypted Session
         </p>

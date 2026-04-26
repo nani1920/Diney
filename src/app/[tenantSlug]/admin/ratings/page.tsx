@@ -19,9 +19,9 @@ export default function AdminRatingsPage() {
                     <div>
                         <div className="flex items-center gap-2 text-emerald-600 mb-2">
                             <Star className="w-4 h-4 fill-emerald-600" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Feedback Management</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Feedback Management</span>
                         </div>
-                        <h1 className="text-3xl font-black text-neutral-900 tracking-tight">Customer Ratings</h1>
+                        <h1 className="text-3xl font-bold text-neutral-900 tracking-tight">Customer Ratings</h1>
                         <p className="text-neutral-500 text-sm mt-1 font-medium">Monitor customer satisfaction and reviews across your store.</p>
                     </div>
                 </header>

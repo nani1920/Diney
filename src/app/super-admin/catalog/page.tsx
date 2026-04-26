@@ -120,7 +120,7 @@ export default function CatalogPage() {
             <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
               <Package className="w-5 h-5 text-red-500" />
             </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Master Catalog</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Master Catalog</h1>
           </div>
           <p className="text-neutral-500 text-xs font-bold uppercase tracking-[0.2em] max-w-xl">Global Item Registry & Asset Repository</p>
         </div>
@@ -129,12 +129,12 @@ export default function CatalogPage() {
           <div className="bg-[#0a0a0a] border border-white/[0.03] px-6 py-4 rounded-2xl flex items-center gap-4 shadow-xl">
             <div className="text-right">
               <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">Repository Volume</p>
-              <p className="text-xl font-black text-white tracking-tighter">{products.length} Items</p>
+              <p className="text-xl font-bold text-white tracking-tighter">{products.length} Items</p>
             </div>
           </div>
           <button 
             onClick={() => handleOpenModal()}
-            className="group flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] active:scale-95"
+            className="group flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] active:scale-95"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             Add Master Product
@@ -164,7 +164,7 @@ export default function CatalogPage() {
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={clsx(
-                "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                "px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border",
                 selectedCategory === cat
                   ? "bg-red-600 border-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]"
                   : "bg-[#0a0a0a] border-white/[0.05] text-neutral-500 hover:text-white hover:border-white/10"
@@ -188,7 +188,7 @@ export default function CatalogPage() {
           <div className="w-24 h-24 rounded-[2rem] bg-neutral-900 border border-white/[0.03] flex items-center justify-center mx-auto mb-6 text-neutral-800">
             <Search className="w-10 h-10" />
           </div>
-          <h3 className="text-2xl font-black text-white tracking-tight">Registry Entry Not Found</h3>
+          <h3 className="text-2xl font-bold text-white tracking-tight">Registry Entry Not Found</h3>
           <p className="text-neutral-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Adjust filters or initialize new master record</p>
         </div>
       ) : (
@@ -214,7 +214,7 @@ export default function CatalogPage() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-neutral-800 gap-2">
                       <ImageIcon className="w-10 h-10 stroke-[1]" />
-                      <span className="text-[7px] font-black uppercase tracking-widest">No Asset Loaded</span>
+                      <span className="text-[7px] font-bold uppercase tracking-widest">No Asset Loaded</span>
                     </div>
                   )}
 
@@ -236,7 +236,7 @@ export default function CatalogPage() {
 
                   {product.category_suggestion && (
                     <div className="absolute bottom-3 left-3">
-                      <div className="px-2.5 py-1 bg-black/80 backdrop-blur-md text-[8px] font-black uppercase tracking-[0.15em] text-white border border-white/10 rounded-lg">
+                      <div className="px-2.5 py-1 bg-black/80 backdrop-blur-md text-[8px] font-bold uppercase tracking-[0.15em] text-white border border-white/10 rounded-lg">
                         {product.category_suggestion}
                       </div>
                     </div>
@@ -246,7 +246,7 @@ export default function CatalogPage() {
                 { }
                 <div className="flex-1 p-6 flex flex-col justify-between min-h-[120px]">
                   <div className="space-y-2">
-                    <h3 className="text-[15px] font-black text-white tracking-tight group-hover:text-red-500 transition-colors duration-300 line-clamp-1">
+                    <h3 className="text-[15px] font-bold text-white tracking-tight group-hover:text-red-500 transition-colors duration-300 line-clamp-1">
                       {product.name}
                     </h3>
                     <p className="text-[12px] text-neutral-500 font-medium leading-relaxed line-clamp-2">
@@ -257,7 +257,7 @@ export default function CatalogPage() {
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-neutral-800">
                       <Package className="w-2.5 h-2.5" />
-                      <span className="text-[7px] font-black uppercase tracking-widest">ID: {product.id.slice(0, 8)}</span>
+                      <span className="text-[7px] font-bold uppercase tracking-widest">ID: {product.id.slice(0, 8)}</span>
                     </div>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function CatalogPage() {
               <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
                 <div className="p-10 border-b border-white/[0.03] flex items-center justify-between">
                   <div>
-                    <h2 className="text-3xl font-black text-white tracking-tight">
+                    <h2 className="text-3xl font-bold text-white tracking-tight">
                       {editingItem ? "Update Master Asset" : "Initialize Master Asset"}
                     </h2>
                     <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mt-1">Registry Record Calibration</p>
@@ -304,7 +304,7 @@ export default function CatalogPage() {
                 <div className="p-10 space-y-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                         <Package className="w-3 h-3 text-red-500" />
                         Asset Identifier
                       </label>
@@ -318,7 +318,7 @@ export default function CatalogPage() {
                       />
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                         <Tag className="w-3 h-3 text-red-500" />
                         Suggested Taxonomy
                       </label>
@@ -333,7 +333,7 @@ export default function CatalogPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
+                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                       <ImageIcon className="w-3 h-3 text-red-500" />
                       Global Visual Asset URL
                     </label>
@@ -354,7 +354,7 @@ export default function CatalogPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
+                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                       <Info className="w-3 h-3 text-red-500" />
                       Registry Description Metadata
                     </label>
@@ -373,14 +373,14 @@ export default function CatalogPage() {
                     disabled={isSubmitting}
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-8 py-4 text-neutral-500 font-black text-xs uppercase tracking-[0.2em] hover:text-white transition-colors disabled:opacity-50"
+                    className="px-8 py-4 text-neutral-500 font-bold text-xs uppercase tracking-[0.2em] hover:text-white transition-colors disabled:opacity-50"
                   >
                     Abort
                   </button>
                   <button 
                     disabled={isSubmitting}
                     type="submit"
-                    className="flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] active:scale-95 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:shadow-none"
+                    className="flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] active:scale-95 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:shadow-none"
                   >
                     {isSubmitting ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

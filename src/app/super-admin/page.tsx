@@ -74,10 +74,10 @@ export default function SuperAdminDashboard() {
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-4">
                         <div className="px-3 py-1 bg-red-600/10 border border-red-600/20 rounded-full">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">System Overview</span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500">System Overview</span>
                         </div>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
                         Platform <span className="text-neutral-500">Pulse</span>
                     </h1>
                     <p className="text-neutral-500 font-medium text-lg max-w-lg">Live intelligence and global health of the food merchant ecosystem.</p>
@@ -123,7 +123,7 @@ export default function SuperAdminDashboard() {
                     <div className="flex justify-between items-center relative z-10">
                         <div>
                             <h3 className="text-xl font-bold text-white tracking-tight">Revenue Velocity</h3>
-                            <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-[0.2em] font-black">Live Transaction Flow Analytics</p>
+                            <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-[0.2em] font-bold">Live Transaction Flow Analytics</p>
                         </div>
                         <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-neutral-600">
                             <Link href="/super-admin/analytics" className="hover:text-red-500 transition-colors">Detailed View</Link>
@@ -135,7 +135,7 @@ export default function SuperAdminDashboard() {
                         {stats.trendData.every((d: any) => d.amount === 0) ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-700 space-y-2 translate-y-[-20px]">
                                 <TrendingUp className="w-12 h-12 opacity-20" />
-                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">No activity in last 24h</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">No activity in last 24h</p>
                             </div>
                         ) : null}
                         
@@ -160,14 +160,14 @@ export default function SuperAdminDashboard() {
                                         {labels.map((l: any, i: number) => (
                                             <g key={i}>
                                                 <line x1="0" y1={l.y} x2="1000" y2={l.y} stroke="white" strokeOpacity="0.03" strokeWidth="1" strokeDasharray="4 4" />
-                                                <text x="1000" y={l.y - 12} textAnchor="end" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">{l.val}</text>
+                                                <text x="1000" y={l.y - 12} textAnchor="end" className="fill-neutral-600 text-[16px] font-bold uppercase tracking-widest">{l.val}</text>
                                             </g>
                                         ))}
 
                                         { }
-                                        <text x="0" y="295" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">24h ago</text>
-                                        <text x="500" y="295" textAnchor="middle" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">12h ago</text>
-                                        <text x="1000" y="295" textAnchor="end" className="fill-neutral-600 text-[16px] font-black uppercase tracking-widest">Now</text>
+                                        <text x="0" y="295" className="fill-neutral-600 text-[16px] font-bold uppercase tracking-widest">24h ago</text>
+                                        <text x="500" y="295" textAnchor="middle" className="fill-neutral-600 text-[16px] font-bold uppercase tracking-widest">12h ago</text>
+                                        <text x="1000" y="295" textAnchor="end" className="fill-neutral-600 text-[16px] font-bold uppercase tracking-widest">Now</text>
                                     </>
                                 );
                             })()}
@@ -235,7 +235,7 @@ export default function SuperAdminDashboard() {
                             {stats.topPerformers.map((t: any, i: number) => (
                                 <div key={i} className="flex items-center justify-between group cursor-default">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-white/[0.05] flex items-center justify-center text-xs font-black text-neutral-500 group-hover:bg-red-600 group-hover:text-white group-hover:border-red-600 transition-all duration-300">
+                                        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-white/[0.05] flex items-center justify-center text-xs font-bold text-neutral-500 group-hover:bg-red-600 group-hover:text-white group-hover:border-red-600 transition-all duration-300">
                                             {i + 1}
                                         </div>
                                         <div>
@@ -244,7 +244,7 @@ export default function SuperAdminDashboard() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[14px] font-black text-white italic group-hover:text-red-500 transition-colors">₹{t.revenue.toLocaleString()}</p>
+                                        <p className="text-[14px] font-bold text-white italic group-hover:text-red-500 transition-colors">₹{t.revenue.toLocaleString()}</p>
                                     </div>
                                 </div>
                             ))}
@@ -253,12 +253,12 @@ export default function SuperAdminDashboard() {
 
                     { }
                     <div className="bg-neutral-900/40 p-8 rounded-[2rem] border border-white/[0.03] relative overflow-hidden group transition-all hover:bg-neutral-900/60">
-                        <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-6 text-neutral-500 italic">Network Capacity</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-6 text-neutral-500 italic">Network Capacity</h3>
                         <div className="space-y-5">
                             <div className="space-y-2">
                                 <div className="flex justify-between text-[11px] font-bold uppercase tracking-[0.1em] text-neutral-400">
                                     <span>Cloud Utilization</span>
-                                    <span className="text-red-500 font-black">84%</span>
+                                    <span className="text-red-500 font-bold">84%</span>
                                 </div>
                                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-0.5">
                                     <motion.div 
@@ -279,9 +279,9 @@ export default function SuperAdminDashboard() {
                 <div className="p-8 border-b border-white/[0.03] flex justify-between items-center bg-white/[0.01]">
                     <div>
                         <h2 className="text-xl font-bold tracking-tight text-white uppercase">Latest Registry</h2>
-                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mt-1">Tenant Onboarding History</p>
+                        <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-1">Tenant Onboarding History</p>
                     </div>
-                    <Link href="/super-admin/tenants" className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-red-500 hover:text-white transition-all group">
+                    <Link href="/super-admin/tenants" className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-red-500 hover:text-white transition-all group">
                         Manage Registry <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </Link>
                 </div>
@@ -301,7 +301,7 @@ export default function SuperAdminDashboard() {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <span className="text-[11px] font-black uppercase tracking-widest text-neutral-500 bg-neutral-900 px-3 py-1.5 rounded-full border border-white/[0.03]">
+                                <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 bg-neutral-900 px-3 py-1.5 rounded-full border border-white/[0.03]">
                                     {new Date(t.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </span>
                             </div>
@@ -330,14 +330,14 @@ function MetricCard({ label, value, icon: Icon, subtitle, growth, trend }: any) 
                     </div>
                 )}
                 {trend && (
-                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500 bg-neutral-900 px-3 py-2 rounded-full border border-white/[0.05] shadow-sm">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-500 bg-neutral-900 px-3 py-2 rounded-full border border-white/[0.05] shadow-sm">
                         {trend}
                     </div>
                 )}
             </div>
             <div className="space-y-1.5 relative z-10">
                 <p className="text-neutral-500 font-extrabold uppercase tracking-[0.2em] text-[10px]">{label}</p>
-                <p className="text-4xl font-black tracking-tighter text-white group-hover:translate-y-[-2px] transition-transform duration-500">{value}</p>
+                <p className="text-4xl font-bold tracking-tighter text-white group-hover:translate-y-[-2px] transition-transform duration-500">{value}</p>
             </div>
             <p className="text-neutral-600 text-xs mt-6 font-bold tracking-tight uppercase group-hover:text-neutral-400 transition-colors">{subtitle}</p>
             

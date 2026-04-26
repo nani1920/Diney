@@ -17,7 +17,7 @@ export default function ContactPage() {
                   <div className="w-12 h-12 bg-[#025E43]/5 rounded-xl flex items-center justify-center text-[#025E43]">
                      <Building size={24} />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black/20">Business Name</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-black/20">Business Name</h3>
                   <p className="text-3xl font-bold tracking-tight">Diney</p>
                   <p className="text-black/40 font-medium">Sovereign QR-SaaS Operations</p>
                </div>
@@ -26,7 +26,7 @@ export default function ContactPage() {
                   <div className="w-12 h-12 bg-[#025E43]/5 rounded-xl flex items-center justify-center text-[#025E43]">
                      <Mail size={24} />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black/20">Support Email</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-black/20">Support Email</h3>
                   <p className="text-2xl font-bold tracking-tight">mr.luckymano2005@gmail.com</p>
                   <p className="text-black/40 font-medium">Direct Executive Response</p>
                </div>
@@ -35,7 +35,7 @@ export default function ContactPage() {
                   <div className="w-12 h-12 bg-[#025E43]/5 rounded-xl flex items-center justify-center text-[#025E43]">
                      <Phone size={24} />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black/20">Operational Line</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-black/20">Operational Line</h3>
                   <p className="text-3xl font-bold tracking-tight">+91 7569964480</p>
                   <p className="text-black/40 font-medium">Available during business hours</p>
                </div>
@@ -44,7 +44,7 @@ export default function ContactPage() {
                   <div className="w-12 h-12 bg-[#025E43]/5 rounded-xl flex items-center justify-center text-[#025E43]">
                      <MapPin size={24} />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black/20">Physical Node</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-black/20">Physical Node</h3>
                   <p className="text-3xl font-bold tracking-tight">KNL, Andhra Pradesh</p>
                   <p className="text-black/40 font-medium">India / Operational Hub</p>
                </div>

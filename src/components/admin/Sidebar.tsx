@@ -17,7 +17,8 @@ import {
     History,
     Layers,
     ChevronDown,
-    Star
+    Star,
+    Users
 } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
@@ -70,6 +71,7 @@ export default function AdminSidebar() {
             items: [
                 { name: 'Live Orders', href: getLink('/admin/orders'), icon: ClipboardList },
                 { name: 'Prep Queue', href: getLink('/admin/prep-queue'), icon: Layers },
+                { name: 'Tables', href: getLink('/admin/tables'), icon: UtensilsCrossed },
                 { name: 'Order History', href: getLink('/admin/all-orders'), icon: History },
             ]
         },
@@ -85,6 +87,7 @@ export default function AdminSidebar() {
             title: 'Tools & Settings',
             icon: QrCode,
             items: [
+                { name: 'Staff Management', href: getLink('/admin/staff'), icon: Users },
                 { name: 'QR Generator', href: getLink('/admin/qr-generator'), icon: QrCode },
                 { name: 'Settings', href: getLink('/admin/settings'), icon: Store },
             ]
@@ -136,7 +139,7 @@ export default function AdminSidebar() {
                                 <h1 className="font-bold text-xl tracking-wide text-white capitalize">
                                     {tenant?.name || 'Admin'}
                                 </h1>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mt-1">Admin Portal</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Admin Portal</p>
                             </div>
                         </div>
                     </div>

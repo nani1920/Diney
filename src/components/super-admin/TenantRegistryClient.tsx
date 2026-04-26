@@ -33,9 +33,9 @@ export default function TenantRegistryClient({ initialTenants }: { initialTenant
                 <div className="px-8 py-6 border-b border-white/[0.03] flex justify-between items-center bg-white/[0.01]">
                     <div>
                         <h2 className="text-lg font-bold tracking-tight text-white uppercase">Merchant Base</h2>
-                        <p className="text-[10px] font-black text-neutral-600 uppercase tracking-widest mt-0.5">Live Node Directory</p>
+                        <p className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest mt-0.5">Live Node Directory</p>
                     </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4 py-1.5 bg-neutral-900 rounded-lg border border-white/[0.05]">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-4 py-1.5 bg-neutral-900 rounded-lg border border-white/[0.05]">
                         <span className="text-red-500">{filteredTenants.length}</span> Results
                     </div>
                 </div>
@@ -43,7 +43,7 @@ export default function TenantRegistryClient({ initialTenants }: { initialTenant
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-neutral-900/40 text-white/90 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/[0.03]">
+                            <tr className="bg-neutral-900/40 text-white/90 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-white/[0.03]">
                                 <th className="px-8 py-5">Identity</th>
                                 <th className="px-8 py-5 hidden lg:table-cell">EntryPoint</th>
                                 <th className="px-8 py-5">Network Status</th>
@@ -88,7 +88,7 @@ export default function TenantRegistryClient({ initialTenants }: { initialTenant
                                                             if (res.success) window.location.reload();
                                                             else alert(res.error || 'Failed to approve');
                                                         }}
-                                                        className="px-2 py-1 bg-green-600 text-[9px] font-black uppercase tracking-widest text-white rounded hover:bg-green-500 transition-colors"
+                                                        className="px-2 py-1 bg-green-600 text-[9px] font-bold uppercase tracking-widest text-white rounded hover:bg-green-500 transition-colors"
                                                     >
                                                         Approve
                                                     </button>
@@ -100,7 +100,7 @@ export default function TenantRegistryClient({ initialTenants }: { initialTenant
                                                                 else alert(res.error || 'Failed to reject');
                                                             }
                                                         }}
-                                                        className="px-2 py-1 bg-neutral-800 text-[9px] font-black uppercase tracking-widest text-neutral-400 rounded hover:bg-red-600 hover:text-white transition-all"
+                                                        className="px-2 py-1 bg-neutral-800 text-[9px] font-bold uppercase tracking-widest text-neutral-400 rounded hover:bg-red-600 hover:text-white transition-all"
                                                     >
                                                         Reject
                                                     </button>
@@ -118,7 +118,7 @@ export default function TenantRegistryClient({ initialTenants }: { initialTenant
                                             </div>
                                             {t.owner && (
                                                 <div className="pt-2 border-t border-white/5 mt-2">
-                                                    <p className="text-[9px] font-black text-neutral-500 uppercase tracking-widest leading-none mb-1">Owner Ident</p>
+                                                    <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest leading-none mb-1">Owner Ident</p>
                                                     <p className="text-[10px] font-bold text-neutral-300 truncate max-w-[120px]">{t.owner.phone_number || 'No Phone'}</p>
                                                     <p className="text-[8px] font-medium text-neutral-600 truncate max-w-[120px]">{t.owner.email}</p>
                                                 </div>

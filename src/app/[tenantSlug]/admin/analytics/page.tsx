@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
                                 key={t}
                                 onClick={() => setTimeframe(t)}
                                 className={clsx(
-                                    "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                    "px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all",
                                     timeframe === t 
                                         ? "bg-white text-black shadow-md border border-gray-100" 
                                         : "text-gray-500 hover:text-gray-700"
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{item.count} Sold</p>
                                     </div>
                                 </div>
-                                <div className="text-sm font-black text-gray-900">
+                                <div className="text-sm font-bold text-gray-900">
                                     ₹{item.revenue}
                                 </div>
                             </div>
@@ -225,7 +225,7 @@ function MetricCard({ label, value, icon: Icon, description, trend, trendColor }
                     <Icon className="w-6 h-6 text-gray-400 group-hover:text-white" />
                 </div>
                 <div className={clsx(
-                    "flex items-center gap-1 text-[10px] font-black uppercase px-2.5 py-1.5 rounded-full ring-1 ring-inset",
+                    "flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-full ring-1 ring-inset",
                     trendColor === 'green' ? "text-green-600 bg-green-50 ring-green-100" : "text-red-600 bg-red-50 ring-red-100"
                 )}>
                     {trendColor === 'green' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
@@ -233,8 +233,8 @@ function MetricCard({ label, value, icon: Icon, description, trend, trendColor }
                 </div>
             </div>
             <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{label}</p>
-                <p className="text-3xl font-black tracking-tighter">{value}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{label}</p>
+                <p className="text-3xl font-bold tracking-tighter">{value}</p>
             </div>
             <p className="text-[10px] text-gray-400 mt-4 font-bold">{description}</p>
         </div>
