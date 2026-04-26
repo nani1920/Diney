@@ -13,13 +13,12 @@ import {
     ClipboardList
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { updateOrderStatusServer } from '@/app/actions/orders';
 import { toast } from 'react-hot-toast';
 import { playNotificationChime } from '@/lib/sounds';
 import clsx from 'clsx';
 
 export default function PrepQueuePage() {
-    const { orders } = useOrders();
+    const { orders, updateOrderStatus } = useOrders();
     const [searchQuery, setSearchQuery] = useState('');
 
     // Filter for active items only (Received or Preparing)
@@ -63,7 +62,7 @@ export default function PrepQueuePage() {
         setIsUpdating(itemKey);
         try {
             const promises = ordersToUpdate.map(o => 
-                updateOrderStatusServer(o.orderId, newStatus)
+                updateOrderStatus(o.orderId, newStatus as any)
             );
             await Promise.all(promises);
             toast.success(`${newStatus.toUpperCase()} - Items updated`);
